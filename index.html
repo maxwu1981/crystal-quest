@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>水晶传说 Crystal Quest</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+  #hint { position: fixed; bottom: 8px; left: 0; right: 0; text-align: center;
+    color: #666; font: 12px sans-serif; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="game" width="256" height="224"></canvas>
+<div id="hint">方向键/WASD 移动 · Z/Enter 确认 · X/Esc 取消 · 调试：B 强制遇敌 · H 回满</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

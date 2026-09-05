@@ -1,0 +1,59 @@
+# 水晶传说 Crystal Quest — 项目规则（Claude 必读）
+
+FF1 / FF3 / FF5 风格的 2D 回合制 JRPG。现代 JavaScript（ES Modules）+ HTML5 Canvas，
+**零运行时依赖、零构建步骤**。用静态 HTTP 服务器打开 `index.html` 即可运行。
+
+## 目录
+```
+index.html          入口（canvas 256×224，整数倍放大）
+src/main.js         启动
+src/core/           引擎：Game / 固定步长循环 / 输入 / 场景栈 / 可播种随机数 / 文字
+src/field/          地图行走场景（网格移动、步数制遇敌）
+src/battle/         战斗场景、纯函数公式、敌人 AI、角色构造
+src/ui/             FF 蓝色窗口、光标菜单
+src/game/           全局状态（可序列化）、队伍属性计算、升级
+src/assets/         代码生成的占位像素图与瓦片（以后换成 PNG 图集只改这里）
+src/data/loader.js  加载 data/*.json
+data/               **所有游戏内容**：职业、魔法、敌人、遇敌表、地图、初始队伍
+tests/              浏览器内测试（公式 + 数据完整性）
+```
+
+## 架构铁律
+1. **引擎与内容分离**：`src/` 只写机制，`data/*.json` 只写内容。新怪物/魔法/地图 = 改 JSON，不改代码。
+2. **场景栈**：Field / Battle / Menu 都是 Scene（`update(dt)` / `render(ctx)` / 可选 `enter` `exit` `resume`）。
+   用 `game.scenes.push/pop`，场景之间不直接互相引用。
+3. **所有游戏状态在 `game.state`**，必须能 `JSON.stringify`。禁止把状态藏在闭包、DOM 或模块级变量里。
+4. **固定时间步长**：逻辑只在 `update(dt)`，dt 恒为 1/60。`render` 只读状态，不改状态。
+5. **随机数只用 `game.rng`**（可播种，mulberry32）。禁止 `Math.random`。
+6. **数值公式全部是 `src/battle/formulas.js` 的纯函数**。改公式必须同步改 `tests/run.js`。
+7. 单文件不超过 400 行，超了就拆。
+8. 内部分辨率 256×224，瓦片 16px，所有绘制坐标取整。
+9. 精灵由 `src/assets/` 生成；替换正式素材时只改 assets 层，场景代码不动。
+10. 玩家可见文本一律中文，且尽量放在 `data/` 里。
+
+## 禁止
+- 引入 npm 依赖或构建工具（除非用户明确要求）
+- 使用 Square Enix 的美术、音乐、专有名词（陆行鸟、席德、莫古利、巴哈姆特…）
+- 用计时器做遇敌（必须步数制）
+- 像素级碰撞（一律网格制）
+
+## 数据 schema
+- `jobs.json`  `{ id: { name, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:[...] } }`
+- `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', heal?:true, scope:'single' } }`
+- `enemies.json` `{ id: { name, sprite, hp, mp, atk, def, acc, eva, spd, mdef, int, crit, exp, gold, weak:[], resist:[], immune:[], spells:[], ai } }`
+- `encounters.json` `{ zoneId: { steps:[min,max], groups:[{ enemies:[ids], weight }] } }`
+- `maps/*.json` `{ name, encounterZone, spawn:{x,y}, legend:{ 字符: {tile, solid?, encounter?} }, rows:[字符串] }`
+- `party.json` `[{ name, jobId, level }]`
+
+## 调试
+- URL 加 `?debug` 显示 FPS/坐标/遇敌倒计时
+- 地图上按 `B` 强制遇敌，按 `H` 全员回满
+
+## 路线图
+- [x] 0 骨架：循环 / 输入 / 场景栈 / RNG / 文字
+- [x] 1 垂直切片：地图行走 + 步数遇敌 + 回合制战斗 + 胜利/失败/逃跑 + 经验升级
+- [ ] 2 菜单、道具、装备、存档（state 已可序列化）、旅馆
+- [ ] 3 职业转职、更多魔法、状态异常、ATB 模式打磨（调度器已预留 `battleMode:'atb'`）
+- [ ] 4 NPC 对话、剧情标志位、多地图传送（门已是可走瓦片）
+- [ ] 5 世界地图、迷宫、Boss
+- [ ] 6 音效音乐、正式美术、平衡、发布

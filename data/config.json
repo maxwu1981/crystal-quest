@@ -1,0 +1,10 @@
+{
+  "title": "水晶传说",
+  "tickRate": 60,
+  "startMap": "village",
+  "startGold": 50,
+  "battleMode": "turn",
+  "atbRate": 6,
+  "expSplit": false,
+  "seed": 0
+}

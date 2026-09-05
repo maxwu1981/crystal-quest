@@ -1,0 +1,13 @@
+{
+  "village_field": {
+    "steps": [12, 32],
+    "groups": [
+      { "enemies": ["goblin"], "weight": 3 },
+      { "enemies": ["goblin", "goblin"], "weight": 3 },
+      { "enemies": ["slime", "slime"], "weight": 2 },
+      { "enemies": ["wolf"], "weight": 2 },
+      { "enemies": ["slime", "goblin", "slime"], "weight": 1 },
+      { "enemies": ["wolf", "goblin"], "weight": 1 }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "warrior": {
+    "name": "战士",
+    "base":   { "hp": 36, "mp": 0, "str": 12, "agi": 5, "int": 1, "vit": 10, "acc": 30, "eva": 8 },
+    "growth": { "hp": 8,  "mp": 0, "str": 2.2, "agi": 1, "int": 0.3, "vit": 1.8, "acc": 3, "eva": 1 },
+    "commands": ["attack", "defend", "item", "flee"],
+    "spells": []
+  },
+  "thief": {
+    "name": "盗贼",
+    "base":   { "hp": 28, "mp": 0, "str": 8, "agi": 12, "int": 3, "vit": 6, "acc": 24, "eva": 20 },
+    "growth": { "hp": 6,  "mp": 0, "str": 1.6, "agi": 2.2, "int": 0.5, "vit": 1.2, "acc": 3, "eva": 2.5 },
+    "commands": ["attack", "defend", "item", "flee"],
+    "spells": []
+  },
+  "whitemage": {
+    "name": "白魔法师",
+    "base":   { "hp": 24, "mp": 12, "str": 4, "agi": 6, "int": 11, "vit": 6, "acc": 12, "eva": 10 },
+    "growth": { "hp": 5,  "mp": 3, "str": 0.8, "agi": 1.2, "int": 2.2, "vit": 1, "acc": 1.5, "eva": 1.2 },
+    "commands": ["attack", "magic", "defend", "item", "flee"],
+    "spells": ["cure"]
+  },
+  "blackmage": {
+    "name": "黑魔法师",
+    "base":   { "hp": 20, "mp": 14, "str": 3, "agi": 7, "int": 13, "vit": 4, "acc": 10, "eva": 10 },
+    "growth": { "hp": 4,  "mp": 3.5, "str": 0.6, "agi": 1.2, "int": 2.6, "vit": 0.8, "acc": 1.5, "eva": 1.2 },
+    "commands": ["attack", "magic", "defend", "item", "flee"],
+    "spells": ["fire", "thunder"]
+  }
+}
