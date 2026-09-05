@@ -1,19 +1,1256 @@
 {
-  "potion":     { "name": "药水",     "type": "consumable", "effect": { "hp": 30 },  "price": 30,  "desc": "恢复 30 HP",        "battle": true,  "field": true },
-  "hipotion":   { "name": "高级药水", "type": "consumable", "effect": { "hp": 100 }, "price": 150, "desc": "恢复 100 HP",       "battle": true,  "field": true },
-  "ether":      { "name": "以太",     "type": "consumable", "effect": { "mp": 15 },  "price": 120, "desc": "恢复 15 MP",        "battle": true,  "field": true },
-  "phoenix":    { "name": "凤凰尾巴", "type": "consumable", "effect": { "revive": 0.5 }, "price": 200, "desc": "复活并恢复一半 HP", "battle": true, "field": true },
-  "antidote":   { "name": "解毒药",   "type": "consumable", "effect": { "cure": ["poison"] }, "price": 20, "desc": "治疗中毒",      "battle": true,  "field": true },
-  "eyedrop":    { "name": "眼药水",   "type": "consumable", "effect": { "cure": ["blind"] },  "price": 20, "desc": "治疗黑暗",      "battle": true,  "field": true },
-  "tent":       { "name": "帐篷",     "type": "consumable", "effect": { "camp": true }, "price": 100, "desc": "全员完全恢复（只能在地图上用）", "battle": false, "field": true },
-
-  "dagger":     { "name": "匕首", "type": "weapon", "atk": 4,  "acc": 5, "price": 60,  "jobs": ["warrior", "thief", "whitemage", "blackmage", "redmage"] },
-  "shortsword": { "name": "短剑", "type": "weapon", "atk": 7,  "price": 120, "jobs": ["warrior", "thief", "redmage"] },
-  "ironsword":  { "name": "铁剑", "type": "weapon", "atk": 12, "price": 400, "jobs": ["warrior", "redmage"] },
-  "staff":      { "name": "木杖", "type": "weapon", "atk": 3,  "price": 50,  "jobs": ["whitemage", "blackmage", "redmage"] },
-  "knuckle":    { "name": "拳套", "type": "weapon", "atk": 2,  "acc": 10, "price": 80, "jobs": ["monk"], "desc": "武僧空手更强，拳套只加命中" },
-
-  "robe":       { "name": "布袍", "type": "armor", "def": 2, "price": 60,  "jobs": ["thief", "whitemage", "blackmage", "redmage", "monk"] },
-  "leather":    { "name": "皮甲", "type": "armor", "def": 4, "price": 150, "jobs": ["warrior", "thief", "redmage"] },
-  "ironarmor":  { "name": "铁甲", "type": "armor", "def": 9, "price": 600, "jobs": ["warrior"] }
+ "potion": {
+  "name": "药水",
+  "type": "consumable",
+  "effect": {
+   "hp": 30
+  },
+  "price": 30,
+  "desc": "恢复 30 HP",
+  "battle": true,
+  "field": true
+ },
+ "hipotion": {
+  "name": "高级药水",
+  "type": "consumable",
+  "effect": {
+   "hp": 100
+  },
+  "price": 150,
+  "desc": "恢复 100 HP",
+  "battle": true,
+  "field": true
+ },
+ "xpotion": {
+  "name": "特效药水",
+  "type": "consumable",
+  "effect": {
+   "hp": 300
+  },
+  "price": 600,
+  "desc": "恢复 300 HP",
+  "battle": true,
+  "field": true
+ },
+ "ether": {
+  "name": "以太",
+  "type": "consumable",
+  "effect": {
+   "mp": 15
+  },
+  "price": 120,
+  "desc": "恢复 15 MP",
+  "battle": true,
+  "field": true
+ },
+ "hiether": {
+  "name": "高级以太",
+  "type": "consumable",
+  "effect": {
+   "mp": 50
+  },
+  "price": 450,
+  "desc": "恢复 50 MP",
+  "battle": true,
+  "field": true
+ },
+ "phoenix": {
+  "name": "凤凰尾巴",
+  "type": "consumable",
+  "effect": {
+   "revive": 0.5
+  },
+  "price": 200,
+  "desc": "复活并恢复一半 HP",
+  "battle": true,
+  "field": true
+ },
+ "antidote": {
+  "name": "解毒药",
+  "type": "consumable",
+  "effect": {
+   "cure": [
+    "poison"
+   ]
+  },
+  "price": 20,
+  "desc": "治疗中毒",
+  "battle": true,
+  "field": true
+ },
+ "eyedrop": {
+  "name": "眼药水",
+  "type": "consumable",
+  "effect": {
+   "cure": [
+    "blind"
+   ]
+  },
+  "price": 20,
+  "desc": "治疗黑暗",
+  "battle": true,
+  "field": true
+ },
+ "bell": {
+  "name": "唤醒铃",
+  "type": "consumable",
+  "effect": {
+   "cure": [
+    "sleep"
+   ]
+  },
+  "price": 25,
+  "desc": "唤醒沉睡的同伴",
+  "battle": true,
+  "field": true
+ },
+ "elixir": {
+  "name": "万能药",
+  "type": "consumable",
+  "effect": {
+   "hp": 999,
+   "mp": 999,
+   "cure": [
+    "poison",
+    "blind",
+    "sleep"
+   ]
+  },
+  "price": 1200,
+  "desc": "完全恢复 HP MP 并解除异常",
+  "battle": true,
+  "field": true
+ },
+ "tent": {
+  "name": "帐篷",
+  "type": "consumable",
+  "effect": {
+   "camp": true
+  },
+  "price": 100,
+  "desc": "全员完全恢复（只能在地图上用）",
+  "battle": false,
+  "field": true
+ },
+ "wood_sword": {
+  "name": "木剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 1,
+  "atk": 3,
+  "acc": 0,
+  "price": 55,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "bronze_sword": {
+  "name": "青铜剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 3,
+  "atk": 7,
+  "acc": 0,
+  "price": 208,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "iron_sword": {
+  "name": "铁剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 4,
+  "atk": 12,
+  "acc": 0,
+  "price": 405,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "steel_sword": {
+  "name": "钢剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 5,
+  "atk": 18,
+  "acc": 2,
+  "price": 789,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "silver_sword": {
+  "name": "银剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 6,
+  "atk": 25,
+  "acc": 2,
+  "price": 1539,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "mythril_sword": {
+  "name": "秘银剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 7,
+  "atk": 33,
+  "acc": 4,
+  "price": 3002,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "adamant_sword": {
+  "name": "精金剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 8,
+  "atk": 42,
+  "acc": 4,
+  "price": 5854,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "meteor_sword": {
+  "name": "陨铁剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 9,
+  "atk": 52,
+  "acc": 6,
+  "price": 11415,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "dragon_sword": {
+  "name": "龙牙剑",
+  "type": "weapon",
+  "cat": "sword",
+  "tier": 10,
+  "atk": 63,
+  "acc": 6,
+  "price": 22259,
+  "jobs": [
+   "warrior",
+   "redmage"
+  ]
+ },
+ "knife": {
+  "name": "小刀",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 1,
+  "atk": 2,
+  "acc": 6,
+  "price": 55,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "bronze_dagger": {
+  "name": "青铜匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 3,
+  "atk": 5,
+  "acc": 6,
+  "price": 208,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "iron_dagger": {
+  "name": "铁匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 4,
+  "atk": 9,
+  "acc": 8,
+  "price": 405,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "steel_dagger": {
+  "name": "钢匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 5,
+  "atk": 13,
+  "acc": 8,
+  "price": 789,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "silver_dagger": {
+  "name": "银匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 6,
+  "atk": 18,
+  "acc": 10,
+  "price": 1539,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "mythril_dagger": {
+  "name": "秘银匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 7,
+  "atk": 24,
+  "acc": 10,
+  "price": 3002,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "adamant_dagger": {
+  "name": "精金匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 8,
+  "atk": 31,
+  "acc": 12,
+  "price": 5854,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "meteor_dagger": {
+  "name": "陨铁匕首",
+  "type": "weapon",
+  "cat": "dagger",
+  "tier": 9,
+  "atk": 38,
+  "acc": 12,
+  "price": 11415,
+  "jobs": [
+   "warrior",
+   "thief",
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "wrap": {
+  "name": "布缠手",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 1,
+  "atk": 2,
+  "acc": 10,
+  "price": 55,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "leather_knuckle": {
+  "name": "皮拳套",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 2,
+  "atk": 4,
+  "acc": 10,
+  "price": 106,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "iron_knuckle": {
+  "name": "铁拳套",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 4,
+  "atk": 7,
+  "acc": 12,
+  "price": 405,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "steel_knuckle": {
+  "name": "钢拳套",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 5,
+  "atk": 10,
+  "acc": 12,
+  "price": 789,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "silver_knuckle": {
+  "name": "银拳套",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 6,
+  "atk": 14,
+  "acc": 14,
+  "price": 1539,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "mythril_knuckle": {
+  "name": "秘银拳套",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 7,
+  "atk": 19,
+  "acc": 14,
+  "price": 3002,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "adamant_claw": {
+  "name": "精金爪",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 8,
+  "atk": 24,
+  "acc": 16,
+  "price": 5854,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "dragon_claw": {
+  "name": "龙牙爪",
+  "type": "weapon",
+  "cat": "knuckle",
+  "tier": 10,
+  "atk": 32,
+  "acc": 18,
+  "price": 22259,
+  "jobs": [
+   "monk"
+  ]
+ },
+ "wood_staff": {
+  "name": "木杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 1,
+  "atk": 2,
+  "acc": 2,
+  "price": 55,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ]
+ },
+ "oak_staff": {
+  "name": "橡木杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 3,
+  "atk": 4,
+  "acc": 2,
+  "price": 208,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 2
+ },
+ "iron_staff": {
+  "name": "铁杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 4,
+  "atk": 7,
+  "acc": 4,
+  "price": 405,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 3
+ },
+ "crystal_staff": {
+  "name": "水晶杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 5,
+  "atk": 11,
+  "acc": 4,
+  "price": 789,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 4
+ },
+ "silver_staff": {
+  "name": "银杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 6,
+  "atk": 15,
+  "acc": 6,
+  "price": 1539,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 6
+ },
+ "mythril_staff": {
+  "name": "秘银杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 7,
+  "atk": 20,
+  "acc": 6,
+  "price": 3002,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 9
+ },
+ "star_staff": {
+  "name": "星辰杖",
+  "type": "weapon",
+  "cat": "staff",
+  "tier": 9,
+  "atk": 27,
+  "acc": 8,
+  "price": 11415,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage"
+  ],
+  "intBonus": 13
+ },
+ "leather_armor": {
+  "name": "皮甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 2,
+  "price": 114,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 5
+ },
+ "bronze_armor": {
+  "name": "青铜甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 3,
+  "price": 222,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 8
+ },
+ "iron_armor": {
+  "name": "铁甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 4,
+  "price": 434,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 12
+ },
+ "steel_armor": {
+  "name": "钢甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 5,
+  "price": 846,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 17
+ },
+ "silver_armor": {
+  "name": "银甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 6,
+  "price": 1649,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 23,
+  "mdef": 4
+ },
+ "mythril_armor": {
+  "name": "秘银甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 7,
+  "price": 3216,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 30,
+  "mdef": 6
+ },
+ "adamant_armor": {
+  "name": "精金甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 8,
+  "price": 6272,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 38,
+  "mdef": 8
+ },
+ "meteor_armor": {
+  "name": "陨铁甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 9,
+  "price": 12230,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 47,
+  "mdef": 10
+ },
+ "dragon_armor": {
+  "name": "龙鳞甲",
+  "type": "armor",
+  "cat": "armor",
+  "tier": 10,
+  "price": 23849,
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage",
+   "monk"
+  ],
+  "def": 57,
+  "mdef": 14
+ },
+ "cloth_robe": {
+  "name": "布袍",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 1,
+  "price": 51,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 2,
+  "mdef": 2
+ },
+ "linen_robe": {
+  "name": "亚麻袍",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 2,
+  "price": 99,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 4,
+  "mdef": 4
+ },
+ "silk_robe": {
+  "name": "丝绸袍",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 3,
+  "price": 193,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 6,
+  "mdef": 7
+ },
+ "rune_robe": {
+  "name": "符文袍",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 5,
+  "price": 733,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 10,
+  "mdef": 12
+ },
+ "mythril_robe": {
+  "name": "秘银法衣",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 7,
+  "price": 2788,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 16,
+  "mdef": 18
+ },
+ "star_robe": {
+  "name": "星辰法衣",
+  "type": "armor",
+  "cat": "robe",
+  "tier": 9,
+  "price": 10599,
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief",
+   "monk"
+  ],
+  "def": 24,
+  "mdef": 26
+ },
+ "copper_ring": {
+  "name": "铜戒指",
+  "type": "accessory",
+  "tier": 2,
+  "price": 120,
+  "desc": "回避 +4",
+  "eva": 4
+ },
+ "silver_ring": {
+  "name": "银戒指",
+  "type": "accessory",
+  "tier": 5,
+  "price": 420,
+  "desc": "回避 +8　魔防 +4",
+  "eva": 8,
+  "mdef": 4
+ },
+ "mythril_ring": {
+  "name": "秘银戒指",
+  "type": "accessory",
+  "tier": 7,
+  "price": 1100,
+  "desc": "回避 +12　魔防 +8",
+  "eva": 12,
+  "mdef": 8
+ },
+ "power_band": {
+  "name": "力量护腕",
+  "type": "accessory",
+  "tier": 4,
+  "price": 380,
+  "desc": "攻击 +6",
+  "atkBonus": 6
+ },
+ "guard_band": {
+  "name": "守护护腕",
+  "type": "accessory",
+  "tier": 4,
+  "price": 380,
+  "desc": "防御 +6",
+  "defBonus": 6
+ },
+ "swift_boots": {
+  "name": "疾风靴",
+  "type": "accessory",
+  "tier": 6,
+  "price": 700,
+  "desc": "速度 +6",
+  "spd": 6
+ },
+ "excalibur": {
+  "name": "王者之剑",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "excalibur",
+  "lore": "凯尔特 · 亚瑟王传说",
+  "desc": "湖中仙女所赠的选王之剑，剑身自带白光。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior",
+   "redmage"
+  ],
+  "atk": 78,
+  "acc": 20,
+  "crit": 15,
+  "element": "light"
+ },
+ "kusanagi": {
+  "name": "草薙剑",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "kusanagi",
+  "lore": "日本神话",
+  "desc": "从八岐大蛇尾中取出的天丛云剑，能唤起风与雷。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage"
+  ],
+  "atk": 72,
+  "acc": 16,
+  "crit": 10,
+  "element": "thunder"
+ },
+ "gram": {
+  "name": "格拉墨",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "gram",
+  "lore": "北欧神话",
+  "desc": "齐格弗里德的屠龙之剑，一击斩开铁砧。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior"
+  ],
+  "atk": 74,
+  "acc": 14,
+  "crit": 12,
+  "status": "blind"
+ },
+ "xuanyuan": {
+  "name": "轩辕剑",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "xuanyuan",
+  "lore": "中国神话",
+  "desc": "黄帝所铸的圣道之剑，剑气可涤荡邪祟。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior",
+   "redmage"
+  ],
+  "atk": 76,
+  "acc": 18,
+  "crit": 8,
+  "element": "light"
+ },
+ "zulfiqar": {
+  "name": "佐勒菲卡尔",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "zulfiqar",
+  "lore": "中东传说",
+  "desc": "剑身分为双叉的名剑，出鞘必见血。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage"
+  ],
+  "atk": 70,
+  "acc": 22,
+  "crit": 25
+ },
+ "gungnir": {
+  "name": "冈格尼尔",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "gungnir",
+  "lore": "北欧神话",
+  "desc": "奥丁之枪，掷出后必定命中，绝不落空。",
+  "price": 0,
+  "cat": "sword",
+  "jobs": [
+   "warrior"
+  ],
+  "atk": 68,
+  "acc": 90,
+  "crit": 10
+ },
+ "gaebolg": {
+  "name": "盖伯尔加",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "gaebolg",
+  "lore": "凯尔特神话",
+  "desc": "库丘林的魔枪，刺入后倒钩在体内绽开。",
+  "price": 0,
+  "cat": "dagger",
+  "jobs": [
+   "thief",
+   "warrior"
+  ],
+  "atk": 52,
+  "acc": 24,
+  "crit": 18,
+  "status": "poison"
+ },
+ "harpe": {
+  "name": "哈尔佩",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "harpe",
+  "lore": "希腊神话",
+  "desc": "珀尔修斯斩下蛇发女妖首级的镰刃。",
+  "price": 0,
+  "cat": "dagger",
+  "jobs": [
+   "thief"
+  ],
+  "atk": 48,
+  "acc": 20,
+  "crit": 35
+ },
+ "ganjiang": {
+  "name": "干将莫邪",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "ganjiang",
+  "lore": "中国传说",
+  "desc": "雌雄双剑，出手成对，一击两响。",
+  "price": 0,
+  "cat": "dagger",
+  "jobs": [
+   "thief",
+   "warrior"
+  ],
+  "atk": 44,
+  "acc": 18,
+  "crit": 15,
+  "hits": 2
+ },
+ "vajra": {
+  "name": "金刚杵",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "vajra",
+  "lore": "印度神话",
+  "desc": "因陀罗的雷霆之杵，坚不可摧亦不可挡。",
+  "price": 0,
+  "cat": "knuckle",
+  "jobs": [
+   "monk"
+  ],
+  "atk": 46,
+  "acc": 26,
+  "crit": 14,
+  "element": "thunder"
+ },
+ "nemean_fist": {
+  "name": "狮皮拳套",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "nemean_fist",
+  "lore": "希腊神话",
+  "desc": "以涅墨亚猛狮的爪掌制成，刀枪不入。",
+  "price": 0,
+  "cat": "knuckle",
+  "jobs": [
+   "monk"
+  ],
+  "atk": 42,
+  "acc": 22,
+  "crit": 12,
+  "hits": 2
+ },
+ "laevateinn": {
+  "name": "雷瓦汀",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "laevateinn",
+  "lore": "北欧神话",
+  "desc": "洛基以符文锻造的火焰之杖，据说能烧尽世界树。",
+  "price": 0,
+  "cat": "staff",
+  "jobs": [
+   "blackmage",
+   "redmage"
+  ],
+  "atk": 30,
+  "acc": 10,
+  "intBonus": 14,
+  "element": "fire"
+ },
+ "caduceus": {
+  "name": "双蛇之杖",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "caduceus",
+  "lore": "希腊神话",
+  "desc": "双蛇缠绕的信使之杖，带来治愈与安眠。",
+  "price": 0,
+  "cat": "staff",
+  "jobs": [
+   "whitemage",
+   "redmage"
+  ],
+  "atk": 34,
+  "acc": 12,
+  "intBonus": 12,
+  "mdef": 8
+ },
+ "was_scepter": {
+  "name": "瓦斯权杖",
+  "type": "weapon",
+  "tier": 11,
+  "myth": true,
+  "icon": "was_scepter",
+  "lore": "埃及神话",
+  "desc": "兽首长杖，象征统治与混沌。",
+  "price": 0,
+  "cat": "staff",
+  "jobs": [
+   "blackmage"
+  ],
+  "atk": 28,
+  "acc": 10,
+  "intBonus": 13,
+  "element": "dark"
+ },
+ "aegis": {
+  "name": "埃癸斯",
+  "type": "armor",
+  "tier": 11,
+  "myth": true,
+  "icon": "aegis",
+  "lore": "希腊神话",
+  "desc": "雅典娜的神盾胸铠，正面刻着令人石化的蛇发面容。",
+  "price": 0,
+  "cat": "armor",
+  "jobs": [
+   "warrior",
+   "redmage"
+  ],
+  "def": 62,
+  "mdef": 18,
+  "eva": 6
+ },
+ "jade_armor": {
+  "name": "金缕玉衣",
+  "type": "armor",
+  "tier": 11,
+  "myth": true,
+  "icon": "jade_armor",
+  "lore": "中国传说",
+  "desc": "金丝串起的玉片战衣，据说可保神魂不散。",
+  "price": 0,
+  "cat": "armor",
+  "jobs": [
+   "warrior",
+   "thief",
+   "redmage"
+  ],
+  "def": 58,
+  "mdef": 22
+ },
+ "brynhild": {
+  "name": "女武神之铠",
+  "type": "armor",
+  "tier": 11,
+  "myth": true,
+  "icon": "brynhild",
+  "lore": "北欧神话",
+  "desc": "布伦希尔德的锁子甲，穿上便不再畏惧战场。",
+  "price": 0,
+  "cat": "armor",
+  "jobs": [
+   "warrior",
+   "monk"
+  ],
+  "def": 60,
+  "mdef": 14,
+  "spd": 4
+ },
+ "hagoromo": {
+  "name": "天之羽衣",
+  "type": "armor",
+  "tier": 11,
+  "myth": true,
+  "icon": "hagoromo",
+  "lore": "日本传说",
+  "desc": "天女遗落的羽衣，轻若无物，连风都无法触及。",
+  "price": 0,
+  "cat": "robe",
+  "jobs": [
+   "whitemage",
+   "blackmage",
+   "redmage",
+   "thief"
+  ],
+  "def": 36,
+  "mdef": 30,
+  "eva": 18
+ },
+ "nemean_hide": {
+  "name": "涅墨亚狮皮",
+  "type": "armor",
+  "tier": 11,
+  "myth": true,
+  "icon": "nemean_hide",
+  "lore": "希腊神话",
+  "desc": "刀剑不能伤的狮鬃披风。",
+  "price": 0,
+  "cat": "robe",
+  "jobs": [
+   "monk",
+   "thief",
+   "warrior"
+  ],
+  "def": 46,
+  "mdef": 12,
+  "defBonus": 8
+ },
+ "sampo": {
+  "name": "三宝磨",
+  "type": "accessory",
+  "tier": 11,
+  "myth": true,
+  "icon": "sampo",
+  "lore": "芬兰神话",
+  "desc": "不断磨出财富与谷物的神奇磨盘碎片。",
+  "price": 0,
+  "mpBonus": 30,
+  "intBonus": 6
+ },
+ "ouroboros": {
+  "name": "衔尾蛇之环",
+  "type": "accessory",
+  "tier": 11,
+  "myth": true,
+  "icon": "ouroboros",
+  "lore": "埃及 · 希腊",
+  "desc": "首尾相衔的永恒之环，一切异常都在循环中归零。",
+  "price": 0,
+  "immuneAll": true
+ },
+ "dragon_heart": {
+  "name": "龙之心",
+  "type": "accessory",
+  "tier": 11,
+  "myth": true,
+  "icon": "dragon_heart",
+  "lore": "世界龙传说",
+  "desc": "尚在跳动的古龙心脏，让持有者血脉沸腾。",
+  "price": 0,
+  "hpBonus": 150,
+  "defBonus": 6
+ },
+ "winged_sandals": {
+  "name": "赫尔墨斯之靴",
+  "type": "accessory",
+  "tier": 11,
+  "myth": true,
+  "icon": "winged_sandals",
+  "lore": "希腊神话",
+  "desc": "生有双翼的凉鞋，脚步快到无人看清。",
+  "price": 0,
+  "spd": 14,
+  "eva": 10
+ }
 }

@@ -9,7 +9,7 @@ import { execute } from './actions.js';
 import { Effects } from './effects.js';
 import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
 import { grantExp } from '../game/party.js';
-import { canUseOn } from '../game/items.js';
+import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { drawArt, artW, artH } from '../core/draw.js';
 
@@ -201,6 +201,11 @@ export class BattleScene {
     const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;
     this.game.state.gold += gold;
     this.msg = `获得 ${share} 经验值\n获得 ${gold} 金币`; yield 'confirm';
+    for (const r of this.opts.reward || []) { // Boss 掉落
+      addItem(this.game.state.inventory, r.id, r.qty || 1);
+      const it = this.game.data.items[r.id]; audio.sfx('levelup');
+      this.msg = `获得了 ${it?.name || r.id}${r.qty > 1 ? ' ×' + r.qty : ''}！` + (it?.myth ? '\n★ 神话装备' : ''); yield 'confirm';
+    }
     for (const a of alive) {
       this.syncMember(a);
       for (const g of grantExp(a.member, share, this.game.data)) {

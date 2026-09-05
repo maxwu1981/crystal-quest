@@ -8,7 +8,7 @@ export function makePartyActors(state, data) {
       id: `p${i}`, side: 'party', name: m.name, member: m, jobId: m.jobId, level: m.level,
       hp: m.hp, mp: m.mp, ...s,
       commands: job.commands, spells: memberSpells(m, data),
-      weak: [], resist: [], immune: [],
+      weak: [], resist: [], immune: s.immuneAll ? ['poison', 'sleep', 'blind'] : [],
       status: { ...(m.status || {}) },
       alive: m.hp > 0, defending: false, atb: 0, queued: false,
     };

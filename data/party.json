@@ -1,6 +1,42 @@
 [
-  { "name": "雷欧", "jobId": "warrior",   "level": 1, "equipment": { "weapon": "shortsword", "armor": "leather" } },
-  { "name": "莉娜", "jobId": "thief",     "level": 1, "equipment": { "weapon": "dagger",     "armor": "robe" } },
-  { "name": "艾露", "jobId": "whitemage", "level": 1, "equipment": { "weapon": "staff",      "armor": "robe" } },
-  { "name": "凯",   "jobId": "blackmage", "level": 1, "equipment": { "weapon": "staff",      "armor": "robe" } }
+ {
+  "name": "雷欧",
+  "jobId": "warrior",
+  "level": 1,
+  "equipment": {
+   "weapon": "bronze_sword",
+   "armor": "leather_armor",
+   "accessory": null
+  }
+ },
+ {
+  "name": "莉娜",
+  "jobId": "thief",
+  "level": 1,
+  "equipment": {
+   "weapon": "knife",
+   "armor": "leather_armor",
+   "accessory": null
+  }
+ },
+ {
+  "name": "艾露",
+  "jobId": "whitemage",
+  "level": 1,
+  "equipment": {
+   "weapon": "wood_staff",
+   "armor": "cloth_robe",
+   "accessory": null
+  }
+ },
+ {
+  "name": "凯",
+  "jobId": "blackmage",
+  "level": 1,
+  "equipment": {
+   "weapon": "wood_staff",
+   "armor": "cloth_robe",
+   "accessory": null
+  }
+ }
 ]

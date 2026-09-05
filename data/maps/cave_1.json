@@ -92,6 +92,14 @@
       "id": "c1_ether",
       "item": "ether",
       "qty": 2
+    },
+    {
+      "id": "c1_ganjiang",
+      "item": "ganjiang",
+      "qty": 1,
+      "x": 20,
+      "y": 18,
+      "type": "chest"
     }
   ],
   "npcs": []

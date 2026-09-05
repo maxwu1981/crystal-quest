@@ -60,6 +60,30 @@
       "y": 3,
       "type": "crystal",
       "needFlag": "bossDefeated"
+    },
+    {
+      "id": "c3_vajra",
+      "item": "vajra",
+      "qty": 1,
+      "x": 14,
+      "y": 13,
+      "type": "chest"
+    },
+    {
+      "id": "c3_laevateinn",
+      "item": "laevateinn",
+      "qty": 1,
+      "x": 18,
+      "y": 9,
+      "type": "chest"
+    },
+    {
+      "id": "c3_harpe",
+      "item": "harpe",
+      "qty": 1,
+      "x": 20,
+      "y": 7,
+      "type": "chest"
     }
   ],
   "npcs": [
@@ -80,7 +104,17 @@
         "after": [
           "……居然……被这样的孩子……",
           "记住……水晶的光……终有一天会引来『它』……",
-          "（黑甲骑士化作黑雾消散了）"
+          "（黑甲骑士化作黑雾消散，地上留下了他的剑与一颗仍在跳动的心脏）"
+        ],
+        "reward": [
+          {
+            "id": "excalibur",
+            "qty": 1
+          },
+          {
+            "id": "dragon_heart",
+            "qty": 1
+          }
         ]
       },
       "dialogue": [

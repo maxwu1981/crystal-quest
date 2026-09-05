@@ -150,7 +150,7 @@ export class FieldScene {
     else if (script.type === 'boss') {
       g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => {
         this.afterBattle = script.after ? { name: def.name, pages: script.after, flag: script.winFlag } : null;
-        g.startBattle(script.enemies, { canFlee: false, winFlag: script.winFlag, bgm: 'boss' });
+        g.startBattle(script.enemies, { canFlee: false, winFlag: script.winFlag, bgm: 'boss', reward: script.reward });
       } }));
     }
     else if (script.type === 'shop') g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => g.scenes.push(new ShopScene(g, script, def.name)) }));

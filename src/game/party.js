@@ -3,25 +3,33 @@ import { expForLevel } from '../battle/formulas.js';
 
 export const STAT_KEYS = ['hp', 'mp', 'str', 'agi', 'int', 'vit', 'acc', 'eva'];
 
+export const SLOTS = ['weapon', 'armor', 'accessory'];
+
 export function computeStats(member, data) {
   const job = data.jobs[member.jobId];
   if (!job) throw new Error(`未知职业 ${member.jobId}`);
   const L = member.level - 1, b = {};
   for (const k of STAT_KEYS) b[k] = Math.floor((job.base[k] || 0) + (job.growth[k] || 0) * L);
   const items = data.items || {};
+  const gear = SLOTS.map(s => items[member.equipment?.[s]]).filter(Boolean);
+  const sum = k => gear.reduce((t, g) => t + (g[k] || 0), 0);
   const weapon = items[member.equipment?.weapon] || null;
-  const armor = items[member.equipment?.armor] || null;
   const unarmed = job.unarmed || 0; // 武僧：空手时按等级加攻击
   return {
-    maxHp: b.hp, maxMp: b.mp, str: b.str, agi: b.agi, int: b.int, vit: b.vit,
-    atk: Math.floor(b.str / 2) + (weapon ? weapon.atk || 0 : Math.floor(unarmed * member.level)), // FF1 式：力量/2 + 武器，武器升级很重要
-    def: Math.floor(b.vit / 2) + (armor?.def || 0),
-    acc: b.acc + (weapon?.acc || 0),
-    eva: b.eva + Math.floor(b.agi / 2),
-    spd: b.agi,
-    mdef: Math.floor(b.int / 2),
-    crit: 5 + Math.floor(b.agi / 4),
-    hits: job.hits || 1, // 武僧：每次攻击的命中数倍率
+    maxHp: b.hp + sum('hpBonus'), maxMp: b.mp + sum('mpBonus'),
+    str: b.str, agi: b.agi, int: b.int + sum('intBonus'), vit: b.vit,
+    // FF1 式：力量/2 + 武器，武器升级很重要
+    atk: Math.floor(b.str / 2) + (weapon ? weapon.atk || 0 : Math.floor(unarmed * member.level)) + sum('atkBonus'),
+    def: Math.floor(b.vit / 2) + sum('def') + sum('defBonus'),
+    acc: b.acc + sum('acc'),
+    eva: b.eva + Math.floor(b.agi / 2) + sum('eva'),
+    spd: b.agi + sum('spd'),
+    mdef: Math.floor(b.int / 2) + sum('mdef'),
+    crit: 5 + Math.floor(b.agi / 4) + sum('crit'),
+    hits: (job.hits || 1) * (weapon?.hits || 1), // 命中数倍率（武僧 2、双剑 2）
+    element: weapon?.element || null,            // 武器附带属性
+    onHit: weapon?.status ? { status: weapon.status, chance: 0.3 } : null, // 武器附带状态
+    immuneAll: gear.some(g => g.immuneAll),      // 衔尾蛇之环：免疫一切状态异常
   };
 }
 

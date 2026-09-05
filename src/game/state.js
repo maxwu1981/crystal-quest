@@ -5,7 +5,7 @@ export const SAVE_KEY = 'crystal-quest-save';
 
 export function newGameState(data) {
   const party = data.party.map(p => {
-    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, status: {}, equipment: { weapon: p.equipment?.weapon || null, armor: p.equipment?.armor || null } };
+    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, status: {}, equipment: { weapon: p.equipment?.weapon || null, armor: p.equipment?.armor || null, accessory: p.equipment?.accessory || null } };
     const s = computeStats(m, data);
     m.hp = s.maxHp; m.mp = s.maxMp;
     return m;
@@ -30,7 +30,7 @@ export function saveGame(state) { localStorage.setItem(SAVE_KEY, JSON.stringify(
 export function loadGame() {
   const s = localStorage.getItem(SAVE_KEY); if (!s) return null;
   const st = JSON.parse(s);
-  for (const m of st.party) m.status ||= {};
+  for (const m of st.party) { m.status ||= {}; m.equipment ||= {}; m.equipment.accessory ??= null; }
   st.settings ||= {};
   return st;
 }

@@ -1,0 +1,9 @@
+{
+ "characters": {
+  "warrior": {
+   "down": "char_warrior_down.png"
+  }
+ },
+ "enemies": {},
+ "tiles": {}
+}

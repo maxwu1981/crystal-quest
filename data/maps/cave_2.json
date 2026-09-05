@@ -83,7 +83,7 @@
       "y": 1,
       "type": "chest",
       "id": "c2_ironsword",
-      "item": "ironsword",
+      "item": "steel_sword",
       "qty": 1
     },
     {
@@ -100,6 +100,22 @@
       "type": "chest",
       "id": "c2_gold",
       "gold": 300
+    },
+    {
+      "id": "c2_hagoromo",
+      "item": "hagoromo",
+      "qty": 1,
+      "x": 13,
+      "y": 18,
+      "type": "chest"
+    },
+    {
+      "id": "c2_ring",
+      "item": "silver_ring",
+      "qty": 1,
+      "x": 17,
+      "y": 5,
+      "type": "chest"
     }
   ],
   "npcs": []

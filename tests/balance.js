@@ -9,10 +9,19 @@ import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
 import { execute } from '../src/battle/actions.js';
 import { decideEnemyAction } from '../src/battle/ai.js';
 
-// 各等级默认装备（模拟玩家按金币逐步换装）
-const GEAR = level => level >= 6
-  ? { warrior: ['ironsword', 'ironarmor'], thief: ['shortsword', 'leather'], whitemage: ['staff', 'robe'], blackmage: ['staff', 'robe'], monk: [null, 'robe'], redmage: ['ironsword', 'leather'] }
-  : { warrior: ['shortsword', 'leather'], thief: ['dagger', 'robe'], whitemage: ['staff', 'robe'], blackmage: ['staff', 'robe'], monk: [null, 'robe'], redmage: ['shortsword', 'robe'] };
+// 各等级默认装备（模拟玩家按金币逐步换装：出村青铜、洞窟前铁、深处钢）
+const TIERS = [
+  { upto: 3, gear: { warrior: ['bronze_sword', 'leather_armor'], thief: ['knife', 'leather_armor'],
+                     whitemage: ['wood_staff', 'cloth_robe'], blackmage: ['wood_staff', 'cloth_robe'],
+                     monk: [null, 'cloth_robe'], redmage: ['bronze_sword', 'cloth_robe'] } },
+  { upto: 6, gear: { warrior: ['iron_sword', 'bronze_armor'], thief: ['bronze_dagger', 'leather_armor'],
+                     whitemage: ['oak_staff', 'linen_robe'], blackmage: ['oak_staff', 'linen_robe'],
+                     monk: ['leather_knuckle', 'linen_robe'], redmage: ['iron_sword', 'linen_robe'] } },
+  { upto: 99, gear: { warrior: ['steel_sword', 'iron_armor'], thief: ['iron_dagger', 'bronze_armor'],
+                      whitemage: ['iron_staff', 'silk_robe'], blackmage: ['iron_staff', 'silk_robe'],
+                      monk: ['iron_knuckle', 'silk_robe'], redmage: ['steel_sword', 'silk_robe'] } },
+];
+const GEAR = level => TIERS.find(t => level <= t.upto).gear;
 
 function scene(data, level, enemyIds, seed) {
   const st = newGameState(data);

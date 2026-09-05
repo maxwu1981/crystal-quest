@@ -102,30 +102,30 @@ test('药水回血封顶；凤凰尾巴只对死者有效', () => {
   assert(applyItem(p, d) === null); const o = applyItem(ph, d); assert(o.revived && d.alive && d.hp === 20);
 });
 test('装备：职业限制、旧装备回背包、攻击力变化、卸下', () => {
-  const m = { jobId: 'whitemage', level: 1, exp: 0, hp: 1, mp: 1, equipment: { weapon: 'staff', armor: null } };
-  const inv = [{ id: 'ironsword', qty: 1 }, { id: 'dagger', qty: 1 }];
-  assert(!equip(m, 'weapon', 'ironsword', inv, data), '白魔不能拿铁剑');
+  const m = { jobId: 'whitemage', level: 1, exp: 0, hp: 1, mp: 1, equipment: { weapon: 'wood_staff', armor: null } };
+  const inv = [{ id: 'iron_sword', qty: 1 }, { id: 'bronze_dagger', qty: 1 }];
+  assert(!equip(m, 'weapon', 'iron_sword', inv, data), '白魔不能拿铁剑');
   const before = computeStats(m, data).atk;
-  assert(equip(m, 'weapon', 'dagger', inv, data));
-  assert(m.equipment.weapon === 'dagger' && countItem(inv, 'staff') === 1 && countItem(inv, 'dagger') === 0);
+  assert(equip(m, 'weapon', 'bronze_dagger', inv, data));
+  assert(m.equipment.weapon === 'bronze_dagger' && countItem(inv, 'wood_staff') === 1 && countItem(inv, 'bronze_dagger') === 0);
   assert(computeStats(m, data).atk > before);
-  assert(equip(m, 'weapon', null, inv, data) && m.equipment.weapon === null && countItem(inv, 'dagger') === 1);
+  assert(equip(m, 'weapon', null, inv, data) && m.equipment.weapon === null && countItem(inv, 'bronze_dagger') === 1);
 });
 test('道具数据完整；初始装备/背包引用存在且职业可装', () => {
-  for (const p of data.party) for (const slot of ['weapon', 'armor']) {
+  for (const p of data.party) for (const slot of ['weapon', 'armor', 'accessory']) {
     const id = p.equipment?.[slot]; if (!id) continue; const it = data.items[id];
     assert(it && it.type === slot, `${p.name} ${slot}`); assert(canEquip(it, { jobId: p.jobId }), `${p.name} 不能装备 ${id}`);
   }
   for (const s of data.config.startInventory || []) assert(data.items[s.id], s.id);
   for (const [id, it] of Object.entries(data.items)) {
-    assert(['consumable', 'weapon', 'armor'].includes(it.type), id);
+    assert(['consumable', 'weapon', 'armor', 'accessory'].includes(it.type), id);
     if (it.type === 'consumable') assert(it.effect && typeof it.battle === 'boolean' && typeof it.field === 'boolean', id);
     if (it.jobs) for (const j of it.jobs) assert(data.jobs[j], `${id} 职业 ${j}`);
   }
 });
 test('存档往返：状态可 JSON 序列化且不丢字段', () => {
   const s = newGameState(data), back = JSON.parse(JSON.stringify(s));
-  assert(JSON.stringify(back) === JSON.stringify(s)); assert(back.party[0].equipment.weapon === 'shortsword'); assert(back.inventory.length === 3);
+  assert(JSON.stringify(back) === JSON.stringify(s)); assert(back.party[0].equipment.weapon === 'bronze_sword' && back.party[0].equipment.accessory === null); assert(back.inventory.length === 3);
 });
 
 test('地图事件与 NPC：传送目标存在且可走、NPC 站在可走格、对话/脚本格式正确', () => {
@@ -164,7 +164,7 @@ test('pickVariant / applyVariant：按标志选变体，副作用生效', () => 
 test('商店买卖金额', () => {
   const st = { gold: 100, inventory: [] };
   assert(buyItem(st, 'potion', data).ok && st.gold === 70 && countItem(st.inventory, 'potion') === 1);
-  assert(!buyItem(st, 'ironsword', data).ok && st.gold === 70);
+  assert(!buyItem(st, 'iron_sword', data).ok && st.gold === 70);
   assert(sellItem(st, 'potion', data).ok && st.gold === 85 && st.inventory.length === 0);
   assert(!sellItem(st, 'potion', data).ok);
 });
@@ -240,7 +240,7 @@ test('spellsFor：按等级学魔法；升级时 learned 列出新魔法', () =>
   const g = grantExp(m, F.expForLevel(2), data); assert(g[0].learned.join() === 'ice', `学会 ${g[0].learned}`);
 });
 test('changeJob：换职业卸下不能装的装备并放回背包，HP 截断', () => {
-  const m = { jobId: 'warrior', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'ironsword', armor: 'ironarmor' }, status: {} }, inv = [];
+  const m = { jobId: 'warrior', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'iron_sword', armor: 'iron_armor' }, status: {} }, inv = [];
   const removed = changeJob(m, 'blackmage', inv, data);
   assert(removed.length === 2 && inv.length === 2 && m.equipment.weapon === null, '卸装备'); assert(m.hp === computeStats(m, data).maxHp, 'HP 截断');
   assert(changeJob(m, 'nope', inv, data) === null);
@@ -301,6 +301,87 @@ test('敌人附带状态攻击（黑史莱姆下毒）与战斗结束只保留�
   let n = 0; while (!w.status.poison && n++ < 40) { s.run({ actor: s.enemies[0], type: 'attack', target: w }); if (!w.alive) { w.alive = true; w.hp = w.maxHp; } }
   assert(w.status.poison, '40 次攻击应至少下毒一次');
   w.status.blind = true; const kept = persistentOnly(w.status); assert(kept.poison && !kept.blind);
+});
+
+
+// ---------- 装备系统：材质分级 + 神话装备 ----------
+test('材质分级：同类装备 tier 越高属性越强、价格越贵', () => {
+  const byCat = {};
+  for (const [id, it] of Object.entries(data.items)) {
+    if (it.myth || !it.cat) continue;
+    (byCat[it.type + ':' + it.cat] ||= []).push({ id, ...it });
+  }
+  for (const [k, list] of Object.entries(byCat)) {
+    list.sort((a, b) => a.tier - b.tier);
+    for (let i = 1; i < list.length; i++) {
+      const prev = list[i - 1], cur = list[i], key = cur.type === 'weapon' ? 'atk' : 'def';
+      assert(cur.tier > prev.tier, `${k} tier 重复：${prev.id} ${cur.id}`);
+      assert(cur[key] > prev[key], `${k} ${cur.id} 的 ${key} 不比 ${prev.id} 强`);
+      assert(cur.price > prev.price, `${k} ${cur.id} 不比 ${prev.id} 贵`);
+    }
+  }
+});
+test('神话装备：都有造型 id、出处、说明，且强于同类最高材质', () => {
+  const myth = Object.entries(data.items).filter(([, it]) => it.myth);
+  assert(myth.length >= 20, `神话装备只有 ${myth.length} 件`);
+  const icons = new Set();
+  for (const [id, it] of myth) {
+    assert(it.icon && !icons.has(it.icon), `${id} 造型 id 缺失或重复`); icons.add(it.icon);
+    assert(it.lore && it.desc, `${id} 缺出处或说明`);
+    assert(it.price === 0, `${id} 神话装备不该标价`);
+    if (!it.cat) continue;
+    const peers = Object.values(data.items).filter(x => !x.myth && x.cat === it.cat && x.type === it.type);
+    const key = it.type === 'weapon' ? 'atk' : 'def';
+    const best = Math.max(...peers.map(x => x[key] || 0));
+    assert((it[key] || 0) > best, `${id} 的 ${key} 没有超过最强材质款 ${best}`);
+  }
+  const lores = new Set(myth.map(([, it]) => it.lore));
+  assert(lores.size >= 8, `神话来源只有 ${lores.size} 种，应覆盖更多地区`);
+});
+test('三个装备槽：饰品可装、加成进属性、卸下还原', () => {
+  const m = { jobId: 'warrior', level: 5, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: null, armor: null, accessory: null } };
+  const before = computeStats(m, data);
+  const inv = [{ id: 'dragon_heart', qty: 1 }, { id: 'power_band', qty: 1 }];
+  assert(equip(m, 'accessory', 'dragon_heart', inv, data), '饰品应能装上');
+  const after = computeStats(m, data);
+  assert(after.maxHp === before.maxHp + 150, `HP 加成没生效 ${before.maxHp}→${after.maxHp}`);
+  assert(after.def === before.def + 6, '防御加成没生效');
+  assert(equip(m, 'accessory', 'power_band', inv, data) && countItem(inv, 'dragon_heart') === 1, '换饰品应把旧的放回背包');
+  assert(equip(m, 'accessory', null, inv, data) && computeStats(m, data).atk === before.atk, '卸下应还原');
+});
+test('武器特效：属性倍率、连击、附加状态、免疫饰品', () => {
+  const m = { jobId: 'warrior', level: 8, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: 'kusanagi', armor: null, accessory: null } };
+  const s = computeStats(m, data);
+  assert(s.element === 'thunder', '草薙剑应带雷属性');
+  assert(computeStats({ ...m, equipment: { weapon: 'ganjiang' } }, data).hits === 2, '干将莫邪应是 2 连击');
+  assert(computeStats({ ...m, jobId: 'monk', equipment: { weapon: null } }, data).hits === 2, '武僧空手应是 2 连击');
+  assert(computeStats({ ...m, jobId: 'monk', equipment: { weapon: 'nemean_fist' } }, data).hits === 4, '武僧 + 双击武器 = 4');
+  assert(computeStats({ ...m, equipment: { weapon: 'gram' } }, data).onHit.status === 'blind', '格拉墨应附加黑暗');
+  const im = computeStats({ ...m, equipment: { accessory: 'ouroboros' } }, data);
+  assert(im.immuneAll, '衔尾蛇之环应免疫异常');
+  const st = { party: [{ ...m, equipment: { weapon: null, armor: null, accessory: 'ouroboros' } }], inventory: [] };
+  assert(makePartyActors(st, data)[0].immune.includes('poison'), '免疫应带进战斗');
+});
+test('神话武器的属性伤害与连击在战斗里真的生效', () => {
+  const s = fakeBattle(['warrior'], ['slime', 'slime']);  // 史莱姆弱雷
+  const w = s.party[0];
+  Object.assign(w, computeStats({ jobId: 'warrior', level: 12, equipment: { weapon: 'kusanagi', armor: null, accessory: null } }, data));
+  w.acc = 200; w.name = '雷欧';
+  const hp0 = s.enemies[0].hp;
+  s.run({ actor: w, type: 'attack', target: s.enemies[0] });
+  assert(s.msg.includes('效果拔群'), `雷属性打史莱姆应拔群：${s.msg}`);
+  assert(s.enemies[0].hp < hp0, '应该造成伤害');
+});
+test('商店只卖非神话装备，宝箱/掉落才有神话装备', () => {
+  for (const md of Object.values(data.maps)) for (const n of md.npcs || []) {
+    for (const id of n.script?.items || []) assert(!data.items[id].myth, `商店不该卖神话装备 ${id}`);
+    for (const r of n.script?.reward || []) assert(data.items[r.id], `掉落物 ${r.id} 不存在`);
+  }
+  const fromChests = new Set();
+  for (const md of Object.values(data.maps)) for (const ev of md.events || []) if (ev.item) fromChests.add(ev.item);
+  for (const md of Object.values(data.maps)) for (const n of md.npcs || []) for (const r of n.script?.reward || []) fromChests.add(r.id);
+  const mythAvailable = [...fromChests].filter(id => data.items[id]?.myth);
+  assert(mythAvailable.length >= 4, `流程里只能拿到 ${mythAvailable.length} 件神话装备`);
 });
 
 const out = document.getElementById('out');

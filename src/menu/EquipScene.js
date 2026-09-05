@@ -1,12 +1,12 @@
 // 装备菜单：选角色 → 选部位 → 从背包挑装备（带攻防预览）
 import { Menu } from '../ui/Menu.js';
 import { drawWindow } from '../ui/Window.js';
-import { drawText, LINE_H } from '../core/text.js';
+import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
 import { drawPartyPanel, drawSprite, stepCursor, PARTY_W } from './common.js';
 
-const SLOTS = [['weapon', '武器'], ['armor', '防具']];
+const SLOTS = [['weapon', '武器'], ['armor', '防具'], ['accessory', '饰品']];
 
 export class EquipScene {
   constructor(game) { this.game = game; this.transparent = true; this.mode = 'member'; this.cursor = 0; this.slot = 'weapon'; }
@@ -17,7 +17,7 @@ export class EquipScene {
     const lab = id => id ? items[id].name : '—';
     this.slotMenu = new Menu({
       items: SLOTS.map(([slot, name]) => ({ label: `${name}  ${lab(m.equipment[slot])}`, value: slot })),
-      x: 0, y: 56, w: 256, h: 44,
+      x: 0, y: 56, w: 256, h: 56,
       onSelect: it => this.openPick(it.value), onCancel: () => { this.mode = 'member'; },
     });
     this.slotMenu.cursor = keep;
@@ -29,7 +29,7 @@ export class EquipScene {
     list.unshift({ label: '卸下', value: null });
     this.slot = slot; this.mode = 'pick';
     this.pickMenu = new Menu({
-      items: list, x: 0, y: 100, w: 256, h: 124, cols: 2,
+      items: list, x: 0, y: 112, w: 256, h: 112, cols: 2,
       onSelect: it => { equip(m, slot, it.value, inv, data); this.buildSlotMenu(SLOTS.findIndex(s => s[0] === slot)); this.mode = 'slot'; },
       onCancel: () => { this.mode = 'slot'; },
     });
@@ -68,6 +68,14 @@ export class EquipScene {
     stat('攻击', cur.atk, next?.atk, 52); stat('防御', cur.def, next?.def, 150);
     this.slotMenu.render(ctx);
     if (this.mode === 'pick') this.pickMenu.render(ctx);
-    else { drawWindow(ctx, 0, 100, 256, 124); drawText(ctx, '选择要更换的部位', 8, 108, { color: '#9aa4d8' }); }
+    else {
+      drawWindow(ctx, 0, 112, 256, 112);
+      const it = this.game.data.items[m.equipment[SLOTS[this.slotMenu.cursor][0]]];
+      if (it) {
+        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), 8, 120, { color: it.myth ? '#ffe66d' : '#fff' });
+        if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: '#9aa4d8' });
+        wrapText(ctx, it.desc || '', 240).slice(0, 3).forEach((l, i) => drawText(ctx, l, 8, 120 + LINE_H * (i + 1), { color: '#9aa4d8' }));
+      } else drawText(ctx, '选择要更换的部位', 8, 120, { color: '#9aa4d8' });
+    }
   }
 }

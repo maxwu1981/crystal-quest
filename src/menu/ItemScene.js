@@ -5,6 +5,7 @@ import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
 import { drawPartyPanel, drawTextBlock, stepCursor, PARTY_W } from './common.js';
 import { audio } from '../core/audio.js';
+import { itemStats } from '../game/shop.js';
 
 export class ItemScene {
   constructor(game) { this.game = game; this.transparent = true; this.mode = 'list'; this.cursor = 0; this.msg = ''; this.buildMenu(); }
@@ -50,7 +51,7 @@ export class ItemScene {
     if (this.mode === 'list') {
       drawWindow(ctx, 0, 0, 256, 32);
       const it = this.menu.item?.value ? data.items[this.menu.item.value] : null;
-      const desc = it ? (it.desc || `${it.type === 'weapon' ? '攻击' : '防御'} +${it.atk || it.def}`) : '道具';
+      const desc = it ? (it.type === 'consumable' ? (it.desc || '') : itemStats(it)) : '道具';
       drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? '#ffe66d' : '#fff' });
       this.menu.render(ctx);
       return;

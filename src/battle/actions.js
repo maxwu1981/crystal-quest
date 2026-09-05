@@ -70,9 +70,15 @@ function* attack(scene, actor, a) {
   scene.msg = `${actor.name} 的攻击！`; actor.lunge = 0.3; yield 0.3;
   const r = F.physicalAttack(F.effectiveStats(actor), F.effectiveStats(t), scene.rng);
   if (r.miss) { scene.popup(t, 'MISS', '#ddd'); audio.sfx('miss'); scene.msg += '\n没有命中'; yield 0.7; return; }
-  scene.fx.add('slash', ...scene.center(t)); audio.sfx(r.crit ? 'crit' : 'hit');
+  // 武器属性：对弱点翻倍、被抗性减半
+  const mult = F.elementMultiplier(t, actor.element);
+  if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
+  scene.fx.add(actor.element ? (ELEMENT_FX[actor.element] || 'slash') : 'slash', ...scene.center(t));
+  audio.sfx(r.crit ? 'crit' : 'hit');
   scene.damage(t, r.damage, { physical: true });
-  scene.msg += `\n${r.hits} 次命中${r.crit ? '  会心一击！' : ''}\n${t.name} 受到 ${r.damage} 伤害`;
+  scene.msg += `\n${r.hits} 次命中${r.crit ? '  会心一击！' : ''}`;
+  if (actor.element && mult > 1) scene.msg += '  效果拔群！'; else if (actor.element && mult < 1 && mult > 0) scene.msg += '  效果不佳…';
+  scene.msg += `\n${t.name} 受到 ${r.damage} 伤害`;
   yield 0.8;
   if (!t.alive) { scene.msg += `\n${t.name} 倒下了`; yield 0.5; return; }
   const oh = actor.onHit; // 敌人附带状态攻击（蝙蝠致盲、黑史莱姆下毒…）

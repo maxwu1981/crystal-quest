@@ -112,7 +112,7 @@ export async function playShop(g) {
   const drv = makeDriver(g); toField(g);
   const { ShopScene } = await import('../src/field/ShopScene.js');
   g.state.gold = 100; const potions = g.state.inventory.find(s => s.id === 'potion')?.qty || 0;
-  g.scenes.push(new ShopScene(g, { items: ['potion', 'dagger'] }, '测试商店'));
+  g.scenes.push(new ShopScene(g, { items: ['potion', 'bronze_dagger'] }, '测试商店'));
   drv.key('confirm'); drv.key('confirm');      // 购买 → 药水
   const afterBuy = { gold: g.state.gold, potions: g.state.inventory.find(s => s.id === 'potion')?.qty || 0 };
   drv.key('cancel'); drv.key('down'); drv.key('confirm'); drv.key('confirm'); // 出售 → 第一项
@@ -203,6 +203,26 @@ export function playSettings(g) {
   return { opened, mode1, atbMode: atb.mode, atbEnded: atb.ended, atbTop: atb.top };
 }
 
+// 装备：把神话武器装到 1 号身上，确认属性变化与特效带进战斗
+export function playEquip(g) {
+  const drv = makeDriver(g); toField(g);
+  g.state.party[0].jobId = 'warrior';
+  g.state.inventory.unshift({ id: 'excalibur', qty: 1 }, { id: 'dragon_heart', qty: 1 });
+  drv.key('cancel'); drv.key('down'); drv.key('confirm');   // 菜单 → 装备
+  const opened = g.scenes.top.constructor.name;
+  drv.key('confirm');                                        // 选 1 号
+  const atkBefore = g.scenes.top.previewStats().cur.atk;
+  drv.key('confirm');                                        // 武器槽（挑选列表是双列，左右移动）
+  drv.key('right'); drv.key('confirm');                      // 「卸下」之后的第一件 = 王者之剑
+  const weapon = g.state.party[0].equipment.weapon;
+  drv.key('down'); drv.key('down'); drv.key('confirm');      // 饰品槽
+  drv.key('right'); drv.key('confirm');                      // 龙之心
+  const acc = g.state.party[0].equipment.accessory;
+  const st = g.scenes.top.previewStats().cur;
+  drv.key('cancel'); drv.key('cancel'); drv.tick(3);
+  return { opened, atkBefore, atkAfter: st.atk, hp: st.maxHp, element: st.element, weapon, acc, slots: Object.keys(g.state.party[0].equipment) };
+}
+
 export async function runAll(g = window.game) {
   const out = {}; g.paused = true; // 暂停实时循环，全部同步步进，结果可复现
   try {
@@ -221,6 +241,7 @@ export async function runAll(g = window.game) {
   out.status = playStatus(g);
   out.job = playJob(g);
   out.settings = playSettings(g);
+  out.equip = playEquip(g);
   // 全灭：把队伍血量压到 1，对上两只狼
   for (const m of g.state.party) m.hp = 1;
   out.lose = playBattle(g, ['wolf', 'wolf']);
