@@ -14,6 +14,8 @@ function frame(img, f, mirror = false) {
 }
 const load = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
 
+export const icons = {}; // 神话装备造型：icons[itemIcon] = Image
+
 export async function loadArt(sprites, tiles, base = './assets/art/') {
   let m;
   try { const r = await fetch(base + 'manifest.json', { cache: 'no-store' }); if (!r.ok) return 0; m = await r.json(); } catch { return 0; }
@@ -30,5 +32,6 @@ export async function loadArt(sprites, tiles, base = './assets/art/') {
   }
   for (const [id, file] of Object.entries(m.enemies || {})) { const im = await load(base + file); if (im) { sprites['enemy_' + id] = im; n++; } }
   for (const [id, file] of Object.entries(m.tiles || {})) { const im = await load(base + file); if (im) { tiles[id] = im; n++; } }
+  for (const [id, file] of Object.entries(m.icons || {})) { const im = await load(base + file); if (im) { icons[id] = im; n++; } }
   return n;
 }

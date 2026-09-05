@@ -87,6 +87,34 @@ TILES = {  # 对应 src/assets/tiles.js 的名字
 }
 ART = 2  # 与 src/core/draw.js 的 ART 保持一致：所有输出尺寸都是逻辑尺寸的 ART 倍
 CHAR_SIZE = (16 * ART, 24 * ART)
+ICON_SIZE = (24 * ART, 24 * ART)   # 神话装备造型（装备菜单里显示）
+
+# 神话装备造型：id → 英文描述。清单与 data/items.json 里 myth:true 的 icon 一一对应
+ICONS = {
+    'excalibur':   'a legendary golden longsword with a glowing white blade and an ornate winged crossguard',
+    'kusanagi':    'an ancient straight Japanese sword with a jade green blade wrapped in faint lightning',
+    'gram':        'a heavy Norse broadsword with runes carved along a notched steel blade',
+    'xuanyuan':    'an ancient Chinese bronze sword with jade inlay and a golden dragon-head pommel',
+    'zulfiqar':    'a curved scimitar whose blade splits into two parallel points near the tip',
+    'gungnir':     'an ornate silver spear with a long leaf-shaped head and runic bands',
+    'gaebolg':     'a barbed crimson spear with hooked thorns along the shaft',
+    'harpe':       'a curved bronze sickle-sword with a hooked blade, ancient Greek design',
+    'ganjiang':    'a matched pair of crossed short swords, one dark and one pale',
+    'vajra':       'a golden ritual thunderbolt scepter with symmetrical prongs at both ends',
+    'nemean_fist': 'a pair of clawed gauntlets made from tawny lion hide and fur',
+    'laevateinn':  'a black wizard staff topped with a burning orange flame',
+    'caduceus':    'a golden staff with two snakes coiled around it and small white wings on top',
+    'was_scepter': 'an Egyptian golden scepter with a forked base and a stylized animal head on top',
+    'aegis':       'a round bronze breastplate-shield bearing a snake-haired gorgon face',
+    'jade_armor':  'a ceremonial suit of small green jade plates sewn together with gold thread',
+    'brynhild':    'a silver valkyrie chainmail cuirass with small white feathered wing pauldrons',
+    'hagoromo':    'a flowing translucent white silk celestial robe scarf, weightless and shimmering',
+    'nemean_hide': 'a tawny lion pelt cloak with the lion head as a hood',
+    'sampo':       'an ornate golden hand mill grinding out gold coins and grain',
+    'ouroboros':   'a golden ring shaped as a serpent biting its own tail',
+    'dragon_heart':'a glowing red crystalline dragon heart with faint veins of light',
+    'winged_sandals': 'a pair of golden winged sandals with small white feathered wings at the heels',
+}
 
 def assets():
     for cid, desc in CHARACTERS.items():
@@ -96,6 +124,9 @@ def assets():
     for eid, (desc, size) in ENEMIES.items():
         yield {'kind': 'enemy', 'id': eid, 'file': f'enemy_{eid}.png', 'size': (size * ART, size * ART),
                'prompt': f'{STYLE} A single monster sprite for a turn-based RPG battle screen, full body, facing slightly to the right toward the player, {MAGENTA} {desc}'}
+    for iid, desc in ICONS.items():
+        yield {'kind': 'icon', 'id': iid, 'file': f'icon_{iid}.png', 'size': ICON_SIZE,
+               'prompt': f'{STYLE} A single RPG inventory item icon, the object alone seen from the side, filling the frame, {MAGENTA} {desc}.'}
     for tid, desc in TILES.items():
         yield {'kind': 'tile', 'id': tid, 'file': f'tile_{tid}.png', 'size': (16 * ART, 16 * ART),
                'prompt': f'{STYLE} A single top-down terrain tile for a 2D RPG overworld map: {desc}. Seamless, filling the whole square image edge to edge, no border, no frame, no margin, no background color showing.'}
@@ -162,11 +193,12 @@ def main():
 
 def load_manifest():
     p = os.path.join(ART, 'manifest.json')
-    return json.load(open(p)) if os.path.exists(p) else {'characters': {}, 'enemies': {}, 'tiles': {}}
+    return json.load(open(p)) if os.path.exists(p) else {'characters': {}, 'enemies': {}, 'tiles': {}, 'icons': {}}
 def save_manifest(m): json.dump(m, open(os.path.join(ART, 'manifest.json'), 'w'), ensure_ascii=False, indent=1)
 def register(m, x):
     if x['kind'] == 'char': m['characters'].setdefault(x['id'], {})[x['view']] = x['file']
     elif x['kind'] == 'enemy': m['enemies'][x['id']] = x['file']
+    elif x['kind'] == 'icon': m.setdefault('icons', {})[x['id']] = x['file']
     else: m['tiles'][x['id']] = x['file']
 
 if __name__ == '__main__': main()

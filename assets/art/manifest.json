@@ -1,7 +1,34 @@
 {
  "characters": {
   "warrior": {
-   "down": "char_warrior_down.png"
+   "down": "char_warrior_down.png",
+   "left": "char_warrior_left.png",
+   "up": "char_warrior_up.png"
+  },
+  "blackmage": {
+   "down": "char_blackmage_down.png",
+   "left": "char_blackmage_left.png",
+   "up": "char_blackmage_up.png"
+  },
+  "monk": {
+   "down": "char_monk_down.png",
+   "left": "char_monk_left.png",
+   "up": "char_monk_up.png"
+  },
+  "redmage": {
+   "down": "char_redmage_down.png",
+   "left": "char_redmage_left.png",
+   "up": "char_redmage_up.png"
+  },
+  "thief": {
+   "down": "char_thief_down.png",
+   "left": "char_thief_left.png",
+   "up": "char_thief_up.png"
+  },
+  "whitemage": {
+   "down": "char_whitemage_down.png",
+   "left": "char_whitemage_left.png",
+   "up": "char_whitemage_up.png"
   }
  },
  "enemies": {},

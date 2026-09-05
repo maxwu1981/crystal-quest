@@ -5,6 +5,8 @@ import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
 import { drawPartyPanel, drawSprite, stepCursor, PARTY_W } from './common.js';
+import { icons } from '../assets/art.js';
+import { itemStats } from '../game/shop.js';
 
 const SLOTS = [['weapon', '武器'], ['armor', '防具'], ['accessory', '饰品']];
 
@@ -72,9 +74,13 @@ export class EquipScene {
       drawWindow(ctx, 0, 112, 256, 112);
       const it = this.game.data.items[m.equipment[SLOTS[this.slotMenu.cursor][0]]];
       if (it) {
-        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), 8, 120, { color: it.myth ? '#ffe66d' : '#fff' });
+        const ic = it.icon && icons[it.icon];               // 神话装备的专属造型
+        const tx = ic ? 40 : 8, tw = ic ? 208 : 240;
+        if (ic) drawSprite(ctx, ic, 6, 132, 28);
+        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? '#ffe66d' : '#fff' });
         if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: '#9aa4d8' });
-        wrapText(ctx, it.desc || '', 240).slice(0, 3).forEach((l, i) => drawText(ctx, l, 8, 120 + LINE_H * (i + 1), { color: '#9aa4d8' }));
+        drawText(ctx, itemStats(it), tx, 120 + LINE_H, { color: '#7cc4ff' });
+        wrapText(ctx, it.desc || '', tw).slice(0, 2).forEach((l, i) => drawText(ctx, l, tx, 120 + LINE_H * (i + 2), { color: '#9aa4d8' }));
       } else drawText(ctx, '选择要更换的部位', 8, 120, { color: '#9aa4d8' });
     }
   }

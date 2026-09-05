@@ -18,7 +18,7 @@ Gemini 下载下来的其实是 JPEG，这里先用 macOS 自带的 sips 转成 
 import argparse, json, os, subprocess, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pixel
-from gen_art import ART, CHAR_SIZE, ENEMIES, CHARACTERS, TILES
+from gen_art import ART, CHAR_SIZE, ICON_SIZE, ENEMIES, CHARACTERS, TILES, ICONS
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 ARTDIR = os.path.join(ROOT, 'assets', 'art')
@@ -39,6 +39,9 @@ def target_of(name):
     elif base.startswith('enemy_'):
         eid = base[6:]
         if eid in ENEMIES: return 'enemy', eid, None, (ENEMIES[eid][1] * ART,) * 2
+    elif base.startswith('icon_'):
+        iid = base[5:]
+        if iid in ICONS: return 'icon', iid, None, ICON_SIZE
     elif base.startswith('tile_'):
         tid = base[5:]
         if tid in TILES: return 'tile', tid, None, (16 * ART, 16 * ART)
@@ -61,7 +64,7 @@ def load_manifest():
     if os.path.exists(MANIFEST):
         try: return json.load(open(MANIFEST))
         except ValueError: pass
-    return {'characters': {}, 'enemies': {}, 'tiles': {}}
+    return {'characters': {}, 'enemies': {}, 'tiles': {}, 'icons': {}}
 
 
 def main():
@@ -83,11 +86,12 @@ def main():
             out = pixel.process_sprite(w, h, bytearray(px), tw, th,
                                        anchor='bottom' if kind == 'char' else 'center',
                                        key=(kind != 'tile'))
-            fname = f'{kind if kind != "char" else "char"}_{cid}' + (f'_{view}' if view else '') + '.png'
+            fname = f'{kind}_{cid}' + (f'_{view}' if view else '') + '.png'
             open(os.path.join(RAW, fname), 'wb').write(png)
             open(os.path.join(ARTDIR, fname), 'wb').write(pixel.encode_png(tw, th, out))
             if kind == 'char': m['characters'].setdefault(cid, {})[view] = fname
             elif kind == 'enemy': m['enemies'][cid] = fname
+            elif kind == 'icon': m.setdefault('icons', {})[cid] = fname
             else: m['tiles'][cid] = fname
             if not a.keep: os.unlink(src)
             print(f'  ✔ {fname}  {w}×{h} → {tw}×{th}')
@@ -95,7 +99,7 @@ def main():
         except Exception as e:
             print(f'  ✘ {name}: {e}')
     json.dump(m, open(MANIFEST, 'w'), ensure_ascii=False, indent=1)
-    have = len(m['characters']) * 0 + sum(len(v) for v in m['characters'].values()) + len(m['enemies']) + len(m['tiles'])
+    have = sum(len(v) for v in m['characters'].values()) + len(m['enemies']) + len(m['tiles']) + len(m.get('icons', {}))
     print(f'导入 {done} 张；清单里现在共 {have} 张')
 
 
