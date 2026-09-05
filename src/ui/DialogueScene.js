@@ -2,6 +2,7 @@
 import { drawWindow } from './Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { Menu } from './Menu.js';
+import { audio } from '../core/audio.js';
 
 const BOX = { x: 0, y: 152, w: 256, h: 72 };
 const CPS = 40; // 每秒字数
@@ -29,6 +30,7 @@ export class DialogueScene {
     }
     if (this.isLast && this.choices) { this.openChoices(); return; }
     if (input.justPressed('confirm') || input.justPressed('cancel')) {
+      audio.sfx('cursor');
       if (!this.isLast) { this.page++; this.shown = 0; this.acc = 0; }
       else this.close(null);
     }

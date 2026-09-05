@@ -4,6 +4,7 @@ import { drawWindow } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem } from '../game/items.js';
 import { buyItem, sellItem, sellPrice, describeItem } from '../game/shop.js';
+import { audio } from '../core/audio.js';
 
 const GREETING = '想要点什么？';
 
@@ -28,7 +29,7 @@ export class ShopScene {
   }
   trade(id) {
     const r = this.mode === 'buy' ? buyItem(this.game.state, id, this.game.data) : sellItem(this.game.state, id, this.game.data);
-    this.msg = r.msg;
+    this.msg = r.msg; audio.sfx(r.ok ? 'coin' : 'buzz');
     if (r.ok && this.mode === 'sell') this.buildList(this.list.cursor);
   }
   update() {

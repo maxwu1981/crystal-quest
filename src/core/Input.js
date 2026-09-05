@@ -4,13 +4,13 @@ const KEYMAP = {
   ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
   KeyZ: 'confirm', Enter: 'confirm', Space: 'confirm',
   KeyX: 'cancel', Escape: 'cancel', Backspace: 'cancel',
-  KeyB: 'debugBattle', KeyH: 'debugHeal',
+  KeyB: 'debugBattle', KeyH: 'debugHeal', KeyM: 'mute',
 };
 // 有些环境（自动化工具、部分输入法）只给 e.key 不给 e.code，两者都认
 const KEYNAME = {
   ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down', ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right',
   z: 'confirm', Enter: 'confirm', ' ': 'confirm', x: 'cancel', Escape: 'cancel', Backspace: 'cancel',
-  b: 'debugBattle', h: 'debugHeal',
+  b: 'debugBattle', h: 'debugHeal', m: 'mute',
   Return: 'confirm', Up: 'up', Down: 'down', Left: 'left', Right: 'right', // 旧式/自动化工具的键名
 };
 const actionOf = e => KEYMAP[e.code] || KEYNAME[e.key] || KEYNAME[(e.key || '').toLowerCase()];

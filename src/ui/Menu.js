@@ -1,6 +1,7 @@
 // 光标菜单：上下（多列时左右）选择，确认/取消回调，超出高度自动滚动。
 import { drawText, LINE_H } from '../core/text.js';
 import { drawWindow } from './Window.js';
+import { audio } from '../core/audio.js';
 
 export function drawCursor(ctx, x, y) {
   ctx.fillStyle = '#000';
@@ -26,13 +27,15 @@ export class Menu {
       else if (input.repeatPressed('down')) c = row < rows - 1 ? c + this.cols : (this.wrap ? col : c);
       else if (this.cols > 1 && input.repeatPressed('left')) c = col > 0 ? c - 1 : (this.wrap ? c + this.cols - 1 : c);
       else if (this.cols > 1 && input.repeatPressed('right')) c = col < this.cols - 1 ? c + 1 : (this.wrap ? c - this.cols + 1 : c);
-      this.cursor = Math.min(Math.max(0, c), n - 1);
+      c = Math.min(Math.max(0, c), n - 1);
+      if (c !== this.cursor) audio.sfx('cursor');
+      this.cursor = c;
     }
     if (input.justPressed('confirm')) {
       const it = this.item;
       if (!it) return;
-      if (it.disabled) this.onDisabled?.(it); else this.onSelect?.(it, this.cursor);
-    } else if (input.justPressed('cancel')) this.onCancel?.();
+      if (it.disabled) { audio.sfx('buzz'); this.onDisabled?.(it); } else { audio.sfx('confirm'); this.onSelect?.(it, this.cursor); }
+    } else if (input.justPressed('cancel')) { audio.sfx('cancel'); this.onCancel?.(); }
   }
 
   render(ctx, { window: win = true } = {}) {

@@ -9,6 +9,7 @@ import { DialogueScene } from '../ui/DialogueScene.js';
 import { ShopScene } from './ShopScene.js';
 import { NPC, pickVariant, applyVariant } from './npc.js';
 import { DIRS, lerp, clamp } from './grid.js';
+import { audio } from '../core/audio.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 
@@ -30,7 +31,7 @@ export function parseMap(md) {
 
 export class FieldScene {
   constructor(game) {
-    this.game = game; this.transparent = false; this.animT = 0; this.nameT = 0;
+    this.game = game; this.transparent = false; this.bgm = 'field'; this.animT = 0; this.nameT = 0;
     const m = game.state.map;
     this.loadMap(m.id, m.x, m.y, m.facing);
   }
@@ -73,7 +74,7 @@ export class FieldScene {
       if (input.justPressed('debugHeal')) for (const m of this.game.state.party) healFull(m, this.game.data);
     }
     if (!p.moving) {
-      if (input.justPressed('cancel')) { this.game.scenes.push(new MenuScene(this.game)); return; }
+      if (input.justPressed('cancel')) { audio.sfx('confirm'); this.game.scenes.push(new MenuScene(this.game)); return; }
       if (input.justPressed('confirm')) { this.interact(); return; }
     }
     if (p.moving) {
@@ -97,7 +98,7 @@ export class FieldScene {
 
   onStep() {
     const st = this.game.state, ev = this.map.events[`${this.p.x},${this.p.y}`];
-    if (ev?.type === 'warp') { this.game.fadeTo(() => this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing)); return; }
+    if (ev?.type === 'warp') { audio.sfx('door'); this.game.fadeTo(() => this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing)); return; }
     st.steps++;
     const c = this.cell(this.p.x, this.p.y);
     if (c?.encounter) { st.stepsUntilEncounter--; if (st.stepsUntilEncounter <= 0) this.triggerEncounter(); }
@@ -136,7 +137,7 @@ export class FieldScene {
         if (r !== 0) return;
         if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.poor || ['哎呀，金币不够呢。'] })); return; }
         g.state.gold -= price;
-        g.fadeTo(() => { campParty(g.state.party, g.data); g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
+        g.fadeTo(() => { campParty(g.state.party, g.data); audio.sfx('heal'); g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
       },
     }));
   }

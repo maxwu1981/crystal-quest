@@ -81,7 +81,7 @@ test('地图行长度一致、图例完整、出生点可走、遇敌区存在',
     const m = parseMap(md);
     const c = m.cells[md.spawn.y * m.w + md.spawn.x];
     assert(c && !c.solid, `${id} 出生点不可走`);
-    assert(data.encounters[md.encounterZone], `${id} 遇敌区 ${md.encounterZone} 不存在`);
+    if (md.encounterZone) assert(data.encounters[md.encounterZone], `${id} 遇敌区 ${md.encounterZone} 不存在`); // 室内地图 null = 不遇敌
   }
 });
 test('初始队伍职业存在', () => { for (const p of data.party) assert(data.jobs[p.jobId], p.name); });

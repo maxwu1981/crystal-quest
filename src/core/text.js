@@ -1,6 +1,20 @@
-// 文字绘制。以后放入 assets/fonts 的像素字体（如开源的「缝合怪像素字体 Fusion Pixel」）会自动优先使用。
-export const FONT = '10px "Fusion Pixel 12px", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+// 文字绘制。若 index.html 里定义了 @font-face "Fusion Pixel 12px"（开源像素字体）且加载成功，自动切换为像素字体。
+export let FONT_FAMILY = '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+export let FONT = `10px ${FONT_FAMILY}`;
+export let PIXEL = false;
 export const LINE_H = 13;
+
+export async function initFont() {
+  try {
+    await document.fonts.load('12px "Fusion Pixel 12px"');
+    for (const f of document.fonts) {
+      if (f.family.replace(/"/g, '') === 'Fusion Pixel 12px' && f.status === 'loaded') {
+        PIXEL = true; FONT_FAMILY = '"Fusion Pixel 12px", sans-serif'; FONT = `12px ${FONT_FAMILY}`;
+      }
+    }
+  } catch { /* 没有像素字体就用系统字体 */ }
+  return PIXEL;
+}
 
 export function drawText(ctx, text, x, y, opts = {}) {
   const { color = '#ffffff', shadow = true, align = 'left' } = opts;

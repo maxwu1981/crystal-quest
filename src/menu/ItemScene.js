@@ -4,6 +4,7 @@ import { drawWindow } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
 import { drawPartyPanel, drawTextBlock, stepCursor, PARTY_W } from './common.js';
+import { audio } from '../core/audio.js';
 
 export class ItemScene {
   constructor(game) { this.game = game; this.transparent = true; this.mode = 'list'; this.cursor = 0; this.msg = ''; this.buildMenu(); }
@@ -21,7 +22,7 @@ export class ItemScene {
   }
   pick(id) {
     const it = this.game.data.items[id];
-    if (it.effect?.camp) { campParty(this.game.state.party, this.game.data); removeItem(this.inv, id); this.msg = '全员完全恢复了'; this.buildMenu(this.menu.cursor); return; }
+    if (it.effect?.camp) { audio.sfx('heal'); campParty(this.game.state.party, this.game.data); removeItem(this.inv, id); this.msg = '全员完全恢复了'; this.buildMenu(this.menu.cursor); return; }
     this.mode = 'target'; this.itemId = id; this.cursor = 0; this.msg = '';
   }
   update() {
@@ -37,7 +38,8 @@ export class ItemScene {
     if (input.justPressed('confirm')) {
       const it = this.game.data.items[this.itemId], m = party[this.cursor];
       const out = useItemOnMember(it, m, this.game.data);
-      if (!out) { this.msg = '没有效果'; return; }
+      if (!out) { this.msg = '没有效果'; audio.sfx('buzz'); return; }
+      audio.sfx('heal');
       removeItem(this.inv, this.itemId);
       this.msg = describeUse(it, m.name, out);
       if (!countItem(this.inv, this.itemId)) { this.mode = 'list'; this.buildMenu(this.menu.cursor); }
