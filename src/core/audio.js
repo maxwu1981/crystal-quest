@@ -71,7 +71,8 @@ class AudioSystem {
     for (let i = 0; i < len; i++) { s = (Math.imul(s, 1103515245) + 12345) >>> 0; d[i] = (s / 4294967296) * 2 - 1; }
     return buf;
   }
-  toggleMute() { this.muted = !this.muted; if (this.master) this.master.gain.value = this.muted ? 0 : 0.6; return this.muted; }
+  setMute(v) { this.muted = !!v; if (this.master) this.master.gain.value = this.muted ? 0 : 0.6; return this.muted; }
+  toggleMute() { return this.setMute(!this.muted); }
 
   tone({ freq, type = 'square', dur = 0.1, vol = 0.2, slide = 0, at = 0 }) {
     const ctx = this.ctx; if (!ctx || !freq) return;

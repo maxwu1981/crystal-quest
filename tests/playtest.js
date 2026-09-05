@@ -35,7 +35,7 @@ export function playBattle(g, enemyIds, { strategy = 'attack' } = {}) {
     else tick(1);
   }
   tick(60); // 等淡入结束
-  return { log, ticks: safety, ended: g.scenes.top !== bs, top: g.scenes.top.constructor.name, escaped: bs.escaped };
+  return { log, ticks: safety, ended: g.scenes.top !== bs, top: g.scenes.top.constructor.name, escaped: bs.escaped, mode: bs.mode };
 }
 
 // 菜单流程：开菜单 → 道具 → 对 1 号用药水 → 存档 → 关闭
@@ -52,7 +52,7 @@ export function playMenu(g) {
   key('confirm');                       // 用在 1 号
   const hpAfter = g.state.party[0].hp;
   key('cancel'); key('cancel');         // 回主菜单
-  key('down'); key('down'); key('down'); key('confirm'); // 存档
+  for (let i = 0; i < 5; i++) key('down'); key('confirm'); // 存档（道具 装备 状态 转职 设置 存档）
   const saved = !!localStorage.getItem('crystal-quest-save');
   key('cancel');
   tick(5);
@@ -178,8 +178,34 @@ export function playStatus(g) {
   return { poisonTick: log.some(l => l.includes('毒的侵蚀')), poisonAfterBattle, hpBeforeWalk, hpAfterWalk, cured, itemMsg, top: g.scenes.top.constructor.name };
 }
 
+// 转职：村长给了碎片后，菜单 → 转职 → 1 号 → 换成盗贼
+export function playJob(g) {
+  const drv = makeDriver(g); toField(g);
+  g.state.flags.jobUnlocked = true; const before = g.state.party[0].jobId;
+  drv.key('cancel'); drv.key('down'); drv.key('down'); drv.key('down'); drv.key('confirm'); // 菜单 → 转职
+  const opened = g.scenes.top.constructor.name;
+  drv.key('confirm');                       // 选 1 号
+  const jobMode = g.scenes.top.mode;
+  drv.key('down'); drv.key('confirm');      // 下一个职业
+  const after = g.state.party[0].jobId, msg = g.scenes.top.msg;
+  drv.key('cancel'); drv.key('cancel'); drv.tick(3);
+  return { opened, jobMode, before, after, msg, top: g.scenes.top.constructor.name };
+}
+// 设置：切换战斗模式到 ATB，打一场，再切回来
+export function playSettings(g) {
+  const drv = makeDriver(g); toField(g);
+  drv.key('cancel'); for (let i = 0; i < 4; i++) drv.key('down'); drv.key('confirm'); // 菜单 → 设置
+  const opened = g.scenes.top.constructor.name;
+  drv.key('confirm'); const mode1 = g.state.settings.battleMode;
+  drv.key('cancel'); drv.key('cancel'); drv.tick(3);
+  const atb = playBattle(g, ['goblin']);
+  g.state.settings.battleMode = 'turn';
+  return { opened, mode1, atbMode: atb.mode, atbEnded: atb.ended, atbTop: atb.top };
+}
+
 export async function runAll(g = window.game) {
-  const out = {};
+  const out = {}; g.paused = true; // 暂停实时循环，全部同步步进，结果可复现
+  try {
   out.win = playBattle(g, ['goblin', 'goblin']);
   out.partyAfterWin = g.state.party.map(m => ({ name: m.name, level: m.level, exp: m.exp, hp: m.hp, mp: m.mp }));
   out.goldAfterWin = g.state.gold;
@@ -193,9 +219,12 @@ export async function runAll(g = window.game) {
   out.chest = playChest(g);
   out.boss = playBoss(g);
   out.status = playStatus(g);
+  out.job = playJob(g);
+  out.settings = playSettings(g);
   // 全灭：把队伍血量压到 1，对上两只狼
   for (const m of g.state.party) m.hp = 1;
   out.lose = playBattle(g, ['wolf', 'wolf']);
   out.stateAfterLose = { top: g.scenes.top.constructor.name, hp: g.state.party.map(m => m.hp), gold: g.state.gold };
+  } finally { g.paused = false; }
   return out;
 }

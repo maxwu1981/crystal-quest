@@ -1,0 +1,46 @@
+// 设置：战斗模式（回合制 / ATB）、声音。存在 state.settings 里，随存档保存。
+import { Menu } from '../ui/Menu.js';
+import { drawWindow } from '../ui/Window.js';
+import { drawText, wrapText, LINE_H } from '../core/text.js';
+import { audio } from '../core/audio.js';
+
+export const OPTIONS = [
+  { key: 'battleMode', label: '战斗模式', values: [['turn', '回合制'], ['atb', 'ATB']], desc: '回合制：全员下令后按速度结算。ATB：时间槽满了才能行动，敌人不等你。' },
+  { key: 'mute', label: '声音', values: [[false, '开'], [true, '关']], desc: '游戏中随时按 M 也能切换。' },
+];
+
+export function getSetting(game, key) {
+  const v = game.state.settings?.[key];
+  if (v !== undefined) return v;
+  return key === 'battleMode' ? (game.data.config.battleMode || 'turn') : key === 'mute' ? audio.muted : OPTIONS.find(o => o.key === key).values[0][0];
+}
+export function applySettings(game) { audio.setMute(!!game.state.settings?.mute); }
+
+export class SettingsScene {
+  constructor(game) { this.game = game; this.transparent = true; this.build(); }
+  build(keep = 0) {
+    const items = OPTIONS.map(o => ({ label: `${o.label}`, right: o.values.find(v => v[0] === getSetting(this.game, o.key))?.[1] ?? '?', value: o.key }));
+    items.push({ label: '返回', value: 'back' });
+    this.menu = new Menu({ items, x: 48, y: 48, w: 160, h: 16 + items.length * LINE_H, onSelect: it => this.select(it.value, 1), onCancel: () => this.game.scenes.pop() });
+    this.menu.cursor = keep;
+  }
+  select(key, dir) {
+    if (key === 'back') { this.game.scenes.pop(); return; }
+    const o = OPTIONS.find(x => x.key === key), i = o.values.findIndex(v => v[0] === getSetting(this.game, key));
+    const next = o.values[(i + dir + o.values.length) % o.values.length][0];
+    this.game.state.settings ||= {}; this.game.state.settings[key] = next;
+    applySettings(this.game); this.build(this.menu.cursor);
+  }
+  update() {
+    const input = this.game.input, it = this.menu.item;
+    if (it?.value !== 'back' && (input.repeatPressed('left') || input.repeatPressed('right'))) { audio.sfx('cursor'); this.select(it.value, input.repeatPressed('left') ? -1 : 1); return; }
+    this.menu.update(input);
+  }
+  render(ctx) {
+    drawWindow(ctx, 48, 24, 160, 24); drawText(ctx, '设置', 128, 31, { align: 'center' });
+    this.menu.render(ctx);
+    const o = OPTIONS.find(x => x.key === this.menu.item?.value);
+    drawWindow(ctx, 48, 48 + this.menu.h, 160, 56);
+    wrapText(ctx, o?.desc || '← → 切换，X 返回', 144).slice(0, 3).forEach((l, i) => drawText(ctx, l, 56, 56 + this.menu.h + i * LINE_H, { color: '#9aa4d8' }));
+  }
+}

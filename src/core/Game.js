@@ -46,7 +46,7 @@ export class Game {
     this.state = newGameState(this.data);
     this.scenes.push(new TitleScene(this));
     this.loopStats = startLoop({
-      update: dt => this.update(dt),
+      update: dt => { if (!this.paused) this.update(dt); }, // paused：自动试玩时暂停实时循环，改为同步步进
       render: (alpha, stats) => this.render(alpha, stats),
       tickRate: this.data.config.tickRate || 60,
     });
@@ -78,6 +78,7 @@ export class Game {
   newGame() { this.loadState(newGameState(this.data)); }
   loadState(state) {
     this.state = state;
+    audio.setMute(!!state.settings?.mute);
     this.scenes.clear();
     this.scenes.push(new FieldScene(this));
   }
@@ -99,7 +100,7 @@ export class Game {
   update(dt) {
     this.input.beginTick(dt);
     this.updateFade(dt);
-    if (this.input.justPressed('mute')) audio.toggleMute();
+    if (this.input.justPressed('mute')) { (this.state.settings ||= {}).mute = audio.toggleMute(); }
     if (!this.transitioning) this.scenes.update(dt);
     audio.playBgm(this.scenes.opaque()?.bgm ?? null);
     this.state.playTime = (this.state.playTime || 0) + dt;
