@@ -30,6 +30,8 @@ const DRAW = {
   roof(ctx) { fill(ctx, '#c62828'); hlines(ctx, [3, 7, 11, 15], '#8e1b1b'); hlines(ctx, [0, 4, 8, 12], '#e05353'); },
   door(ctx) { DRAW.wall(ctx); ctx.fillStyle = '#4e342e'; ctx.fillRect(4, 3, 8, 13); ctx.fillStyle = '#ffca28'; ctx.fillRect(10, 10, 1, 1); },
   floor(ctx) { fill(ctx, '#a1887f'); hlines(ctx, [3, 7, 11, 15], '#795548'); },
+  counter(ctx) { DRAW.floor(ctx); ctx.fillStyle = '#8d6e63'; ctx.fillRect(0, 0, 16, 10); ctx.fillStyle = '#d7a86e'; ctx.fillRect(0, 0, 16, 5); ctx.fillStyle = '#5d4037'; ctx.fillRect(0, 10, 16, 1); },
+  bed(ctx) { DRAW.floor(ctx); ctx.fillStyle = '#5d4037'; ctx.fillRect(1, 0, 14, 16); ctx.fillStyle = '#1e88e5'; ctx.fillRect(2, 6, 12, 9); ctx.fillStyle = '#fafafa'; ctx.fillRect(3, 1, 10, 4); },
 };
 
 export function buildTiles(rng) {

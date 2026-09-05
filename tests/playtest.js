@@ -59,6 +59,68 @@ export function playMenu(g) {
   return { menuOpened, itemOpened, potionBefore, potionAfter: g.state.inventory.find(s => s.id === 'potion')?.qty || 0, hpAfter, saved, top: g.scenes.top.constructor.name };
 }
 
+// 按住方向走 steps 格（遇到传送会提前结束）
+export function walk(g, drv, dir, steps) {
+  const st = g.state.map, mapId = st.id;
+  const [dx, dy] = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+  const tx = st.x + dx * steps, ty = st.y + dy * steps;
+  g.input.down.set(dir, 0);
+  for (let i = 0; i < steps * 12 + 20; i++) {
+    drv.tick(1);
+    if (g.state.map.id !== mapId) break;
+    if (g.state.map.x === tx && g.state.map.y === ty) break;
+  }
+  g.input.down.delete(dir);
+  for (let i = 0; i < 30 && (g.scenes.top.p?.moving || g.transitioning); i++) drv.tick(1);
+  drv.tick(2);
+}
+export function skipDialogue(g, drv, max = 40) {
+  let n = 0;
+  while (g.scenes.top.constructor.name === 'DialogueScene' && n++ < max) { g.scenes.top.shown = 1e9; drv.tick(1); if (g.scenes.top.menu) break; drv.key('confirm'); }
+}
+
+// 村庄流程：走进村长家 → 对话 → 拿到任务和 100 金币 → 走出来
+export function playVillage(g) {
+  const drv = makeDriver(g); toField(g);
+  const goldBefore = g.state.gold;
+  walk(g, drv, 'left', 10); walk(g, drv, 'up', 2); drv.tick(40);
+  const inside = g.state.map.id;
+  walk(g, drv, 'up', 3);
+  drv.key('confirm');
+  const talked = g.scenes.top.constructor.name;
+  skipDialogue(g, drv);
+  const after = { questStarted: !!g.state.flags.questStarted, gold: g.state.gold, top: g.scenes.top.constructor.name };
+  walk(g, drv, 'down', 4); drv.tick(40);
+  return { goldBefore, inside, talked, ...after, backTo: g.state.map };
+}
+
+// 旅馆：直接调用 runInn（不用走路）
+export function playInn(g) {
+  const drv = makeDriver(g); toField(g);
+  const f = g.scenes.top; g.state.gold = 50; g.state.party[0].hp = 1;
+  f.runInn({ name: '旅馆' }, ['住吗？'], { price: 30 });
+  skipDialogue(g, drv);
+  const choicesShown = !!g.scenes.top.menu;
+  drv.key('confirm'); drv.tick(150);           // 选「住宿」→ 淡入淡出 → 早安对话
+  const wake = g.scenes.top.constructor.name;
+  skipDialogue(g, drv);
+  return { choicesShown, wake, gold: g.state.gold, hp0: g.state.party[0].hp, top: g.scenes.top.constructor.name };
+}
+
+// 商店：买一瓶药水再卖掉
+export async function playShop(g) {
+  const drv = makeDriver(g); toField(g);
+  const { ShopScene } = await import('../src/field/ShopScene.js');
+  g.state.gold = 100; const potions = g.state.inventory.find(s => s.id === 'potion')?.qty || 0;
+  g.scenes.push(new ShopScene(g, { items: ['potion', 'dagger'] }, '测试商店'));
+  drv.key('confirm'); drv.key('confirm');      // 购买 → 药水
+  const afterBuy = { gold: g.state.gold, potions: g.state.inventory.find(s => s.id === 'potion')?.qty || 0 };
+  drv.key('cancel'); drv.key('down'); drv.key('confirm'); drv.key('confirm'); // 出售 → 第一项
+  const afterSell = { gold: g.state.gold, potions: g.state.inventory.find(s => s.id === 'potion')?.qty || 0 };
+  drv.key('cancel'); drv.key('cancel'); // 回到根菜单再取消 = 离开
+  return { potionsBefore: potions, afterBuy, afterSell, top: g.scenes.top.constructor.name };
+}
+
 export async function runAll(g = window.game) {
   const out = {};
   out.win = playBattle(g, ['goblin', 'goblin']);
@@ -68,6 +130,9 @@ export async function runAll(g = window.game) {
   g.state.party[0].hp = 5;
   out.item = playBattle(g, ['goblin'], { strategy: 'item' });
   out.menu = playMenu(g);
+  out.village = playVillage(g);
+  out.inn = playInn(g);
+  out.shop = await playShop(g);
   // 全灭：把队伍血量压到 1，对上两只狼
   for (const m of g.state.party) m.hp = 1;
   out.lose = playBattle(g, ['wolf', 'wolf']);

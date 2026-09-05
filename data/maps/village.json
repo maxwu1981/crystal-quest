@@ -1,17 +1,52 @@
 {
-  "name": "科尼利亚村",
+  "name": "铃兰村",
   "encounterZone": "village_field",
-  "spawn": { "x": 15, "y": 15 },
+  "spawn": {
+    "x": 15,
+    "y": 15
+  },
   "legend": {
-    "g": { "tile": "grass", "encounter": true },
-    ",": { "tile": "grass" },
-    "p": { "tile": "path" },
-    "T": { "tile": "tree", "solid": true },
-    "w": { "tile": "water", "solid": true },
-    "W": { "tile": "wall", "solid": true },
-    "R": { "tile": "roof", "solid": true },
-    "D": { "tile": "door" },
-    "f": { "tile": "floor" }
+    "g": {
+      "tile": "grass",
+      "encounter": true
+    },
+    ",": {
+      "tile": "grass"
+    },
+    "p": {
+      "tile": "path"
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    },
+    "w": {
+      "tile": "water",
+      "solid": true
+    },
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "R": {
+      "tile": "roof",
+      "solid": true
+    },
+    "D": {
+      "tile": "door"
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    }
   },
   "rows": [
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
@@ -31,10 +66,10 @@
     "T,,,,p,,,,,,,,,pp,,,,,,,,p,,,,,T",
     "T,,,,pppppppppppppppppppppp,,,,T",
     "T,,,,,,,,,,,,,,pp,,,,,,,,,,,,,,T",
-    "T,,,wwww,,,,,,,pp,,,,,,,,,,,,,,T",
-    "T,,wwwwww,,,,,,pp,,,,,,,RRRRR,,T",
     "T,,,wwww,,,,,,,pp,,,,,,,RRRRR,,T",
-    "T,,,,,,,,,,,,,,pp,,,,,,,WWDWW,,T",
+    "T,,wwwwww,,,,,,pp,,,,,,,RRRRR,,T",
+    "T,,,wwww,,,,,,,pp,,,,,,,WWDWW,,T",
+    "T,,,,,,,,,,,,,,pp,,,,,,,,,,,,,,T",
     "TTTTTTTTTTTTTTTppTTTTTTTTTTTTTTT",
     "TggggggggggggggppggggggggggggggT",
     "TgggTggggggggggppggggggTgggggggT",
@@ -42,5 +77,120 @@
     "TggggggggggggggggggggggggggggggT",
     "TgggggggTggggggggggggggggggggggT",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "events": [
+    {
+      "x": 5,
+      "y": 13,
+      "type": "warp",
+      "to": {
+        "map": "house_elder",
+        "x": 5,
+        "y": 7,
+        "facing": "up"
+      }
+    },
+    {
+      "x": 25,
+      "y": 13,
+      "type": "warp",
+      "to": {
+        "map": "inn",
+        "x": 5,
+        "y": 7,
+        "facing": "up"
+      }
+    },
+    {
+      "x": 26,
+      "y": 19,
+      "type": "warp",
+      "to": {
+        "map": "shop",
+        "x": 5,
+        "y": 7,
+        "facing": "up"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "guard",
+      "name": "卫兵",
+      "sprite": "guard",
+      "x": 14,
+      "y": 10,
+      "dir": "right",
+      "dialogue": [
+        {
+          "if": "questStarted",
+          "lines": [
+            "村长把水晶的事托付给你们了？",
+            "回音洞窟在北边草原的尽头。路上的怪物比以前凶得多，药水一定要带够。"
+          ]
+        },
+        {
+          "lines": [
+            "北边的草原最近怪物很多，别乱跑。",
+            "要出村的话，先去左上那间屋子听听村长怎么说吧。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "girl",
+      "name": "少女",
+      "sprite": "woman",
+      "x": 10,
+      "y": 16,
+      "dir": "down",
+      "wander": true,
+      "dialogue": [
+        {
+          "if": "questStarted",
+          "lines": [
+            "你们真的要去洞窟？……一定要平安回来。"
+          ]
+        },
+        {
+          "lines": [
+            "自从水晶的光消失以后，晚上连星星都变暗了。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oldman",
+      "name": "老人",
+      "sprite": "man",
+      "x": 21,
+      "y": 16,
+      "dir": "left",
+      "dialogue": [
+        {
+          "lines": [
+            "年轻时我也进过回音洞窟。",
+            "在里面喊一声，能听见十次回声——所以千万别大声说话，会把怪物引来。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "孩子",
+      "sprite": "kid",
+      "x": 18,
+      "y": 12,
+      "dir": "down",
+      "wander": true,
+      "dialogue": [
+        {
+          "lines": [
+            "我长大了也要当战士！",
+            "呐，你的剑能借我看看吗？……不行吗。"
+          ]
+        }
+      ]
+    }
   ]
 }

@@ -35,6 +35,7 @@ export class Game {
   async boot() {
     this.data = await loadData();
     this.rng = new RNG(this.data.config.seed || (Date.now() >>> 0));
+    this.rngFx = new RNG(99); // 纯装饰用（NPC 闲逛等），不影响战斗/遇敌
     this.sprites = buildSprites();
     this.tiles = buildTiles(new RNG(12345));
     this.state = newGameState(this.data);

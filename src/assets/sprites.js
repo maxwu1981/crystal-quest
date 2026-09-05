@@ -12,6 +12,18 @@ const PALETTES = {
   blackmage: { o: '#1b1b2f', s: '#1b1b2f', h: '#1d3557', c: '#1d3557', d: '#0f1e33', b: '#4a2e1a', e: '#ffd54f', hat: true },
 };
 
+// 村民调色板（缺省项沿用 warrior 的轮廓/皮肤/眼睛）
+const NPC_PALETTES = {
+  elder:     { h: '#e0e0e0', c: '#8d6e63', d: '#5d4037' },
+  woman:     { h: '#6d4c41', c: '#f06292', d: '#ad1457' },
+  man:       { h: '#263238', c: '#42a5f5', d: '#1565c0' },
+  kid:       { h: '#ffca28', c: '#66bb6a', d: '#2e7d32' },
+  merchant:  { h: '#6d4c41', c: '#26a69a', d: '#00695c', hat: true, s: '#f1c27d', e: '#1b1b2f' },
+  innkeeper: { h: '#8d6e63', c: '#fafafa', d: '#c62828' },
+  guard:     { h: '#455a64', c: '#90a4ae', d: '#546e7a' },
+};
+const BASE = { o: '#1b1b2f', s: '#f1c27d', e: '#1b1b2f', b: '#4a2e1a' };
+
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
 function drawHumanoid(ctx, p, dir, frame) {
@@ -69,9 +81,10 @@ export function spriteFromRows(rows, palette, name = '?') {
 
 export function buildSprites() {
   const S = {};
-  for (const [job, p] of Object.entries(PALETTES)) {
-    for (const d of DIRS) for (const f of [0, 1]) S[`${job}_${d}_${f}`] = humanoid(p, d, f);
-    S[`${job}_downed`] = downed(S[`${job}_left_0`]);
+  for (const [id, pal] of Object.entries({ ...PALETTES, ...NPC_PALETTES })) {
+    const p = { ...BASE, ...pal };
+    for (const d of DIRS) for (const f of [0, 1]) S[`${id}_${d}_${f}`] = humanoid(p, d, f);
+    S[`${id}_downed`] = downed(S[`${id}_left_0`]);
   }
   for (const [id, art] of Object.entries(ENEMY_ART)) S[`enemy_${id}`] = spriteFromRows(art.rows, art.palette, id);
   return S;

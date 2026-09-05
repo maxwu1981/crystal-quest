@@ -1,0 +1,87 @@
+{
+  "name": "村长家",
+  "encounterZone": null,
+  "spawn": {
+    "x": 5,
+    "y": 7
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "door"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WWWWWDWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 5,
+      "y": 8,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 5,
+        "y": 14,
+        "facing": "down"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "elder",
+      "name": "村长",
+      "sprite": "elder",
+      "x": 5,
+      "y": 3,
+      "dir": "down",
+      "dialogue": [
+        {
+          "if": "questStarted",
+          "lines": [
+            "回音洞窟在村子北边草原的尽头。",
+            "别逞强，累了就回旅馆休息。"
+          ]
+        },
+        {
+          "set": [
+            "questStarted"
+          ],
+          "give": {
+            "gold": 100
+          },
+          "lines": [
+            "你们来了……听我说，孩子们。",
+            "四百年来，铃兰村的『风之水晶』守护着这片土地，让田野丰饶、怪物远离。",
+            "三天前，一名黑甲骑士闯进回音洞窟，带走了水晶。从那以后光芒消失，草原上的怪物开始袭击行人。",
+            "我老了，能托付的只有你们四个。去北边的回音洞窟，把水晶带回来吧。",
+            "这是村里凑出的路费，100 金币。去杂货店备些药水再出发。"
+          ]
+        }
+      ]
+    }
+  ]
+}

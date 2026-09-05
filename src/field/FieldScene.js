@@ -1,13 +1,16 @@
-// 地图行走：网格移动、镜头跟随、步数制遇敌。
+// 地图行走：网格移动、镜头跟随、步数制遇敌、门传送、NPC 对话。
 import { TILE } from '../assets/tiles.js';
 import { drawText } from '../core/text.js';
+import { drawWindow } from '../ui/Window.js';
 import { healFull } from '../game/party.js';
+import { campParty } from '../game/items.js';
 import { MenuScene } from '../menu/MenuScene.js';
+import { DialogueScene } from '../ui/DialogueScene.js';
+import { ShopScene } from './ShopScene.js';
+import { NPC, pickVariant, applyVariant } from './npc.js';
+import { DIRS, lerp, clamp } from './grid.js';
 
 const STEP_TIME = 0.16; // 每格秒数
-const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
-const lerp = (a, b, t) => a + (b - a) * t;
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 export function parseMap(md) {
   const rows = md.rows, h = rows.length, w = rows[0].length;
@@ -17,21 +20,29 @@ export function parseMap(md) {
     for (let x = 0; x < w; x++) {
       const ch = rows[y][x], def = md.legend[ch];
       if (!def) throw new Error(`地图 ${md.name} 未知字符 '${ch}' at (${x},${y})`);
-      cells.push({ tile: def.tile, solid: !!def.solid, encounter: !!def.encounter });
+      cells.push({ tile: def.tile, solid: !!def.solid, encounter: !!def.encounter, counter: !!def.counter });
     }
   }
-  return { w, h, cells, encounterZone: md.encounterZone, spawn: md.spawn, name: md.name };
+  const events = {};
+  for (const ev of md.events || []) events[`${ev.x},${ev.y}`] = ev;
+  return { w, h, cells, events, encounterZone: md.encounterZone, spawn: md.spawn, name: md.name };
 }
 
 export class FieldScene {
   constructor(game) {
-    this.game = game;
-    this.transparent = false;
+    this.game = game; this.transparent = false; this.animT = 0; this.nameT = 0;
     const m = game.state.map;
-    this.map = parseMap(game.data.maps[m.id]);
-    this.p = { x: m.x, y: m.y, fromX: m.x, fromY: m.y, dir: m.facing, moving: false, t: 0 };
-    this.animT = 0;
-    if (!game.state.stepsUntilEncounter) this.resetEncounter();
+    this.loadMap(m.id, m.x, m.y, m.facing);
+  }
+  loadMap(id, x, y, facing) {
+    const md = this.game.data.maps[id];
+    if (!md) throw new Error(`地图不存在: ${id}`);
+    this.mapId = id; this.map = parseMap(md);
+    this.p = { x, y, fromX: x, fromY: y, dir: facing || 'down', moving: false, t: 0 };
+    this.npcs = (md.npcs || []).map(d => new NPC(d, this));
+    Object.assign(this.game.state.map, { id, x, y, facing: this.p.dir });
+    this.nameT = 2;
+    if (!this.game.state.stepsUntilEncounter) this.resetEncounter();
   }
 
   get zone() { return this.game.data.encounters[this.map.encounterZone]; }
@@ -44,15 +55,27 @@ export class FieldScene {
     return this.map.cells[y * this.map.w + x];
   }
   passable(x, y) { const c = this.cell(x, y); return !!c && !c.solid; }
+  // who: 'player' | NPC
+  walkable(x, y, who = null) {
+    if (!this.passable(x, y)) return false;
+    if (who !== 'player' && ((this.p.x === x && this.p.y === y) || (this.p.moving && this.p.fromX === x && this.p.fromY === y))) return false;
+    for (const n of this.npcs) if (n !== who && n.occupies(x, y)) return false;
+    if (who instanceof NPC && this.map.events[`${x},${y}`]) return false;
+    return true;
+  }
 
   update(dt) {
     const input = this.game.input, p = this.p;
-    this.animT += dt;
+    this.animT += dt; if (this.nameT > 0) this.nameT -= dt;
+    for (const n of this.npcs) n.update(dt);
     if (this.game.debug) {
       if (input.justPressed('debugBattle')) { this.triggerEncounter(); return; }
       if (input.justPressed('debugHeal')) for (const m of this.game.state.party) healFull(m, this.game.data);
     }
-    if (!p.moving && input.justPressed('cancel')) { this.game.scenes.push(new MenuScene(this.game)); return; }
+    if (!p.moving) {
+      if (input.justPressed('cancel')) { this.game.scenes.push(new MenuScene(this.game)); return; }
+      if (input.justPressed('confirm')) { this.interact(); return; }
+    }
     if (p.moving) {
       p.t += dt / STEP_TIME;
       if (p.t >= 1) {
@@ -66,19 +89,19 @@ export class FieldScene {
       if (d) {
         p.dir = d;
         const [dx, dy] = DIRS[d];
-        if (this.passable(p.x + dx, p.y + dy)) { p.fromX = p.x; p.fromY = p.y; p.x += dx; p.y += dy; p.moving = true; p.t = 0; }
+        if (this.walkable(p.x + dx, p.y + dy, 'player')) { p.fromX = p.x; p.fromY = p.y; p.x += dx; p.y += dy; p.moving = true; p.t = 0; }
       }
     }
     const m = this.game.state.map; m.x = p.x; m.y = p.y; m.facing = p.dir;
   }
 
   onStep() {
-    const st = this.game.state;
+    const st = this.game.state, ev = this.map.events[`${this.p.x},${this.p.y}`];
+    if (ev?.type === 'warp') { this.game.fadeTo(() => this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing)); return; }
     st.steps++;
     const c = this.cell(this.p.x, this.p.y);
     if (c?.encounter) { st.stepsUntilEncounter--; if (st.stepsUntilEncounter <= 0) this.triggerEncounter(); }
   }
-
   triggerEncounter() {
     const zone = this.zone;
     if (!zone) return;
@@ -87,20 +110,59 @@ export class FieldScene {
     this.game.startBattle(g.enemies, { zone: this.map.encounterZone });
   }
 
+  // ---------- 对话 ----------
+  interact() {
+    const [dx, dy] = DIRS[this.p.dir];
+    let x = this.p.x + dx, y = this.p.y + dy;
+    if (this.cell(x, y)?.counter) { x += dx; y += dy; } // 隔着柜台说话
+    const npc = this.npcs.find(n => n.occupies(x, y));
+    if (!npc) return;
+    npc.stop(); npc.faceToward(this.p.x, this.p.y);
+    this.talk(npc);
+  }
+  talk(npc) {
+    const def = npc.def, g = this.game;
+    const pages = applyVariant(pickVariant(def.dialogue, g.state.flags), g.state);
+    const script = def.script;
+    if (!script) g.scenes.push(new DialogueScene(g, { name: def.name, pages }));
+    else if (script.type === 'inn') this.runInn(def, pages, script);
+    else if (script.type === 'shop') g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => g.scenes.push(new ShopScene(g, script, def.name)) }));
+  }
+  runInn(def, pages, script) {
+    const g = this.game, price = script.price ?? 30;
+    g.scenes.push(new DialogueScene(g, {
+      name: def.name, pages, choices: ['住宿', '不了'],
+      onDone: r => {
+        if (r !== 0) return;
+        if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.poor || ['哎呀，金币不够呢。'] })); return; }
+        g.state.gold -= price;
+        g.fadeTo(() => { campParty(g.state.party, g.data); g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
+      },
+    }));
+  }
+
+  // ---------- 渲染 ----------
   render(ctx) {
     const { W, H } = this.game, p = this.p, map = this.map;
     const px = lerp(p.fromX, p.x, p.t) * TILE, py = lerp(p.fromY, p.y, p.t) * TILE;
-    const camX = clamp(Math.round(px + TILE / 2 - W / 2), 0, Math.max(0, map.w * TILE - W));
-    const camY = clamp(Math.round(py + TILE / 2 - H / 2), 0, Math.max(0, map.h * TILE - H));
-    const x0 = Math.floor(camX / TILE), y0 = Math.floor(camY / TILE);
+    const mw = map.w * TILE, mh = map.h * TILE;
+    const camX = mw <= W ? -Math.floor((W - mw) / 2) : clamp(Math.round(px + TILE / 2 - W / 2), 0, mw - W);
+    const camY = mh <= H ? -Math.floor((H - mh) / 2) : clamp(Math.round(py + TILE / 2 - H / 2), 0, mh - H);
+    const x0 = Math.max(0, Math.floor(camX / TILE)), y0 = Math.max(0, Math.floor(camY / TILE));
     const x1 = Math.min(map.w - 1, Math.ceil((camX + W) / TILE)), y1 = Math.min(map.h - 1, Math.ceil((camY + H) / TILE));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       ctx.drawImage(this.game.tiles[map.cells[y * map.w + x].tile], x * TILE - camX, y * TILE - camY);
     }
+    // 角色按 y 排序绘制
     const leader = this.game.state.party[0];
     const frame = p.moving ? Math.floor(this.animT * 8) % 2 : 0;
-    ctx.drawImage(this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`], Math.round(px - camX), Math.round(py - camY));
+    const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
+    drawables.push({ y: py, draw: () => ctx.drawImage(this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`], Math.round(px - camX), Math.round(py - camY)) });
+    drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    if (this.nameT > 0 && map.name) {
+      const w = 112; drawWindow(ctx, (W - w) / 2, 8, w, 26);
+      drawText(ctx, map.name, W / 2, 15, { align: 'center' });
+    }
   }
-
-  debugInfo() { return `(${this.p.x},${this.p.y}) 遇敌:${this.game.state.stepsUntilEncounter} 步:${this.game.state.steps}`; }
+  debugInfo() { return `${this.mapId} (${this.p.x},${this.p.y}) 遇敌:${this.game.state.stepsUntilEncounter} 步:${this.game.state.steps}`; }
 }

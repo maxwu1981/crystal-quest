@@ -6,6 +6,9 @@ import { loadData } from '../src/data/loader.js';
 import { parseMap } from '../src/field/FieldScene.js';
 import { addItem, removeItem, countItem, applyItem, equip, canEquip } from '../src/game/items.js';
 import { newGameState } from '../src/game/state.js';
+import { wrapText } from '../src/core/text.js';
+import { pickVariant, applyVariant } from '../src/field/npc.js';
+import { buyItem, sellItem } from '../src/game/shop.js';
 
 const results = [];
 const assert = (c, m = 'assert') => { if (!c) throw new Error(m); };
@@ -119,6 +122,46 @@ test('道具数据完整；初始装备/背包引用存在且职业可装', () =
 test('存档往返：状态可 JSON 序列化且不丢字段', () => {
   const s = newGameState(data), back = JSON.parse(JSON.stringify(s));
   assert(JSON.stringify(back) === JSON.stringify(s)); assert(back.party[0].equipment.weapon === 'shortsword'); assert(back.inventory.length === 3);
+});
+
+test('地图事件与 NPC：传送目标存在且可走、NPC 站在可走格、对话/脚本格式正确', () => {
+  for (const [id, md] of Object.entries(data.maps)) {
+    const m = parseMap(md);
+    for (const ev of md.events || []) {
+      assert(ev.type === 'warp', `${id} 事件类型 ${ev.type}`);
+      const to = data.maps[ev.to.map]; assert(to, `${id} 传送到不存在的地图 ${ev.to.map}`);
+      const tm = parseMap(to), c = tm.cells[ev.to.y * tm.w + ev.to.x];
+      assert(c && !c.solid, `${id} 传送目标 ${ev.to.map}(${ev.to.x},${ev.to.y}) 不可走`);
+      assert(!tm.events[`${ev.to.x},${ev.to.y}`], `${id} 传送目标落在另一个传送点上`);
+    }
+    for (const n of md.npcs || []) {
+      const c = m.cells[n.y * m.w + n.x]; assert(c && !c.solid, `${id}/${n.id} 站在不可走格`);
+      assert(Array.isArray(n.dialogue) && n.dialogue.length, `${id}/${n.id} 没有对话`);
+      for (const v of n.dialogue) assert(Array.isArray(v.lines) && v.lines.length, `${id}/${n.id} 对话缺 lines`);
+      if (n.script) { assert(['inn', 'shop'].includes(n.script.type), `${n.id} 脚本类型`); for (const it of n.script.items || []) assert(data.items[it], `${n.id} 商店卖不存在的 ${it}`); }
+    }
+  }
+});
+test('对话每页最多 3 行（240px 宽，带名字）', () => {
+  const ctx = document.createElement('canvas').getContext('2d');
+  for (const [id, md] of Object.entries(data.maps)) for (const n of md.npcs || []) {
+    const pages = [...n.dialogue.flatMap(v => v.lines), ...(n.script?.wake || []), ...(n.script?.poor || [])];
+    for (const p of pages) assert(wrapText(ctx, p, 240).length <= 3, `${id}/${n.id} 这页太长：${p.slice(0, 12)}…`);
+  }
+});
+test('pickVariant / applyVariant：按标志选变体，副作用生效', () => {
+  const d = [{ if: 'a', lines: ['A'] }, { unless: 'b', set: ['b'], give: { gold: 5, items: [{ id: 'potion', qty: 2 }] }, lines: ['B'] }, { lines: ['C'] }];
+  const st = { flags: {}, gold: 0, inventory: [] };
+  assert(applyVariant(pickVariant(d, st.flags), st)[0] === 'B'); assert(st.flags.b && st.gold === 5 && st.inventory[0].qty === 2);
+  assert(pickVariant(d, st.flags).lines[0] === 'C'); st.flags.a = true; assert(pickVariant(d, st.flags).lines[0] === 'A');
+  assert(pickVariant([], {}) === null && applyVariant(null, st)[0] === '……');
+});
+test('商店买卖金额', () => {
+  const st = { gold: 100, inventory: [] };
+  assert(buyItem(st, 'potion', data).ok && st.gold === 70 && countItem(st.inventory, 'potion') === 1);
+  assert(!buyItem(st, 'ironsword', data).ok && st.gold === 70);
+  assert(sellItem(st, 'potion', data).ok && st.gold === 85 && st.inventory.length === 0);
+  assert(!sellItem(st, 'potion', data).ok);
 });
 
 const out = document.getElementById('out');

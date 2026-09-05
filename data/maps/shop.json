@@ -1,0 +1,85 @@
+{
+  "name": "杂货店",
+  "encounterZone": null,
+  "spawn": {
+    "x": 5,
+    "y": 7
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "door"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWW",
+    "WffffffffffW",
+    "WfCCCCCCCCfW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WWWWWDWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 5,
+      "y": 8,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 26,
+        "y": 20,
+        "facing": "down"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "merchant",
+      "name": "杂货店老板",
+      "sprite": "merchant",
+      "x": 5,
+      "y": 1,
+      "dir": "down",
+      "script": {
+        "type": "shop",
+        "items": [
+          "potion",
+          "hipotion",
+          "ether",
+          "phoenix",
+          "tent",
+          "dagger",
+          "shortsword",
+          "staff",
+          "robe",
+          "leather"
+        ]
+      },
+      "dialogue": [
+        {
+          "lines": [
+            "欢迎光临！慢慢挑。"
+          ]
+        }
+      ]
+    }
+  ]
+}

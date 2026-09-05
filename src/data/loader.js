@@ -1,14 +1,15 @@
-// 一次性加载 data/ 下所有 JSON。'maps/village' 会挂到 data.maps.village。
-const FILES = ['config', 'jobs', 'spells', 'enemies', 'encounters', 'items', 'party', 'maps/village'];
+// 一次性加载 data/ 下所有 JSON。地图列表来自 config.maps，挂到 data.maps[id]。
+const BASE = ['config', 'jobs', 'spells', 'enemies', 'encounters', 'items', 'party'];
 
 export async function loadData(base = './data/') {
-  const out = {};
-  await Promise.all(FILES.map(async f => {
-    const res = await fetch(base + f + '.json');
+  const get = async f => {
+    const res = await fetch(base + f + '.json', { cache: 'no-store' });
     if (!res.ok) throw new Error(`加载失败: ${f}.json (${res.status})`);
-    const json = await res.json();
-    const [dir, name] = f.includes('/') ? f.split('/') : [null, f];
-    if (dir) (out[dir] ??= {})[name] = json; else out[name] = json;
-  }));
+    return res.json();
+  };
+  const out = {};
+  await Promise.all(BASE.map(async f => { out[f] = await get(f); }));
+  out.maps = {};
+  await Promise.all((out.config.maps || ['village']).map(async id => { out.maps[id] = await get('maps/' + id); }));
   return out;
 }

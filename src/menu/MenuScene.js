@@ -37,6 +37,6 @@ export class MenuScene {
     drawInfoPanel(ctx, this.game, PARTY_W, 96, 256 - PARTY_W, 60);
     drawWindow(ctx, PARTY_W, 156, 256 - PARTY_W, 68);
     if (this.msgT > 0) drawTextBlock(ctx, this.msg, PARTY_W + 8, 164, 64);
-    else drawText(ctx, '科尼利亚村', PARTY_W + 8, 164, { color: '#9aa4d8' });
+    else drawText(ctx, this.game.data.maps[this.game.state.map.id]?.name || '', PARTY_W + 8, 164, { color: '#9aa4d8' });
   }
 }

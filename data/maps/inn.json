@@ -1,0 +1,81 @@
+{
+  "name": "铃兰旅馆",
+  "encounterZone": null,
+  "spawn": {
+    "x": 5,
+    "y": 7
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "door"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WfCCCCfffBBW",
+    "WffffffffBBW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WffffffffffW",
+    "WWWWWDWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 5,
+      "y": 8,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 25,
+        "y": 14,
+        "facing": "down"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "innkeeper",
+      "name": "旅馆老板娘",
+      "sprite": "innkeeper",
+      "x": 3,
+      "y": 2,
+      "dir": "down",
+      "script": {
+        "type": "inn",
+        "price": 30,
+        "wake": [
+          "早上好！大家看起来精神多了。",
+          "祝旅途平安。"
+        ],
+        "poor": [
+          "哎呀，金币不够呢。去草原上打点怪再来吧。"
+        ]
+      },
+      "dialogue": [
+        {
+          "lines": [
+            "欢迎来到铃兰旅馆。住一晚 30 金币，要住下吗？"
+          ]
+        }
+      ]
+    }
+  ]
+}
