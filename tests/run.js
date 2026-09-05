@@ -20,6 +20,28 @@ function test(name, fn) { try { fn(); results.push({ name, ok: true }); } catch 
 
 const data = await loadData('../data/');
 
+// 正式美术的角色精灵：量出每张图里角色实际占的高度，用来保证大小一致
+async function measureArt() {
+  let m; try { const r = await fetch('../assets/art/manifest.json', { cache: 'no-store' }); if (!r.ok) return null; m = await r.json(); } catch { return null; }
+  const load = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  const out = [];
+  for (const [cid, views] of Object.entries(m.characters || {})) {
+    for (const [view, file] of Object.entries(views)) {
+      const im = await load('../assets/art/' + file); if (!im) continue;
+      const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+      const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+      const d = x.getImageData(0, 0, im.width, im.height).data;
+      let y0 = im.height, y1 = -1;
+      for (let y = 0; y < im.height; y++) for (let px = 0; px < im.width; px++) {
+        if (d[(y * im.width + px) * 4 + 3] > 8) { if (y < y0) y0 = y; if (y > y1) y1 = y; break; }
+      }
+      if (y1 >= 0) out.push({ cid, view, ratio: (y1 - y0 + 1) / im.height, w: im.width, h: im.height });
+    }
+  }
+  return out;
+}
+const artRows = await measureArt();
+
 test('RNG 同种子可复现', () => {
   const a = new RNG(42), b = new RNG(42);
   for (let i = 0; i < 100; i++) assert(a.next() === b.next());
@@ -382,6 +404,16 @@ test('商店只卖非神话装备，宝箱/掉落才有神话装备', () => {
   for (const md of Object.values(data.maps)) for (const n of md.npcs || []) for (const r of n.script?.reward || []) fromChests.add(r.id);
   const mythAvailable = [...fromChests].filter(id => data.items[id]?.myth);
   assert(mythAvailable.length >= 4, `流程里只能拿到 ${mythAvailable.length} 件神话装备`);
+});
+
+test('正式美术：所有角色精灵一样高、尺寸一致（防止某个职业显得特别小）', () => {
+  if (!artRows || !artRows.length) return; // 还没生成正式美术就跳过
+  const sizes = new Set(artRows.map(r => r.w + 'x' + r.h));
+  assert(sizes.size === 1, '角色图尺寸不统一: ' + [...sizes].join(' '));
+  const lo = Math.min(...artRows.map(r => r.ratio)), hi = Math.max(...artRows.map(r => r.ratio));
+  const worst = artRows.slice().sort((a, b) => a.ratio - b.ratio)[0];
+  assert(hi - lo <= 0.12, `角色身高不一致 ${(lo*100).toFixed(0)}%–${(hi*100).toFixed(0)}%，最矮的是 ${worst.cid}_${worst.view}`);
+  assert(lo > 0.8, `${worst.cid}_${worst.view} 只占画布高度 ${(worst.ratio*100).toFixed(0)}%，角色应该几乎占满`);
 });
 
 const out = document.getElementById('out');

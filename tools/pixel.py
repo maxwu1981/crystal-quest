@@ -80,12 +80,22 @@ def alpha_bbox(w, h, px):
                 if y > y1: y1 = y
     return (x0, y0, x1 + 1, y1 + 1) if x1 >= 0 else (0, 0, w, h)
 
-def fit_box(bbox, aspect, margin=0.04, anchor='bottom'):
-    """把包围盒扩成指定宽高比（w/h）的框；anchor='bottom' 让脚贴底，'center' 居中。返回浮点 (x0,y0,x1,y1)。"""
-    x0, y0, x1, y1 = bbox; bw, bh = x1 - x0, y1 - y0
-    bw *= 1 + margin * 2; bh *= 1 + margin * 2
-    if bw / bh < aspect: bw = bh * aspect
-    else: bh = bw / aspect
+def fit_box(bbox, aspect, margin=0.04, anchor='bottom', fit='contain'):
+    """把包围盒扩成指定宽高比（w/h = aspect）的框，返回浮点 (x0,y0,x1,y1)。
+
+    fit='contain'：整个包围盒都装进去（敌人、道具图标用）。
+    fit='height' ：只按高度定缩放，宽度由 aspect 推出，太宽的部分裁掉。
+                   角色必须用这个，否则「宽袍子」的角色会被整体缩小，和别的角色不一样高。
+    anchor='bottom' 让脚贴底，'center' 居中。
+    """
+    x0, y0, x1, y1 = bbox
+    bw, bh = (x1 - x0) * (1 + margin * 2), (y1 - y0) * (1 + margin * 2)
+    if fit == 'height':
+        bw = bh * aspect                       # 身高统一：所有角色都占满画布高度
+    elif bw / bh < aspect:
+        bw = bh * aspect
+    else:
+        bh = bw / aspect
     cx = (x0 + x1) / 2
     if anchor == 'bottom': by1 = y1 + (y1 - y0) * margin; by0 = by1 - bh
     else: cy = (y0 + y1) / 2; by0, by1 = cy - bh / 2, cy + bh / 2
@@ -133,9 +143,9 @@ def outline(w, h, px, color=(27, 27, 47)):
                     px[i:i + 4] = bytes((r, g, b, 255)); break
     return px
 
-def process_sprite(w, h, px, tw, th, anchor='bottom', key=True, add_outline=True):
+def process_sprite(w, h, px, tw, th, anchor='bottom', key=True, add_outline=True, fit='contain'):
     if key: chroma_key(w, h, px)
-    box = fit_box(alpha_bbox(w, h, px), tw / th, anchor=anchor) if key else (0, 0, w, h)
+    box = fit_box(alpha_bbox(w, h, px), tw / th, anchor=anchor, fit=fit) if key else (0, 0, w, h)
     out = downscale(w, h, px, box, tw, th)
     posterize(out); threshold_alpha(out)
     if key and add_outline: outline(tw, th, out)

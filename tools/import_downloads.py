@@ -73,23 +73,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dir', default=os.path.expanduser('~/Downloads'))
     ap.add_argument('--keep', action='store_true')
+    ap.add_argument('--reprocess', action='store_true', help='不看下载目录，直接用 assets/art/raw/ 里的原图重算一遍')
     a = ap.parse_args()
     os.makedirs(RAW, exist_ok=True)
     m = load_manifest()
     done = 0
-    for name in sorted(os.listdir(a.dir)):
+    src_dir = RAW if a.reprocess else a.dir
+    if a.reprocess: a.keep = True
+    for name in sorted(os.listdir(src_dir)):
         t = target_of(name)
         if not t: continue
         kind, cid, view, (tw, th) = t
-        src = os.path.join(a.dir, name)
+        src = os.path.join(src_dir, name)
         try:
             png = to_png(src)
             w, h, px = pixel.decode_png(png)
             out = pixel.process_sprite(w, h, bytearray(px), tw, th,
                                        anchor='bottom' if kind == 'char' else 'center',
-                                       key=(kind != 'tile'))
+                                       key=(kind != 'tile'),
+                                       fit='height' if kind == 'char' else 'contain')
             fname = f'{kind}_{cid}' + (f'_{view}' if view else '') + '.png'
-            open(os.path.join(RAW, fname), 'wb').write(png)
+            if not a.reprocess: open(os.path.join(RAW, fname), 'wb').write(png)
             open(os.path.join(ARTDIR, fname), 'wb').write(pixel.encode_png(tw, th, out))
             if kind == 'char': m['characters'].setdefault(cid, {})[view] = fname
             elif kind == 'enemy': m['enemies'][cid] = fname
@@ -103,6 +107,28 @@ def main():
     json.dump(m, open(MANIFEST, 'w'), ensure_ascii=False, indent=1)
     have = sum(len(v) for v in m['characters'].values()) + len(m['enemies']) + len(m['tiles']) + len(m.get('icons', {}))
     print(f'导入 {done} 张；清单里现在共 {have} 张')
+    check_heights(m)
+
+
+def check_heights(m, tol=0.12):
+    """体检：所有角色精灵的实际身高应该几乎一致，否则游戏里会出现「这个角色特别小」。"""
+    rows = []
+    for cid, views in m.get('characters', {}).items():
+        for view, fname in views.items():
+            path = os.path.join(ARTDIR, fname)
+            if not os.path.exists(path): continue
+            w, h, px = pixel.decode_png(open(path, 'rb').read())
+            x0, y0, x1, y1 = pixel.alpha_bbox(w, h, px)
+            rows.append((cid, view, (y1 - y0) / h))
+    if not rows: return
+    hi = max(r[2] for r in rows); lo = min(r[2] for r in rows)
+    if hi - lo <= tol:
+        print(f'体检通过：{len(rows)} 张角色图身高占比 {lo:.0%}–{hi:.0%}')
+        return
+    print(f'⚠ 角色身高不一致（{lo:.0%}–{hi:.0%}，容差 {tol:.0%}）——游戏里会显得大小不一：')
+    for cid, view, r in sorted(rows, key=lambda r: r[2])[:6]:
+        print(f'    {cid}_{view}  只占 {r:.0%}')
+    print('    修法：确认 process_sprite 用了 fit=\'height\'，然后 python3 tools/import_downloads.py --reprocess')
 
 
 if __name__ == '__main__': main()
