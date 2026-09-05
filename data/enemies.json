@@ -172,5 +172,92 @@
       "sleep"
     ],
     "ai": "basic"
+  },
+  "bee": {
+    "name": "毒蜂",
+    "sprite": "bee",
+    "hp": 22,
+    "mp": 0,
+    "atk": 9,
+    "def": 2,
+    "acc": 30,
+    "eva": 24,
+    "spd": 13,
+    "mdef": 2,
+    "crit": 6,
+    "exp": 18,
+    "gold": 10,
+    "weak": [
+      "fire",
+      "ice"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "poison",
+      "chance": 0.35
+    }
+  },
+  "mandrake": {
+    "name": "曼德拉草",
+    "sprite": "mandrake",
+    "hp": 46,
+    "mp": 12,
+    "atk": 10,
+    "def": 6,
+    "acc": 22,
+    "eva": 4,
+    "spd": 4,
+    "mdef": 8,
+    "int": 6,
+    "crit": 2,
+    "exp": 32,
+    "gold": 18,
+    "weak": [
+      "fire"
+    ],
+    "resist": [
+      "thunder"
+    ],
+    "immune": [
+      "poison"
+    ],
+    "spells": [
+      "sleep"
+    ],
+    "ai": "basic"
+  },
+  "ghost": {
+    "name": "幽灵",
+    "sprite": "ghost",
+    "hp": 34,
+    "mp": 18,
+    "atk": 12,
+    "def": 4,
+    "acc": 28,
+    "eva": 30,
+    "spd": 9,
+    "mdef": 12,
+    "int": 9,
+    "crit": 4,
+    "exp": 40,
+    "gold": 26,
+    "weak": [
+      "fire"
+    ],
+    "resist": [
+      "ice",
+      "dark"
+    ],
+    "immune": [
+      "poison",
+      "sleep"
+    ],
+    "spells": [
+      "dark"
+    ],
+    "ai": "basic"
   }
 }

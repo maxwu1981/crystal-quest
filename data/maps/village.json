@@ -48,7 +48,7 @@
       "solid": true
     },
     "E": {
-      "tile": "cave_entrance"
+      "tile": "path"
     }
   },
   "rows": [
@@ -120,10 +120,10 @@
       "y": 0,
       "type": "warp",
       "to": {
-        "map": "cave_1",
-        "x": 1,
-        "y": 17,
-        "facing": "right"
+        "map": "overworld",
+        "x": 20,
+        "y": 28,
+        "facing": "up"
       }
     }
   ],

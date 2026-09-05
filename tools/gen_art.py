@@ -83,6 +83,7 @@ TILES = {  # 对应 src/assets/tiles.js 的名字
     'forest':        'dense dark green forest canopy',
     'sand':          'pale yellow sand',
     'town':          'a small village of red-roofed houses seen from far above, on grass',
+    'bridge':        'a wooden plank bridge crossing blue water, seen from above',
 }
 CHAR_SIZE = (16, 24)
 

@@ -23,6 +23,7 @@
   ],
   "maps": [
     "village",
+    "overworld",
     "house_elder",
     "inn",
     "shop",

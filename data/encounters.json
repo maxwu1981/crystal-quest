@@ -136,5 +136,67 @@
         "weight": 1
       }
     ]
+  },
+  "plains": {
+    "steps": [
+      14,
+      34
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "goblin",
+          "goblin"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "wolf"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "bee",
+          "bee"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bee",
+          "bee",
+          "bee"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "bee"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "wolf",
+          "wolf"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "ghost"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }
