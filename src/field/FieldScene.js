@@ -202,7 +202,8 @@ export class FieldScene {
     const leader = this.game.state.party[0];
     const frame = p.moving ? Math.floor(this.animT * 8) % 2 : 0;
     const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
-    drawables.push({ y: py, draw: () => ctx.drawImage(this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`], Math.round(px - camX), Math.round(py - camY)) });
+    const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
+    drawables.push({ y: py, draw: () => ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY) - (spr.height - TILE)) }); // 高精灵脚贴格子底
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
     if (this.nameT > 0 && map.name) {
       const w = 112; drawWindow(ctx, (W - w) / 2, 8, w, 26);

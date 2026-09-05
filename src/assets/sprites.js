@@ -59,12 +59,12 @@ function humanoid(p, dir, frame) {
   return c;
 }
 
-// 倒地：躺倒 + 变灰
-function downed(src) {
-  const c = canvas(16, 16), ctx = c.getContext('2d');
-  ctx.translate(8, 8); ctx.rotate(Math.PI / 2); ctx.drawImage(src, -8, -8);
+// 倒地：躺倒 + 变灰（任意尺寸：w×h 的图旋转后是 h×w）
+export function downed(src) {
+  const w = src.width, h = src.height, c = canvas(h, w), ctx = c.getContext('2d');
+  ctx.translate(h / 2, w / 2); ctx.rotate(Math.PI / 2); ctx.drawImage(src, -w / 2, -h / 2);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalCompositeOperation = 'source-atop'; ctx.fillStyle = 'rgba(90,90,110,0.65)'; ctx.fillRect(0, 0, 16, 16);
+  ctx.globalCompositeOperation = 'source-atop'; ctx.fillStyle = 'rgba(90,90,110,0.65)'; ctx.fillRect(0, 0, h, w);
   return c;
 }
 

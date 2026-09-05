@@ -6,12 +6,18 @@ import { computeStats } from '../game/party.js';
 
 export const PARTY_W = 176, ROW_H = 48;
 
+// 按整数倍放大画精灵，高度不超过 maxH，底部对齐在 y + maxH（16×16 占位图 ×2，16×24 正式图 ×2 或 ×1）
+export function drawSprite(ctx, img, x, y, maxH) {
+  const s = Math.max(1, Math.floor(maxH / img.height)), w = img.width * s, h = img.height * s;
+  ctx.drawImage(img, Math.round(x + (maxH - w) / 2), Math.round(y + maxH - h), w, h);
+}
+
 export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, cursor = -1 } = {}) {
   drawWindow(ctx, x, y, w, h);
   game.state.party.forEach((m, i) => {
     const s = computeStats(m, game.data), job = game.data.jobs[m.jobId];
     const ry = y + 12 + i * ROW_H, dead = m.hp <= 0;
-    ctx.drawImage(game.sprites[`${m.jobId}_down_0`], x + 14, ry + 2, 32, 32);
+    drawSprite(ctx, game.sprites[`${m.jobId}_down_0`], x + 8, ry - 4, 48);
     const col = dead ? '#8a8a9a' : '#fff';
     if (cursor === i) drawCursor(ctx, x + 5, ry + 12);
     drawText(ctx, `${m.name}  ${job.name}`, x + 52, ry, { color: col });

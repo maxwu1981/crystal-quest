@@ -272,8 +272,8 @@ export class BattleScene {
   // ---------- 渲染 ----------
   actorRect(a) {
     if (a.side === 'party') {
-      const i = this.party.indexOf(a);
-      return [PARTY_X - (this.current === a ? 6 : 0), PARTY_Y0 + i * PARTY_DY, 16, 16];
+      const i = this.party.indexOf(a), spr = this.game.sprites[`${a.jobId}_left_0`];
+      return [PARTY_X - (this.current === a ? 6 : 0), PARTY_Y0 + i * PARTY_DY + 16 - spr.height, spr.width, spr.height];
     }
     const i = this.enemies.indexOf(a), spr = this.game.sprites['enemy_' + a.sprite];
     const [cx, cy] = ENEMY_CENTERS[i] || ENEMY_CENTERS[0];

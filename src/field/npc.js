@@ -58,6 +58,6 @@ export class NPC {
     const [px, py] = this.renderPos();
     const frame = this.moving ? Math.floor(this.anim * 8) % 2 : 0;
     const spr = sprites[`${this.sprite}_${this.dir}_${frame}`] || sprites[`man_${this.dir}_0`];
-    ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY));
+    ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY) - (spr.height - TILE));
   }
 }

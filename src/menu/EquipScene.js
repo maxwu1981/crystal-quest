@@ -4,7 +4,7 @@ import { drawWindow } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
-import { drawPartyPanel, stepCursor, PARTY_W } from './common.js';
+import { drawPartyPanel, drawSprite, stepCursor, PARTY_W } from './common.js';
 
 const SLOTS = [['weapon', '武器'], ['armor', '防具']];
 
@@ -58,7 +58,7 @@ export class EquipScene {
     }
     const m = this.member, job = this.game.data.jobs[m.jobId], { cur, next } = this.previewStats();
     drawWindow(ctx, 0, 0, 256, 56);
-    ctx.drawImage(this.game.sprites[`${m.jobId}_down_0`], 12, 12, 32, 32);
+    drawSprite(ctx, this.game.sprites[`${m.jobId}_down_0`], 8, 8, 40);
     drawText(ctx, `${m.name}  ${job.name}  Lv ${m.level}`, 52, 10);
     const stat = (label, a, b, x) => {
       const y = 10 + LINE_H + 4;

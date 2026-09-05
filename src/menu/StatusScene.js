@@ -3,6 +3,7 @@ import { drawWindow } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { expForLevel } from '../battle/formulas.js';
+import { drawSprite } from './common.js';
 
 export class StatusScene {
   constructor(game) { this.game = game; this.transparent = true; this.idx = 0; }
@@ -15,7 +16,7 @@ export class StatusScene {
   render(ctx) {
     const g = this.game, m = g.state.party[this.idx], s = computeStats(m, g.data), job = g.data.jobs[m.jobId], items = g.data.items;
     drawWindow(ctx, 0, 0, 256, 224);
-    ctx.drawImage(g.sprites[`${m.jobId}_down_0`], 16, 16, 48, 48);
+    drawSprite(ctx, g.sprites[`${m.jobId}_down_0`], 12, 12, 56);
     drawText(ctx, `${m.name}`, 76, 16); drawText(ctx, `${job.name}  Lv ${m.level}`, 76, 16 + LINE_H, { color: '#9aa4d8' });
     drawText(ctx, `HP ${m.hp}/${s.maxHp}   MP ${m.mp}/${s.maxMp}`, 76, 16 + LINE_H * 2);
     drawText(ctx, `经验 ${m.exp}   升级还需 ${Math.max(0, expForLevel(m.level + 1) - m.exp)}`, 76, 16 + LINE_H * 3, { color: '#9aa4d8' });

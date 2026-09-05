@@ -8,6 +8,7 @@ import { audio } from './audio.js';
 import { loadData } from '../data/loader.js';
 import { buildSprites } from '../assets/sprites.js';
 import { buildTiles } from '../assets/tiles.js';
+import { loadArt } from '../assets/art.js';
 import { newGameState } from '../game/state.js';
 import { FieldScene } from '../field/FieldScene.js';
 import { BattleScene } from '../battle/BattleScene.js';
@@ -41,6 +42,7 @@ export class Game {
     this.rngFx = new RNG(99); // 纯装饰用（NPC 闲逛等），不影响战斗/遇敌
     this.sprites = buildSprites();
     this.tiles = buildTiles(new RNG(12345));
+    this.artCount = await loadArt(this.sprites, this.tiles); // 有 assets/art/ 正式美术就覆盖占位图
     this.state = newGameState(this.data);
     this.scenes.push(new TitleScene(this));
     this.loopStats = startLoop({
