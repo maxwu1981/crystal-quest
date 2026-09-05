@@ -11,6 +11,8 @@ src/core/           引擎：Game / 固定步长循环 / 输入 / 场景栈 / �
 src/field/          地图行走场景（网格移动、步数制遇敌）
 src/battle/         战斗场景、纯函数公式、敌人 AI、角色构造
 src/ui/             FF 蓝色窗口、光标菜单
+src/menu/           主菜单 / 道具 / 装备 / 状态（透明场景，叠在地图上）
+src/title/          标题画面（新游戏 / 继续）
 src/game/           全局状态（可序列化）、队伍属性计算、升级
 src/assets/         代码生成的占位像素图与瓦片（以后换成 PNG 图集只改这里）
 src/data/loader.js  加载 data/*.json
@@ -43,16 +45,20 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - `enemies.json` `{ id: { name, sprite, hp, mp, atk, def, acc, eva, spd, mdef, int, crit, exp, gold, weak:[], resist:[], immune:[], spells:[], ai } }`
 - `encounters.json` `{ zoneId: { steps:[min,max], groups:[{ enemies:[ids], weight }] } }`
 - `maps/*.json` `{ name, encounterZone, spawn:{x,y}, legend:{ 字符: {tile, solid?, encounter?} }, rows:[字符串] }`
-- `party.json` `[{ name, jobId, level }]`
+- `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor', effect?:{hp|mp|revive|camp}, atk?, def?, acc?, price, jobs?:[], battle?, field?, desc? } }`
+- `party.json` `[{ name, jobId, level, equipment:{weapon, armor} }]`
+- `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`、`expSplit`
 
 ## 调试
 - URL 加 `?debug` 显示 FPS/坐标/遇敌倒计时
 - 地图上按 `B` 强制遇敌，按 `H` 全员回满
+- 自动试玩：控制台 `const t = await import('/tests/playtest.js'); await t.runAll()`（同步步进，不依赖真实按键）
 
 ## 路线图
 - [x] 0 骨架：循环 / 输入 / 场景栈 / RNG / 文字
 - [x] 1 垂直切片：地图行走 + 步数遇敌 + 回合制战斗 + 胜利/失败/逃跑 + 经验升级
-- [ ] 2 菜单、道具、装备、存档（state 已可序列化）、旅馆
+- [x] 2a 标题画面、主菜单（X 键）、道具、装备、状态、存档/读档（localStorage）、战斗中道具
+- [ ] 2b 旅馆、商店、NPC 对话框、进屋（门→室内地图）
 - [ ] 3 职业转职、更多魔法、状态异常、ATB 模式打磨（调度器已预留 `battleMode:'atb'`）
 - [ ] 4 NPC 对话、剧情标志位、多地图传送（门已是可走瓦片）
 - [ ] 5 世界地图、迷宫、Boss

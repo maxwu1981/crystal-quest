@@ -5,7 +5,7 @@ export const SAVE_KEY = 'crystal-quest-save';
 
 export function newGameState(data) {
   const party = data.party.map(p => {
-    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, equipment: { weapon: null, armor: null } };
+    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, equipment: { weapon: p.equipment?.weapon || null, armor: p.equipment?.armor || null } };
     const s = computeStats(m, data);
     m.hp = s.maxHp; m.mp = s.maxMp;
     return m;
@@ -15,7 +15,7 @@ export function newGameState(data) {
   return {
     party,
     gold: data.config.startGold || 0,
-    inventory: [],
+    inventory: (data.config.startInventory || []).map(i => ({ id: i.id, qty: i.qty })),
     map: { id: mapId, x: map.spawn.x, y: map.spawn.y, facing: 'down' },
     flags: {},
     steps: 0,

@@ -2,6 +2,7 @@
 import { TILE } from '../assets/tiles.js';
 import { drawText } from '../core/text.js';
 import { healFull } from '../game/party.js';
+import { MenuScene } from '../menu/MenuScene.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -51,6 +52,7 @@ export class FieldScene {
       if (input.justPressed('debugBattle')) { this.triggerEncounter(); return; }
       if (input.justPressed('debugHeal')) for (const m of this.game.state.party) healFull(m, this.game.data);
     }
+    if (!p.moving && input.justPressed('cancel')) { this.game.scenes.push(new MenuScene(this.game)); return; }
     if (p.moving) {
       p.t += dt / STEP_TIME;
       if (p.t >= 1) {

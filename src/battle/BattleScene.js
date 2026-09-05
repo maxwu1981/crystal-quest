@@ -7,6 +7,7 @@ import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
 import * as F from './formulas.js';
 import { grantExp } from '../game/party.js';
+import { countItem, removeItem, applyItem, canUseOn, describeUse } from '../game/items.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const PANEL_Y = 152, PANEL_H = 72, LEFT_W = 112;
@@ -84,7 +85,7 @@ export class BattleScene {
   }
   openMain() {
     this.sub = 'main'; this.target = null;
-    const items = this.current.commands.map(c => ({ label: CMD[c] || c, value: c, disabled: (c === 'flee' && !this.canFlee) || c === 'item' }));
+    const items = this.current.commands.map(c => ({ label: CMD[c] || c, value: c, disabled: (c === 'flee' && !this.canFlee) || (c === 'item' && !this.battleItems().length) }));
     this.menu = new Menu({ items, x: 0, y: PANEL_Y, w: LEFT_W, h: PANEL_H, onSelect: it => this.onCommand(it.value), onCancel: () => this.onCancelMain() });
   }
   onCancelMain() {
@@ -96,6 +97,7 @@ export class BattleScene {
     else if (cmd === 'defend') this.commit({ type: 'defend' });
     else if (cmd === 'flee') this.commit({ type: 'flee' });
     else if (cmd === 'magic') this.openMagic();
+    else if (cmd === 'item') this.openItems();
   }
   openMagic() {
     const a = this.current, sp = this.game.data.spells;
@@ -108,10 +110,23 @@ export class BattleScene {
       onCancel: () => this.openMain(),
     });
   }
-  openTarget(side, cb, back) {
-    const list = this.alive(side === 'enemy' ? this.enemies : this.party);
-    this.sub = 'target'; this.target = { list, idx: 0, cb, back };
+  battleItems() { return this.game.state.inventory.filter(s => this.game.data.items[s.id]?.battle); }
+  openItems() {
+    const data = this.game.data;
+    const items = this.battleItems().map(s => ({ label: data.items[s.id].name, value: s.id, right: `×${s.qty}` }));
+    this.sub = 'item'; this.target = null;
+    this.menu = new Menu({
+      items, x: 0, y: PANEL_Y, w: LEFT_W, h: PANEL_H,
+      onSelect: it => {
+        const revive = !!data.items[it.value].effect?.revive;
+        const list = this.party.filter(p => revive ? !p.alive : p.alive);
+        if (list.length) this.openTargetList(list, t => this.commit({ type: 'item', itemId: it.value, target: t }), () => this.openItems());
+      },
+      onCancel: () => this.openMain(),
+    });
   }
+  openTarget(side, cb, back) { this.openTargetList(this.alive(side === 'enemy' ? this.enemies : this.party), cb, back); }
+  openTargetList(list, cb, back) { this.sub = 'target'; this.target = { list, idx: 0, cb, back }; }
   updateInput(input) {
     if (this.sub === 'target') {
       const t = this.target, n = t.list.length;
@@ -169,6 +184,18 @@ export class BattleScene {
       if (this.canFlee && this.rng.chance(F.fleeChance(avg, mx))) { this.msg = '成功逃走了！'; this.escaped = true; }
       else this.msg = '没能逃掉！';
       yield 0.8; return;
+    }
+    if (a.type === 'item') {
+      const it = this.game.data.items[a.itemId], t = a.target;
+      if (!countItem(this.game.state.inventory, a.itemId)) { this.msg = `${it.name} 已经用完了`; yield 0.6; return; }
+      this.msg = `${actor.name} 使用了 ${it.name}！`; actor.lunge = 0.3; yield 0.4;
+      if (!canUseOn(it, t)) { this.msg += '\n没有效果'; yield 0.6; return; }
+      removeItem(this.game.state.inventory, a.itemId);
+      const out = applyItem(it, t);
+      if (out?.hp) this.popup(t, String(out.hp), '#7cfc7c');
+      if (out?.mp) this.popup(t, String(out.mp), '#7cc4ff');
+      this.msg += '\n' + describeUse(it, t.name, out); yield 0.8;
+      return;
     }
     const t = this.retarget(a.target);
     if (!t) return;

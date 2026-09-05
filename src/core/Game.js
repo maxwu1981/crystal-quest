@@ -10,6 +10,7 @@ import { buildTiles } from '../assets/tiles.js';
 import { newGameState } from '../game/state.js';
 import { FieldScene } from '../field/FieldScene.js';
 import { BattleScene } from '../battle/BattleScene.js';
+import { TitleScene } from '../title/TitleScene.js';
 
 export class Game {
   constructor(canvas) {
@@ -37,7 +38,7 @@ export class Game {
     this.sprites = buildSprites();
     this.tiles = buildTiles(new RNG(12345));
     this.state = newGameState(this.data);
-    this.scenes.push(new FieldScene(this));
+    this.scenes.push(new TitleScene(this));
     this.loopStats = startLoop({
       update: dt => this.update(dt),
       render: (alpha, stats) => this.render(alpha, stats),
@@ -62,10 +63,15 @@ export class Game {
   startBattle(enemyIds, opts = {}) {
     this.fadeTo(() => this.scenes.push(new BattleScene(this, enemyIds, opts)), { color: '#fff', speed: 5 });
   }
-  gameOver() {
-    this.state = newGameState(this.data);
+  newGame() { this.loadState(newGameState(this.data)); }
+  loadState(state) {
+    this.state = state;
     this.scenes.clear();
     this.scenes.push(new FieldScene(this));
+  }
+  gameOver() {
+    this.scenes.clear();
+    this.scenes.push(new TitleScene(this));
   }
 
   update(dt) {

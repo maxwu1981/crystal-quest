@@ -1,5 +1,5 @@
 // 一次性加载 data/ 下所有 JSON。'maps/village' 会挂到 data.maps.village。
-const FILES = ['config', 'jobs', 'spells', 'enemies', 'encounters', 'party', 'maps/village'];
+const FILES = ['config', 'jobs', 'spells', 'enemies', 'encounters', 'items', 'party', 'maps/village'];
 
 export async function loadData(base = './data/') {
   const out = {};

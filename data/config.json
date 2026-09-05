@@ -6,5 +6,19 @@
   "battleMode": "turn",
   "atbRate": 6,
   "expSplit": false,
-  "seed": 0
+  "seed": 0,
+  "startInventory": [
+    {
+      "id": "potion",
+      "qty": 3
+    },
+    {
+      "id": "phoenix",
+      "qty": 1
+    },
+    {
+      "id": "tent",
+      "qty": 1
+    }
+  ]
 }
