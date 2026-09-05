@@ -48,7 +48,9 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - `maps/*.json` `{ name, encounterZone|null, spawn:{x,y}, legend:{ 字符: {tile, solid?, encounter?, counter?} }, rows:[字符串],
   events:[{x,y,type:'warp',to:{map,x,y,facing}}], npcs:[{id,name,sprite,x,y,dir,wander?,radius?,script?,dialogue:[变体]}] }`
   对话变体 `{ if?:flag, unless?:flag, set?:[flags], give?:{gold, items:[{id,qty}]}, lines:[每页一条] }`，取第一个条件成立的；每页 ≤ 3 行
-  脚本 `{type:'inn', price, wake:[], poor:[]}` / `{type:'shop', items:[ids]}`
+  脚本 `{type:'inn', price, wake:[], poor:[]}` / `{type:'shop', items:[ids]}` / `{type:'boss', enemies:[ids], winFlag, after:[]}`（NPC 用 `unless: winFlag` 打完消失）
+  事件还有 `{type:'chest', id, gold|item, qty}`（开过记 `flags['chest:'+id]`）、`{type:'crystal', needFlag}`（触发结局）
+- `story.json` 水晶三段文本 + 结局字幕（`# ` 开头为大标题，`·` 开头为灰色小字）
 - `config.json` `maps:[加载的地图 id 列表]`
 - `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor', effect?:{hp|mp|revive|camp}, atk?, def?, acc?, price, jobs?:[], battle?, field?, desc? } }`
 - `party.json` `[{ name, jobId, level, equipment:{weapon, armor} }]`
@@ -74,6 +76,6 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - [x] 2b 对话框（打字机/翻页/选项）、NPC（闲逛、隔柜台说话、按标志位选台词）、门传送、旅馆、商店、剧情前提
 - [ ] 3 职业转职、更多魔法、状态异常、ATB 模式打磨（调度器已预留 `battleMode:'atb'`）
 - [ ] 4 NPC 对话、剧情标志位、多地图传送（门已是可走瓦片）
-- [ ] 5 世界地图、迷宫、Boss
+- [x] 5 回音洞窟三层（宝箱/楼梯/Boss 剧情战/水晶/结局滚动字幕）；世界地图与飞空艇未做
 - [x] 6a 音效/BGM（Web Audio 合成，src/core/audio.js）、战斗特效（src/battle/effects.js）、遇敌马赛克转场、像素字体（assets/fonts，OFL）
 - [ ] 6b 正式美术、数值平衡、打包发布

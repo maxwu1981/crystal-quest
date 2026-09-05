@@ -1,13 +1,140 @@
 {
   "village_field": {
-    "steps": [12, 32],
+    "steps": [
+      12,
+      32
+    ],
     "groups": [
-      { "enemies": ["goblin"], "weight": 3 },
-      { "enemies": ["goblin", "goblin"], "weight": 3 },
-      { "enemies": ["slime", "slime"], "weight": 2 },
-      { "enemies": ["wolf"], "weight": 2 },
-      { "enemies": ["slime", "goblin", "slime"], "weight": 1 },
-      { "enemies": ["wolf", "goblin"], "weight": 1 }
+      {
+        "enemies": [
+          "goblin"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "goblin",
+          "goblin"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "slime",
+          "slime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "wolf"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "slime",
+          "goblin",
+          "slime"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "wolf",
+          "goblin"
+        ],
+        "weight": 1
+      }
+    ]
+  },
+  "cave": {
+    "steps": [
+      10,
+      26
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "bat",
+          "bat"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "darkslime"
+        ],
+        "weight": 1
+      }
+    ]
+  },
+  "cave_deep": {
+    "steps": [
+      10,
+      24
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "darkslime",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime",
+          "darkslime"
+        ],
+        "weight": 1
+      }
     ]
   }
 }

@@ -1,17 +1,161 @@
 {
   "goblin": {
-    "name": "哥布林", "sprite": "goblin",
-    "hp": 18, "mp": 0, "atk": 7, "def": 2, "acc": 20, "eva": 6, "spd": 5, "mdef": 4, "crit": 3,
-    "exp": 12, "gold": 8, "weak": [], "resist": [], "immune": [], "spells": [], "ai": "basic"
+    "name": "哥布林",
+    "sprite": "goblin",
+    "hp": 18,
+    "mp": 0,
+    "atk": 7,
+    "def": 2,
+    "acc": 20,
+    "eva": 6,
+    "spd": 5,
+    "mdef": 4,
+    "crit": 3,
+    "exp": 12,
+    "gold": 8,
+    "weak": [],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
   },
   "wolf": {
-    "name": "野狼", "sprite": "wolf",
-    "hp": 30, "mp": 0, "atk": 10, "def": 3, "acc": 28, "eva": 14, "spd": 10, "mdef": 4, "crit": 6,
-    "exp": 22, "gold": 12, "weak": ["fire"], "resist": [], "immune": [], "spells": [], "ai": "basic"
+    "name": "野狼",
+    "sprite": "wolf",
+    "hp": 30,
+    "mp": 0,
+    "atk": 10,
+    "def": 3,
+    "acc": 28,
+    "eva": 14,
+    "spd": 10,
+    "mdef": 4,
+    "crit": 6,
+    "exp": 22,
+    "gold": 12,
+    "weak": [
+      "fire"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
   },
   "slime": {
-    "name": "史莱姆", "sprite": "slime",
-    "hp": 24, "mp": 0, "atk": 5, "def": 7, "acc": 14, "eva": 2, "spd": 3, "mdef": 10, "crit": 0,
-    "exp": 10, "gold": 6, "weak": ["thunder"], "resist": ["fire"], "immune": [], "spells": [], "ai": "basic"
+    "name": "史莱姆",
+    "sprite": "slime",
+    "hp": 24,
+    "mp": 0,
+    "atk": 5,
+    "def": 7,
+    "acc": 14,
+    "eva": 2,
+    "spd": 3,
+    "mdef": 10,
+    "crit": 0,
+    "exp": 10,
+    "gold": 6,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [
+      "fire"
+    ],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "bat": {
+    "name": "洞窟蝙蝠",
+    "sprite": "bat",
+    "hp": 26,
+    "mp": 0,
+    "atk": 12,
+    "def": 3,
+    "acc": 30,
+    "eva": 22,
+    "spd": 14,
+    "mdef": 4,
+    "crit": 5,
+    "exp": 25,
+    "gold": 14,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "darkslime": {
+    "name": "黑史莱姆",
+    "sprite": "darkslime",
+    "hp": 40,
+    "mp": 0,
+    "atk": 11,
+    "def": 10,
+    "acc": 16,
+    "eva": 2,
+    "spd": 4,
+    "mdef": 16,
+    "crit": 0,
+    "exp": 35,
+    "gold": 20,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [
+      "fire"
+    ],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "skeleton": {
+    "name": "骷髅兵",
+    "sprite": "skeleton",
+    "hp": 55,
+    "mp": 0,
+    "atk": 16,
+    "def": 8,
+    "acc": 34,
+    "eva": 6,
+    "spd": 6,
+    "mdef": 6,
+    "crit": 6,
+    "exp": 45,
+    "gold": 30,
+    "weak": [
+      "fire"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "knight": {
+    "name": "黑甲骑士 维恩",
+    "sprite": "knight",
+    "hp": 260,
+    "mp": 40,
+    "atk": 22,
+    "def": 10,
+    "acc": 50,
+    "eva": 8,
+    "spd": 9,
+    "mdef": 10,
+    "int": 10,
+    "crit": 8,
+    "exp": 300,
+    "gold": 400,
+    "weak": [],
+    "resist": [
+      "dark"
+    ],
+    "immune": [],
+    "spells": [
+      "dark"
+    ],
+    "ai": "basic"
   }
 }

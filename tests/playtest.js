@@ -121,6 +121,39 @@ export async function playShop(g) {
   return { potionsBefore: potions, afterBuy, afterSell, top: g.scenes.top.constructor.name };
 }
 
+// 宝箱：开一次拿东西，再开是空的
+export function playChest(g) {
+  const drv = makeDriver(g); toField(g);
+  const f = g.scenes.top; f.loadMap('cave_1', 5, 6, 'up'); drv.tick(3);
+  const before = g.state.inventory.find(s => s.id === 'potion')?.qty || 0;
+  f.interact(); const first = g.scenes.top.text; skipDialogue(g, drv);
+  f.interact(); const second = g.scenes.top.text; skipDialogue(g, drv);
+  return { first, second, potions: (g.state.inventory.find(s => s.id === 'potion')?.qty || 0) - before, flag: !!g.state.flags['chest:c1_potion'] };
+}
+// Boss 战 + 水晶 + 结局
+export function playBoss(g) {
+  const drv = makeDriver(g); toField(g);
+  const f = g.scenes.top; f.loadMap('cave_3', 11, 6, 'up'); drv.tick(3);
+  const bossVisible = f.npcs.some(n => n.def.id === 'boss');
+  f.interact(); skipDialogue(g, drv); drv.tick(150);
+  const bs = g.scenes.top; const inBattle = bs.constructor.name === 'BattleScene';
+  const canFlee = bs.canFlee, bgm = bs.bgm;
+  for (const p of bs.party) { p.hp = p.maxHp = 999; p.atk = 500; p.acc = 200; }
+  let n = 0;
+  while (g.scenes.top === bs && n++ < 5000) {
+    if (bs.phase === 'input') drv.key('confirm');
+    else if (bs.phase === 'acting' && bs.wait === 'confirm') drv.key('confirm');
+    else drv.tick(1);
+  }
+  drv.tick(80);
+  const afterDlg = g.scenes.top.constructor.name; skipDialogue(g, drv);
+  const bossGone = !f.npcs.some(n => n.def.id === 'boss'), flag = !!g.state.flags.bossDefeated;
+  walk(g, drv, 'up', 2); f.interact(); skipDialogue(g, drv); drv.tick(90);
+  const ending = g.scenes.top.constructor.name;
+  g.input.down.set('confirm', 0); drv.tick(2400); g.input.down.delete('confirm'); drv.tick(120);
+  return { bossVisible, inBattle, canFlee, bgm, afterDlg, bossGone, flag, ending, cleared: !!g.state.flags.gameCleared, finalTop: g.scenes.top.constructor.name };
+}
+
 export async function runAll(g = window.game) {
   const out = {};
   out.win = playBattle(g, ['goblin', 'goblin']);
@@ -133,6 +166,8 @@ export async function runAll(g = window.game) {
   out.village = playVillage(g);
   out.inn = playInn(g);
   out.shop = await playShop(g);
+  out.chest = playChest(g);
+  out.boss = playBoss(g);
   // 全灭：把队伍血量压到 1，对上两只狼
   for (const m of g.state.party) m.hp = 1;
   out.lose = playBattle(g, ['wolf', 'wolf']);

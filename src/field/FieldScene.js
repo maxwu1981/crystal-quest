@@ -10,6 +10,8 @@ import { ShopScene } from './ShopScene.js';
 import { NPC, pickVariant, applyVariant } from './npc.js';
 import { DIRS, lerp, clamp } from './grid.js';
 import { audio } from '../core/audio.js';
+import { addItem } from '../game/items.js';
+import { EndingScene } from '../title/EndingScene.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 
@@ -40,11 +42,25 @@ export class FieldScene {
     if (!md) throw new Error(`地图不存在: ${id}`);
     this.mapId = id; this.map = parseMap(md);
     this.p = { x, y, fromX: x, fromY: y, dir: facing || 'down', moving: false, t: 0 };
-    this.npcs = (md.npcs || []).map(d => new NPC(d, this));
+    this.npcDefs = md.npcs || []; this.refreshNpcs();
     Object.assign(this.game.state.map, { id, x, y, facing: this.p.dir });
     this.nameT = 2;
     if (!this.game.state.stepsUntilEncounter) this.resetEncounter();
   }
+
+  // NPC 可见条件：if / unless 标志位（Boss 被打败后消失等）
+  refreshNpcs() {
+    const flags = this.game.state.flags;
+    const visible = this.npcDefs.filter(d => (!d.if || flags[d.if]) && (!d.unless || !flags[d.unless]));
+    this.npcs = visible.map(d => this.npcs?.find(n => n.def === d) || new NPC(d, this));
+  }
+  resume() {
+    this.refreshNpcs();
+    const ab = this.afterBattle; this.afterBattle = null;
+    if (ab && this.game.state.flags[ab.flag]) this.game.scenes.push(new DialogueScene(this.game, { name: ab.name, pages: ab.pages }));
+  }
+  eventAt(x, y) { return this.map.events[`${x},${y}`]; }
+  chestOpened(ev) { return !!this.game.state.flags[`chest:${ev.id}`]; }
 
   get zone() { return this.game.data.encounters[this.map.encounterZone]; }
   resetEncounter() {
@@ -61,7 +77,9 @@ export class FieldScene {
     if (!this.passable(x, y)) return false;
     if (who !== 'player' && ((this.p.x === x && this.p.y === y) || (this.p.moving && this.p.fromX === x && this.p.fromY === y))) return false;
     for (const n of this.npcs) if (n !== who && n.occupies(x, y)) return false;
-    if (who instanceof NPC && this.map.events[`${x},${y}`]) return false;
+    const ev = this.eventAt(x, y);
+    if (ev?.type === 'chest') return false;
+    if (who instanceof NPC && ev) return false;
     return true;
   }
 
@@ -117,7 +135,7 @@ export class FieldScene {
     let x = this.p.x + dx, y = this.p.y + dy;
     if (this.cell(x, y)?.counter) { x += dx; y += dy; } // 隔着柜台说话
     const npc = this.npcs.find(n => n.occupies(x, y));
-    if (!npc) return;
+    if (!npc) { const ev = this.eventAt(x, y); if (ev?.type === 'chest') this.openChest(ev); else if (ev?.type === 'crystal') this.touchCrystal(ev); return; }
     npc.stop(); npc.faceToward(this.p.x, this.p.y);
     this.talk(npc);
   }
@@ -127,7 +145,29 @@ export class FieldScene {
     const script = def.script;
     if (!script) g.scenes.push(new DialogueScene(g, { name: def.name, pages }));
     else if (script.type === 'inn') this.runInn(def, pages, script);
+    else if (script.type === 'boss') {
+      g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => {
+        this.afterBattle = script.after ? { name: def.name, pages: script.after, flag: script.winFlag } : null;
+        g.startBattle(script.enemies, { canFlee: false, winFlag: script.winFlag, bgm: 'boss' });
+      } }));
+    }
     else if (script.type === 'shop') g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => g.scenes.push(new ShopScene(g, script, def.name)) }));
+  }
+  openChest(ev) {
+    const g = this.game, st = g.state;
+    if (this.chestOpened(ev)) { g.scenes.push(new DialogueScene(g, { pages: ['宝箱是空的。'] })); return; }
+    st.flags[`chest:${ev.id}`] = true; audio.sfx('coin');
+    let text;
+    if (ev.gold) { st.gold += ev.gold; text = `获得了 ${ev.gold} 金币！`; }
+    else { addItem(st.inventory, ev.item, ev.qty || 1); const it = g.data.items[ev.item]; text = `获得了 ${it.name}${ev.qty > 1 ? ' ×' + ev.qty : ''}！`; }
+    g.scenes.push(new DialogueScene(g, { pages: [text] }));
+  }
+  touchCrystal(ev) {
+    const g = this.game, st = g.state, story = g.data.story?.crystal || {};
+    if (ev.needFlag && !st.flags[ev.needFlag]) { g.scenes.push(new DialogueScene(g, { pages: story.locked || ['……'] })); return; }
+    if (st.flags.gameCleared) { g.scenes.push(new DialogueScene(g, { pages: story.again || ['水晶静静地发着光。'] })); return; }
+    st.flags.gameCleared = true; audio.sfx('levelup');
+    g.scenes.push(new DialogueScene(g, { pages: story.take || ['取回了风之水晶！'], onDone: () => g.fadeTo(() => { g.scenes.clear(); g.scenes.push(new EndingScene(g)); }, { speed: 1 }) }));
   }
   runInn(def, pages, script) {
     const g = this.game, price = script.price ?? 30;
@@ -153,6 +193,10 @@ export class FieldScene {
     const x1 = Math.min(map.w - 1, Math.ceil((camX + W) / TILE)), y1 = Math.min(map.h - 1, Math.ceil((camY + H) / TILE));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       ctx.drawImage(this.game.tiles[map.cells[y * map.w + x].tile], x * TILE - camX, y * TILE - camY);
+    }
+    for (const ev of Object.values(map.events)) {
+      if (ev.type !== 'chest') continue;
+      ctx.drawImage(this.game.tiles[this.chestOpened(ev) ? 'chest_open' : 'chest'], ev.x * TILE - camX, ev.y * TILE - camY);
     }
     // 角色按 y 排序绘制
     const leader = this.game.state.party[0];

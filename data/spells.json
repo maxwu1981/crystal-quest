@@ -1,5 +1,34 @@
 {
-  "fire":    { "name": "火焰", "mp": 4, "power": 8, "element": "fire",    "target": "enemy", "scope": "single" },
-  "thunder": { "name": "闪电", "mp": 5, "power": 9, "element": "thunder", "target": "enemy", "scope": "single" },
-  "cure":    { "name": "治愈", "mp": 4, "power": 14, "target": "ally", "heal": true, "scope": "single" }
+  "fire": {
+    "name": "火焰",
+    "mp": 4,
+    "power": 8,
+    "element": "fire",
+    "target": "enemy",
+    "scope": "single"
+  },
+  "thunder": {
+    "name": "闪电",
+    "mp": 5,
+    "power": 9,
+    "element": "thunder",
+    "target": "enemy",
+    "scope": "single"
+  },
+  "cure": {
+    "name": "治愈",
+    "mp": 4,
+    "power": 14,
+    "target": "ally",
+    "heal": true,
+    "scope": "single"
+  },
+  "dark": {
+    "name": "暗影",
+    "mp": 6,
+    "power": 14,
+    "element": "dark",
+    "target": "enemy",
+    "scope": "single"
+  }
 }

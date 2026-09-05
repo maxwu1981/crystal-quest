@@ -23,6 +23,10 @@ const SONGS = {
     { type: 'square', vol: 0.09, notes: seq('A4 A4 C5 A4 D5 C5 A4 G4  A4 A4 C5 A4 E5 D5 C5 A4  F4 F4 A4 F4 G4 G4 B4 G4  A4 - E5 - A4 C5 A4 -') },
     { type: 'triangle', vol: 0.17, notes: seq('A2 A2 A3 A2 A2 A2 A3 A2  A2 A2 A3 A2 A2 A2 A3 A2  F2 F2 F3 F2 G2 G2 G3 G2  A2 A2 A3 A2 E2 E2 E3 E2') },
   ] },
+  boss: { bpm: 140, channels: [
+    { type: 'square', vol: 0.09, notes: seq('D4 D4 F4 D4 G#4 G4 F4 D4  D4 D4 F4 D4 A4 G#4 G4 F4  A#3 A#3 D4 A#3 C4 C4 E4 C4  D4 - A4 - G#4 G4 F4 -') },
+    { type: 'sawtooth', vol: 0.07, notes: seq('D2 D2 D3 D2 D2 D2 D3 D2  D2 D2 D3 D2 D2 D2 D3 D2  A#1 A#1 A#2 A#1 C2 C2 C3 C2  D2 D2 D3 D2 A1 A1 A2 A1') },
+  ] },
 };
 
 const SFX = {

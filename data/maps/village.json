@@ -46,15 +46,18 @@
     "B": {
       "tile": "bed",
       "solid": true
+    },
+    "E": {
+      "tile": "cave_entrance"
     }
   },
   "rows": [
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-    "TggggggggggggggggggggggggggggggT",
-    "TgggTgggggggggggggTgggggggggTggT",
-    "TggggggggggTgggggggggggggggggggT",
-    "TggggggggggggggggggggggTgggggggT",
-    "TggTgggggggggggggggggggggggggggT",
+    "TTTTTTTTTTTTTTTETTTTTTTTTTTTTTTT",
+    "TggggggggggggggppggggggggggggggT",
+    "TgggTggggggggggppgTgggggggggTggT",
+    "TggggggggggTgggppggggggggggggggT",
+    "TggggggggggggggppggggggTgggggggT",
+    "TggTgggggggggggppggggggggggggggT",
     "TggggggggggggggppgggggggggTggggT",
     "TgggggTggggggggppggggggggggggggT",
     "TgggggggggggggTppgggggTggggggggT",
@@ -111,6 +114,17 @@
         "y": 7,
         "facing": "up"
       }
+    },
+    {
+      "x": 15,
+      "y": 0,
+      "type": "warp",
+      "to": {
+        "map": "cave_1",
+        "x": 1,
+        "y": 17,
+        "facing": "right"
+      }
     }
   ],
   "npcs": [
@@ -122,6 +136,13 @@
       "y": 10,
       "dir": "right",
       "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "光回来了！你们真的做到了。",
+            "北边的洞窟里怪物少多了，不过别大意。"
+          ]
+        },
         {
           "if": "questStarted",
           "lines": [
@@ -146,6 +167,12 @@
       "dir": "down",
       "wander": true,
       "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "昨晚的星星好亮……谢谢你们。"
+          ]
+        },
         {
           "if": "questStarted",
           "lines": [

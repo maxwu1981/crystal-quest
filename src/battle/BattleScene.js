@@ -18,7 +18,7 @@ const ELEMENT_FX = { fire: 'fire', thunder: 'thunder' };
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
     this.game = game;
-    this.transparent = false; this.bgm = 'battle';
+    this.transparent = false; this.bgm = opts.bgm || 'battle'; this.opts = opts;
     this.mode = game.data.config.battleMode || 'turn';
     this.party = makePartyActors(game.state, game.data);
     this.enemies = makeEnemyActors(enemyIds, game.data);
@@ -265,6 +265,7 @@ export class BattleScene {
   syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; }
   finish() {
     for (const a of this.party) this.syncMember(a);
+    if (this.won && this.opts.winFlag) this.game.state.flags[this.opts.winFlag] = true;
     this.game.fadeTo(() => this.game.scenes.pop());
   }
 

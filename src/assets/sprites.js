@@ -21,6 +21,7 @@ const NPC_PALETTES = {
   merchant:  { h: '#6d4c41', c: '#26a69a', d: '#00695c', hat: true, s: '#f1c27d', e: '#1b1b2f' },
   innkeeper: { h: '#8d6e63', c: '#fafafa', d: '#c62828' },
   guard:     { h: '#455a64', c: '#90a4ae', d: '#546e7a' },
+  knight:    { h: '#263238', c: '#212121', d: '#000000', s: '#1b1b2f', e: '#e53935', b: '#000000' },
 };
 const BASE = { o: '#1b1b2f', s: '#f1c27d', e: '#1b1b2f', b: '#4a2e1a' };
 
