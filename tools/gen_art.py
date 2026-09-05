@@ -30,6 +30,9 @@ VIEWS = {
     'up': 'seen directly from behind (back view, we see the back of the head and back of the clothes)',
     'left': 'side view in profile, facing to the LEFT of the image',
 }
+# 每个方向再出一张「迈步」帧，和站立帧交替播放就是走路动画
+WALK = ('mid-stride walking pose: one leg clearly lifted and stepping forward, the other leg back, '
+        'arms swinging in opposite directions, body slightly bobbed down')
 
 # ---------- 资产清单：id → 描述。要加新角色/怪物/瓦片只改这里 ----------
 CHARACTERS = {  # 玩家职业（对应 data/jobs.json）与 NPC（对应地图 npcs[].sprite）
@@ -121,6 +124,8 @@ def assets():
         for view, vdesc in VIEWS.items():
             yield {'kind': 'char', 'id': cid, 'view': view, 'file': f'char_{cid}_{view}.png', 'size': CHAR_SIZE,
                    'prompt': f'{STYLE} A single chibi RPG character sprite, about 2 heads tall, full body, standing still, arms at the sides, {vdesc}, {MAGENTA} {desc}'}
+            yield {'kind': 'char', 'id': cid, 'view': view + '_walk', 'file': f'char_{cid}_{view}_walk.png', 'size': CHAR_SIZE,
+                   'prompt': f'{STYLE} A single chibi RPG character sprite, about 2 heads tall, full body, {WALK}, {vdesc}, {MAGENTA} {desc}'}
     for eid, (desc, size) in ENEMIES.items():
         yield {'kind': 'enemy', 'id': eid, 'file': f'enemy_{eid}.png', 'size': (size * ART, size * ART),
                'prompt': f'{STYLE} A single monster sprite for a turn-based RPG battle screen, full body, facing slightly to the right toward the player, {MAGENTA} {desc}'}

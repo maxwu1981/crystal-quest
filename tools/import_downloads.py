@@ -32,10 +32,12 @@ def target_of(name):
     base = os.path.splitext(name)[0]
     if base.startswith('char_'):
         rest = base[5:]
+        walk = rest.endswith('_walk')
+        if walk: rest = rest[:-5]
         for v in VIEWS:
             if rest.endswith('_' + v):
                 cid = rest[:-len(v) - 1]
-                if cid in CHARACTERS: return 'char', cid, v, CHAR_SIZE
+                if cid in CHARACTERS: return 'char', cid, v + ('_walk' if walk else ''), CHAR_SIZE
     elif base.startswith('enemy_'):
         eid = base[6:]
         if eid in ENEMIES: return 'enemy', eid, None, (ENEMIES[eid][1] * ART,) * 2
