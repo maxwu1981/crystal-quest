@@ -3,14 +3,17 @@
   "hipotion":   { "name": "高级药水", "type": "consumable", "effect": { "hp": 100 }, "price": 150, "desc": "恢复 100 HP",       "battle": true,  "field": true },
   "ether":      { "name": "以太",     "type": "consumable", "effect": { "mp": 15 },  "price": 120, "desc": "恢复 15 MP",        "battle": true,  "field": true },
   "phoenix":    { "name": "凤凰尾巴", "type": "consumable", "effect": { "revive": 0.5 }, "price": 200, "desc": "复活并恢复一半 HP", "battle": true, "field": true },
+  "antidote":   { "name": "解毒药",   "type": "consumable", "effect": { "cure": ["poison"] }, "price": 20, "desc": "治疗中毒",      "battle": true,  "field": true },
+  "eyedrop":    { "name": "眼药水",   "type": "consumable", "effect": { "cure": ["blind"] },  "price": 20, "desc": "治疗黑暗",      "battle": true,  "field": true },
   "tent":       { "name": "帐篷",     "type": "consumable", "effect": { "camp": true }, "price": 100, "desc": "全员完全恢复（只能在地图上用）", "battle": false, "field": true },
 
-  "dagger":     { "name": "匕首", "type": "weapon", "atk": 4,  "acc": 5, "price": 60,  "jobs": ["warrior", "thief", "whitemage", "blackmage"] },
-  "shortsword": { "name": "短剑", "type": "weapon", "atk": 7,  "price": 120, "jobs": ["warrior", "thief"] },
-  "ironsword":  { "name": "铁剑", "type": "weapon", "atk": 12, "price": 400, "jobs": ["warrior"] },
-  "staff":      { "name": "木杖", "type": "weapon", "atk": 3,  "price": 50,  "jobs": ["whitemage", "blackmage"] },
+  "dagger":     { "name": "匕首", "type": "weapon", "atk": 4,  "acc": 5, "price": 60,  "jobs": ["warrior", "thief", "whitemage", "blackmage", "redmage"] },
+  "shortsword": { "name": "短剑", "type": "weapon", "atk": 7,  "price": 120, "jobs": ["warrior", "thief", "redmage"] },
+  "ironsword":  { "name": "铁剑", "type": "weapon", "atk": 12, "price": 400, "jobs": ["warrior", "redmage"] },
+  "staff":      { "name": "木杖", "type": "weapon", "atk": 3,  "price": 50,  "jobs": ["whitemage", "blackmage", "redmage"] },
+  "knuckle":    { "name": "拳套", "type": "weapon", "atk": 2,  "acc": 10, "price": 80, "jobs": ["monk"], "desc": "武僧空手更强，拳套只加命中" },
 
-  "robe":       { "name": "布袍", "type": "armor", "def": 2, "price": 60,  "jobs": ["thief", "whitemage", "blackmage"] },
-  "leather":    { "name": "皮甲", "type": "armor", "def": 4, "price": 150, "jobs": ["warrior", "thief"] },
+  "robe":       { "name": "布袍", "type": "armor", "def": 2, "price": 60,  "jobs": ["thief", "whitemage", "blackmage", "redmage", "monk"] },
+  "leather":    { "name": "皮甲", "type": "armor", "def": 4, "price": 150, "jobs": ["warrior", "thief", "redmage"] },
   "ironarmor":  { "name": "铁甲", "type": "armor", "def": 9, "price": 600, "jobs": ["warrior"] }
 }

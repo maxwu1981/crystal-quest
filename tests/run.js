@@ -4,11 +4,15 @@ import { RNG } from '../src/core/RNG.js';
 import { computeStats, grantExp } from '../src/game/party.js';
 import { loadData } from '../src/data/loader.js';
 import { parseMap } from '../src/field/FieldScene.js';
-import { addItem, removeItem, countItem, applyItem, equip, canEquip } from '../src/game/items.js';
+import { addItem, removeItem, countItem, applyItem, equip, canEquip, canUseOn, campParty } from '../src/game/items.js';
 import { newGameState } from '../src/game/state.js';
 import { wrapText } from '../src/core/text.js';
 import { pickVariant, applyVariant } from '../src/field/npc.js';
 import { buyItem, sellItem } from '../src/game/shop.js';
+import { spellsFor, changeJob, healFull } from '../src/game/party.js';
+import { STATUS, cureStatus, persistentOnly } from '../src/game/status.js';
+import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
+import { execute, inflict } from '../src/battle/actions.js';
 
 const results = [];
 const assert = (c, m = 'assert') => { if (!c) throw new Error(m); };
@@ -62,7 +66,7 @@ test('升级：等级+1，maxHp 增加，HP 同步增加', () => {
 test('职业引用的魔法与指令都存在', () => {
   const cmds = new Set(['attack', 'magic', 'defend', 'item', 'flee']);
   for (const [id, j] of Object.entries(data.jobs)) {
-    for (const s of j.spells) assert(data.spells[s], `${id} 引用了不存在的魔法 ${s}`);
+    for (const s of j.spells) { const sid = typeof s === 'string' ? s : s.id; assert(data.spells[sid], `${id} 引用了不存在的魔法 ${sid}`); if (typeof s !== 'string') assert(s.level >= 1, `${id}/${sid} level`); }
     for (const c of j.commands) assert(cmds.has(c), `${id} 未知指令 ${c}`);
     if (j.spells.length) assert(j.commands.includes('magic'), `${id} 有魔法但没有 magic 指令`);
   }
@@ -208,6 +212,95 @@ test('地图联通：从村子经楼梯能到最深处', () => {
   const seen = new Set(['village']), q = ['village'];
   while (q.length) { const id = q.pop(); for (const ev of data.maps[id].events || []) if (ev.type === 'warp' && !seen.has(ev.to.map)) { seen.add(ev.to.map); q.push(ev.to.map); } }
   assert(seen.has('cave_3'), '到不了 cave_3'); assert(seen.size === Object.keys(data.maps).length, '有地图没连上');
+});
+
+
+// ---------- 阶段 3：状态异常 / 魔法 / 职业 ----------
+test('effectiveStats：黑暗命中减半、防护防御 ×1.5、睡眠回避 0', () => {
+  const a = { acc: 40, def: 10, eva: 20, status: {} };
+  assert(F.effectiveStats(a).acc === 40 && F.effectiveStats(a).def === 10);
+  assert(F.effectiveStats({ ...a, status: { blind: true } }).acc === 20);
+  assert(F.effectiveStats({ ...a, status: { protect: 3 } }).def === 15);
+  assert(F.effectiveStats({ ...a, status: { sleep: 2 } }).eva === 0);
+  assert(F.statusChance({ immune: ['poison'] }, 'poison') === 0 && F.statusChance({ immune: [] }, 'poison') === 0.75);
+  assert(F.poisonDamage(10) === 1 && F.poisonDamage(120) === 10);
+  assert(F.physicalAttack({ atk: 5, acc: 0, crit: 0, hits: 2 }, { def: 0, eva: -200 }, new RNG(1)).hits === 2, '武僧双击');
+});
+test('解毒药：只对中毒者有效，治好后返回状态名；帐篷清空状态', () => {
+  const t = { hp: 10, mp: 0, maxHp: 20, maxMp: 0, alive: true, status: { poison: true } };
+  assert(canUseOn(data.items.antidote, t)); const o = applyItem(data.items.antidote, t);
+  assert(o.cured[0] === '中毒' && !t.status.poison); assert(applyItem(data.items.antidote, t) === null);
+  assert(persistentOnly({ poison: true, sleep: 2, protect: 3 }).poison && !persistentOnly({ sleep: 2 }).sleep);
+  const party = [{ jobId: 'warrior', level: 1, hp: 1, mp: 0, status: { poison: true }, equipment: {} }];
+  campParty(party, data); assert(Object.keys(party[0].status).length === 0 && party[0].hp > 1);
+});
+test('spellsFor：按等级学魔法；升级时 learned 列出新魔法', () => {
+  assert(spellsFor(data.jobs.whitemage, 1).join() === 'cure'); assert(spellsFor(data.jobs.whitemage, 3).includes('protect') && !spellsFor(data.jobs.whitemage, 3).includes('esuna'));
+  const m = { jobId: 'blackmage', level: 1, exp: 0, hp: 5, mp: 5, equipment: {} };
+  const g = grantExp(m, F.expForLevel(2), data); assert(g[0].learned.join() === 'ice', `学会 ${g[0].learned}`);
+});
+test('changeJob：换职业卸下不能装的装备并放回背包，HP 截断', () => {
+  const m = { jobId: 'warrior', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'ironsword', armor: 'ironarmor' }, status: {} }, inv = [];
+  const removed = changeJob(m, 'blackmage', inv, data);
+  assert(removed.length === 2 && inv.length === 2 && m.equipment.weapon === null, '卸装备'); assert(m.hp === computeStats(m, data).maxHp, 'HP 截断');
+  assert(changeJob(m, 'nope', inv, data) === null);
+  const monk = { jobId: 'monk', level: 4, equipment: {} }; assert(computeStats(monk, data).atk > computeStats({ ...monk, equipment: { weapon: 'knuckle' } }, data).atk - 3, '武僧空手攻击');
+});
+test('魔法 / 道具 / 敌人数据字段合法', () => {
+  for (const [id, sp] of Object.entries(data.spells)) {
+    assert(['enemy', 'ally'].includes(sp.target) && ['single', 'all'].includes(sp.scope), `${id} target/scope`);
+    assert(typeof sp.mp === 'number' && typeof sp.power === 'number' && sp.name, `${id} 字段`);
+    if (sp.status) assert(STATUS[sp.status], `${id} 未知状态 ${sp.status}`);
+    for (const c of sp.cure || []) assert(STATUS[c], `${id} 治疗未知状态 ${c}`);
+  }
+  for (const [id, it] of Object.entries(data.items)) for (const c of it.effect?.cure || []) assert(STATUS[c], `${id} 治疗未知状态 ${c}`);
+  for (const [id, e] of Object.entries(data.enemies)) {
+    if (e.onHit) assert(STATUS[e.onHit.status] && e.onHit.chance > 0 && e.onHit.chance <= 1, `${id}.onHit`);
+    for (const s of e.spells || []) assert(data.spells[s], `${id} 魔法 ${s}`);
+    for (const s of e.immune || []) assert(STATUS[s] || ['fire', 'thunder', 'ice', 'poison', 'dark'].includes(s), `${id} immune ${s}`);
+  }
+});
+
+// 用假场景跑行动协程（不需要画面），检验状态逻辑
+function fakeBattle(partyJobs, enemyIds, seed = 5) {
+  const st = newGameState(data); st.party = st.party.filter(m => partyJobs.includes(m.jobId)); st.party.forEach(m => { m.level = 12; healFull(m, data); });
+  const scene = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: true,
+    fx: { add() {} }, popup() {}, center() { return [0, 0]; },
+    party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
+    alive(l) { return l.filter(a => a.alive); },
+    retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },
+    damage(t, dmg, { physical = false } = {}) { t.hp = Math.max(0, t.hp - dmg); if (physical && t.status.sleep) delete t.status.sleep; if (t.hp <= 0) { t.alive = false; t.status = {}; } },
+    run(a) { const co = execute(this, a); let n = 0; while (!co.next().done && n++ < 100); return this.msg; } };
+  return scene;
+}
+test('行动协程：催眠 → 睡着跳过 → 物理攻击打醒；毒每回合掉血；净化解毒；防护减伤', () => {
+  const s = fakeBattle(['blackmage', 'whitemage'], ['goblin']);
+  const [bm, wm] = s.party, gob = s.enemies[0];
+  let tries = 0; while (!gob.status.sleep && tries++ < 10) s.run({ actor: bm, type: 'magic', spellId: 'sleep', target: gob });
+  assert(gob.status.sleep, '催眠应能生效'); assert(s.msg.includes('睡眠'), s.msg);
+  s.run({ actor: gob, type: 'attack', target: bm }); assert(s.msg.includes('沉睡'), '睡着的敌人不能行动: ' + s.msg);
+  const hp = gob.hp; s.run({ actor: wm, type: 'attack', target: gob }); if (gob.hp < hp) assert(!gob.status.sleep, '被打应醒来');
+  bm.status.poison = true; const before = bm.hp; s.run({ actor: bm, type: 'defend' }); assert(bm.hp === before - F.poisonDamage(bm.maxHp), '毒伤害');
+  s.run({ actor: wm, type: 'magic', spellId: 'esuna', target: bm }); assert(!bm.status.poison && s.msg.includes('治好'), '净化');
+  s.run({ actor: wm, type: 'magic', spellId: 'protect', target: wm }); assert(wm.status.protect >= 4, '防护');
+  assert(F.effectiveStats(wm).def > wm.def);
+  const dead = { ...wm, alive: false, hp: 0 }; s.party.push(dead); s.run({ actor: wm, type: 'magic', spellId: 'raise', target: dead }); assert(dead.alive && dead.hp > 0, '复活');
+});
+test('行动协程：全体魔法打到每个敌人；MP 不足不施放；毒雾附加中毒；免疫无效', () => {
+  const s = fakeBattle(['blackmage'], ['slime', 'slime', 'skeleton']);
+  const bm = s.party[0], hp0 = s.enemies.map(e => e.hp);
+  s.run({ actor: bm, type: 'magic', spellId: 'fira', target: 'all' });
+  assert(s.enemies.every((e, i) => e.hp < hp0[i]), '烈焰应打到全体');
+  let n = 0; while (!s.enemies[0].status.poison && n++ < 10 && bm.mp >= 8) s.run({ actor: bm, type: 'magic', spellId: 'poison', target: 'all' });
+  assert(s.enemies[0].status.poison || !s.enemies[0].alive, '毒雾应能下毒'); assert(!s.enemies[2].status.poison, '骷髅免疫毒');
+  bm.mp = 0; s.run({ actor: bm, type: 'magic', spellId: 'fire', target: s.enemies[0] }); assert(s.msg.includes('MP 不足'));
+  const t = { immune: ['sleep'], status: {} }; assert(inflict(s, t, 'sleep') === false);
+});
+test('敌人附带状态攻击（黑史莱姆下毒）与战斗结束只保留持续状态', () => {
+  const s = fakeBattle(['warrior'], ['darkslime']); const w = s.party[0]; w.def = 0; w.eva = -200;
+  let n = 0; while (!w.status.poison && n++ < 40) { s.run({ actor: s.enemies[0], type: 'attack', target: w }); if (!w.alive) { w.alive = true; w.hp = w.maxHp; } }
+  assert(w.status.poison, '40 次攻击应至少下毒一次');
+  w.status.blind = true; const kept = persistentOnly(w.status); assert(kept.poison && !kept.blind);
 });
 
 const out = document.getElementById('out');

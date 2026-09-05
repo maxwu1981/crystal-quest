@@ -1,34 +1,16 @@
 {
-  "fire": {
-    "name": "火焰",
-    "mp": 4,
-    "power": 8,
-    "element": "fire",
-    "target": "enemy",
-    "scope": "single"
-  },
-  "thunder": {
-    "name": "闪电",
-    "mp": 5,
-    "power": 9,
-    "element": "thunder",
-    "target": "enemy",
-    "scope": "single"
-  },
-  "cure": {
-    "name": "治愈",
-    "mp": 4,
-    "power": 14,
-    "target": "ally",
-    "heal": true,
-    "scope": "single"
-  },
-  "dark": {
-    "name": "暗影",
-    "mp": 6,
-    "power": 14,
-    "element": "dark",
-    "target": "enemy",
-    "scope": "single"
-  }
+  "fire":     { "name": "火焰",   "mp": 4,  "power": 8,  "element": "fire",    "target": "enemy", "scope": "single", "desc": "火属性伤害" },
+  "thunder":  { "name": "闪电",   "mp": 5,  "power": 9,  "element": "thunder", "target": "enemy", "scope": "single", "desc": "雷属性伤害" },
+  "ice":      { "name": "冰冻",   "mp": 5,  "power": 9,  "element": "ice",     "target": "enemy", "scope": "single", "desc": "冰属性伤害" },
+  "sleep":    { "name": "催眠",   "mp": 6,  "power": 0,  "status": "sleep",    "target": "enemy", "scope": "single", "desc": "让一个敌人睡着" },
+  "poison":   { "name": "毒雾",   "mp": 8,  "power": 5,  "element": "poison",  "status": "poison", "target": "enemy", "scope": "all", "desc": "全体小伤害并中毒" },
+  "fira":     { "name": "烈焰",   "mp": 12, "power": 16, "element": "fire",    "target": "enemy", "scope": "all", "desc": "全体火属性伤害" },
+  "thundara": { "name": "雷鸣",   "mp": 14, "power": 18, "element": "thunder", "target": "enemy", "scope": "all", "desc": "全体雷属性伤害" },
+  "cure":     { "name": "治愈",   "mp": 4,  "power": 14, "target": "ally", "heal": true, "scope": "single", "desc": "恢复一人 HP" },
+  "protect":  { "name": "防护",   "mp": 5,  "power": 0,  "status": "protect",  "target": "ally", "scope": "single", "desc": "一人防御提高" },
+  "esuna":    { "name": "净化",   "mp": 6,  "power": 0,  "cure": ["poison", "blind", "sleep"], "target": "ally", "scope": "single", "desc": "治疗状态异常" },
+  "cura":     { "name": "大治愈", "mp": 10, "power": 36, "target": "ally", "heal": true, "scope": "single", "desc": "大幅恢复一人 HP" },
+  "cureall":  { "name": "治愈之风", "mp": 14, "power": 18, "target": "ally", "heal": true, "scope": "all", "desc": "恢复全员 HP" },
+  "raise":    { "name": "复活",   "mp": 20, "power": 0,  "revive": 0.4,        "target": "ally", "scope": "single", "desc": "让倒下的同伴复活" },
+  "dark":     { "name": "暗影",   "mp": 6,  "power": 14, "element": "dark",    "target": "enemy", "scope": "single", "desc": "暗属性伤害" }
 }

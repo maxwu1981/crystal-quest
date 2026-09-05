@@ -85,7 +85,11 @@
     "resist": [],
     "immune": [],
     "spells": [],
-    "ai": "basic"
+    "ai": "basic",
+    "onHit": {
+      "status": "blind",
+      "chance": 0.25
+    }
   },
   "darkslime": {
     "name": "黑史莱姆",
@@ -109,7 +113,11 @@
     ],
     "immune": [],
     "spells": [],
-    "ai": "basic"
+    "ai": "basic",
+    "onHit": {
+      "status": "poison",
+      "chance": 0.3
+    }
   },
   "skeleton": {
     "name": "骷髅兵",
@@ -129,7 +137,10 @@
       "fire"
     ],
     "resist": [],
-    "immune": [],
+    "immune": [
+      "poison",
+      "sleep"
+    ],
     "spells": [],
     "ai": "basic"
   },
@@ -137,7 +148,7 @@
     "name": "黑甲骑士 维恩",
     "sprite": "knight",
     "hp": 260,
-    "mp": 40,
+    "mp": 60,
     "atk": 22,
     "def": 10,
     "acc": 50,
@@ -152,9 +163,13 @@
     "resist": [
       "dark"
     ],
-    "immune": [],
+    "immune": [
+      "sleep",
+      "poison"
+    ],
     "spells": [
-      "dark"
+      "dark",
+      "sleep"
     ],
     "ai": "basic"
   }

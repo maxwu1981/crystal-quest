@@ -85,7 +85,7 @@ export class FieldScene {
 
   update(dt) {
     const input = this.game.input, p = this.p;
-    this.animT += dt; if (this.nameT > 0) this.nameT -= dt;
+    this.animT += dt; if (this.nameT > 0) this.nameT -= dt; if (this.poisonT > 0) this.poisonT -= dt;
     for (const n of this.npcs) n.update(dt);
     if (this.game.debug) {
       if (input.justPressed('debugBattle')) { this.triggerEncounter(); return; }
@@ -118,6 +118,7 @@ export class FieldScene {
     const st = this.game.state, ev = this.map.events[`${this.p.x},${this.p.y}`];
     if (ev?.type === 'warp') { audio.sfx('door'); this.game.fadeTo(() => this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing)); return; }
     st.steps++;
+    for (const m of st.party) if (m.status?.poison && m.hp > 1) { m.hp--; this.poisonT = 0.15; } // 中毒：每步掉 1 HP，不会走死
     const c = this.cell(this.p.x, this.p.y);
     if (c?.encounter) { st.stepsUntilEncounter--; if (st.stepsUntilEncounter <= 0) this.triggerEncounter(); }
   }
@@ -205,6 +206,7 @@ export class FieldScene {
     const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
     drawables.push({ y: py, draw: () => ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY) - (spr.height - TILE)) }); // 高精灵脚贴格子底
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    if (this.poisonT > 0) { ctx.fillStyle = 'rgba(120,40,160,0.35)'; ctx.fillRect(0, 0, W, H); }
     if (this.nameT > 0 && map.name) {
       const w = 112; drawWindow(ctx, (W - w) / 2, 8, w, 26);
       drawText(ctx, map.name, W / 2, 15, { align: 'center' });

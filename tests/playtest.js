@@ -154,6 +154,30 @@ export function playBoss(g) {
   return { bossVisible, inBattle, canFlee, bgm, afterDlg, bossGone, flag, ending, cleared: !!g.state.flags.gameCleared, finalTop: g.scenes.top.constructor.name };
 }
 
+
+// 状态异常：中毒打完仗还在 → 走路掉血 → 菜单里用解毒药治好
+export function playStatus(g) {
+  const drv = makeDriver(g); toField(g);
+  g.state.inventory.unshift({ id: 'antidote', qty: 1 });
+  g.startBattle(['slime']); drv.tick(120);
+  const bs = g.scenes.top; if (bs.constructor.name !== 'BattleScene') throw new Error('战斗没有开始');
+  bs.party[0].status.poison = true; bs.party[0].atk = 300; bs.party[0].acc = 200; for (const p of bs.party.slice(1)) p.atk = 0; // 只有 1 号能杀，保证轮到他（触发毒伤害）
+  const log = []; let last = ''; let n = 0;
+  while (g.scenes.top === bs && n++ < 5000) {
+    if (bs.msg && bs.msg !== last) { log.push(bs.msg.replace(/\n/g, ' / ')); last = bs.msg; }
+    if (bs.phase === 'input') drv.key('confirm'); else if (bs.phase === 'acting' && bs.wait === 'confirm') drv.key('confirm'); else drv.tick(1);
+  }
+  drv.tick(60);
+  const poisonAfterBattle = !!g.state.party[0].status.poison, hpBeforeWalk = g.state.party[0].hp;
+  const f = g.scenes.top; f.loadMap('village', 15, 15, 'down'); drv.tick(3);
+  walk(g, drv, 'left', 3);
+  const hpAfterWalk = g.state.party[0].hp;
+  drv.key('cancel'); drv.key('confirm'); drv.key('confirm'); drv.key('confirm'); // 菜单 → 道具 → 解毒药 → 1 号
+  const cured = !g.state.party[0].status.poison, itemMsg = g.scenes.top.msg;
+  drv.key('cancel'); drv.key('cancel'); drv.tick(5);
+  return { poisonTick: log.some(l => l.includes('毒的侵蚀')), poisonAfterBattle, hpBeforeWalk, hpAfterWalk, cured, itemMsg, top: g.scenes.top.constructor.name };
+}
+
 export async function runAll(g = window.game) {
   const out = {};
   out.win = playBattle(g, ['goblin', 'goblin']);
@@ -168,6 +192,7 @@ export async function runAll(g = window.game) {
   out.shop = await playShop(g);
   out.chest = playChest(g);
   out.boss = playBoss(g);
+  out.status = playStatus(g);
   // 全灭：把队伍血量压到 1，对上两只狼
   for (const m of g.state.party) m.hp = 1;
   out.lose = playBattle(g, ['wolf', 'wolf']);

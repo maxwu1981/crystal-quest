@@ -10,6 +10,8 @@ const PALETTES = {
   thief:     { o: '#1b1b2f', s: '#f1c27d', h: '#f4a261', c: '#2a9d8f', d: '#1b6b62', b: '#4a2e1a', e: '#1b1b2f' },
   whitemage: { o: '#1b1b2f', s: '#f1c27d', h: '#f8f8f8', c: '#f8f8f8', d: '#d62828', b: '#8a5a3a', e: '#1b1b2f', hood: true },
   blackmage: { o: '#1b1b2f', s: '#1b1b2f', h: '#1d3557', c: '#1d3557', d: '#0f1e33', b: '#4a2e1a', e: '#ffd54f', hat: true },
+  monk:      { o: '#1b1b2f', s: '#f1c27d', h: '#5d4037', c: '#ef6c00', d: '#b53d00', b: '#f1c27d', e: '#1b1b2f' },
+  redmage:   { o: '#1b1b2f', s: '#f1c27d', h: '#e9c46a', c: '#c62828', d: '#f8f8f8', b: '#4a2e1a', e: '#1b1b2f', hat: true },
 };
 
 // 村民调色板（缺省项沿用 warrior 的轮廓/皮肤/眼睛）

@@ -3,6 +3,7 @@ import { drawWindow } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { drawCursor } from '../ui/Menu.js';
 import { computeStats } from '../game/party.js';
+import { statusTags } from '../game/status.js';
 
 export const PARTY_W = 176, ROW_H = 48;
 
@@ -22,6 +23,7 @@ export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, 
     if (cursor === i) drawCursor(ctx, x + 5, ry + 12);
     drawText(ctx, `${m.name}  ${job.name}`, x + 52, ry, { color: col });
     drawText(ctx, `Lv ${m.level}`, x + 52, ry + LINE_H, { color: col });
+    statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, x + 92 + k * 28, ry + LINE_H, { color: t.color }));
     drawText(ctx, dead ? '战斗不能' : `HP ${m.hp}/${s.maxHp}  MP ${m.mp}/${s.maxMp}`, x + 52, ry + LINE_H * 2,
       { color: !dead && m.hp <= s.maxHp / 4 ? '#ff8a80' : col });
   });

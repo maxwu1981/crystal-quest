@@ -5,7 +5,7 @@ export const SAVE_KEY = 'crystal-quest-save';
 
 export function newGameState(data) {
   const party = data.party.map(p => {
-    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, equipment: { weapon: p.equipment?.weapon || null, armor: p.equipment?.armor || null } };
+    const m = { name: p.name, jobId: p.jobId, level: p.level || 1, exp: 0, hp: 0, mp: 0, status: {}, equipment: { weapon: p.equipment?.weapon || null, armor: p.equipment?.armor || null } };
     const s = computeStats(m, data);
     m.hp = s.maxHp; m.mp = s.maxMp;
     return m;
@@ -21,8 +21,16 @@ export function newGameState(data) {
     steps: 0,
     stepsUntilEncounter: 0,
     playTime: 0,
+    settings: {},
   };
 }
 
 export function saveGame(state) { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
-export function loadGame() { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; }
+// 读档时补齐新版本加的字段，旧存档也能用
+export function loadGame() {
+  const s = localStorage.getItem(SAVE_KEY); if (!s) return null;
+  const st = JSON.parse(s);
+  for (const m of st.party) m.status ||= {};
+  st.settings ||= {};
+  return st;
+}

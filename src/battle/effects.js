@@ -47,6 +47,32 @@ const FX = {
       }
     } };
   },
+  ice: (x, y, rng) => {
+    const ps = Array.from({ length: 8 }, () => ({ dx: rng.int(-12, 12), dy: rng.int(-12, 12), d: rng.next() * 0.3 }));
+    return { t: 0, dur: 0.55, render(ctx, p) {
+      for (const q of ps) {
+        const lp = (p - q.d) / 0.7; if (lp <= 0 || lp >= 1) continue;
+        ctx.globalAlpha = 1 - lp; ctx.fillStyle = lp < 0.5 ? '#e1f5fe' : '#4fc3f7';
+        const cx = Math.round(x + q.dx), cy = Math.round(y + q.dy - 6 * lp);
+        ctx.fillRect(cx, cy - 3, 1, 7); ctx.fillRect(cx - 3, cy, 7, 1);
+      }
+    } };
+  },
+  poison: (x, y, rng) => {
+    const ps = Array.from({ length: 10 }, () => ({ dx: rng.int(-10, 10), d: rng.next() * 0.4, s: rng.int(2, 3) }));
+    return { t: 0, dur: 0.7, render(ctx, p) {
+      for (const q of ps) {
+        const lp = (p - q.d) / 0.6; if (lp <= 0 || lp >= 1) continue;
+        ctx.globalAlpha = 0.9 - lp * 0.9; ctx.fillStyle = lp < 0.5 ? '#ce93d8' : '#7b1fa2';
+        ctx.fillRect(Math.round(x + q.dx), Math.round(y + 8 - 20 * lp), q.s, q.s);
+      }
+    } };
+  },
+  dark: (x, y) => ({ t: 0, dur: 0.45, render(ctx, p) {
+    ctx.globalAlpha = 0.8 * (1 - p); ctx.fillStyle = '#4a148c'; const r = 6 + p * 14;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x, y, r * 0.6, 0, Math.PI * 2); ctx.fill();
+  } }),
   spark: (x, y) => ({ t: 0, dur: 0.4, render(ctx, p) {
     ctx.globalAlpha = 1 - p; ctx.fillStyle = '#fff'; const r = 4 + p * 10;
     for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r), 2, 2); }

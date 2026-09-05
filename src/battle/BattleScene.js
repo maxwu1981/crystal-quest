@@ -1,25 +1,25 @@
-// 战斗场景：FF1/3 式回合制指令战斗。
-// 调度器同时支持 'turn'（回合制）和 'atb'（FF5 式时间槽），由 data/config.json 的 battleMode 切换。
+// 战斗场景：FF1/3 式回合制指令战斗（流程与 UI）。行动执行见 actions.js。
+// 调度器同时支持 'turn'（回合制）和 'atb'（FF5 式时间槽），由 config.json 的 battleMode 或 state.settings.battleMode 切换。
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { Menu, drawCursor } from '../ui/Menu.js';
 import { audio } from '../core/audio.js';
 import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
-import * as F from './formulas.js';
+import { execute } from './actions.js';
 import { Effects } from './effects.js';
 import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
 import { grantExp } from '../game/party.js';
-import { countItem, removeItem, applyItem, canUseOn, describeUse } from '../game/items.js';
+import { canUseOn } from '../game/items.js';
+import { persistentOnly } from '../game/status.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
-const ELEMENT_FX = { fire: 'fire', thunder: 'thunder' };
 
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
     this.game = game;
     this.transparent = false; this.bgm = opts.bgm || 'battle'; this.opts = opts;
-    this.mode = game.data.config.battleMode || 'turn';
+    this.mode = game.state.settings?.battleMode || game.data.config.battleMode || 'turn';
     this.party = makePartyActors(game.state, game.data);
     this.enemies = makeEnemyActors(enemyIds, game.data);
     this.canFlee = opts.canFlee !== false;
@@ -51,17 +51,21 @@ export class BattleScene {
     }
   }
 
+  enemyDecision(e) {
+    if (e.status.sleep) return { actor: e, type: 'sleep' };
+    const d = decideEnemyAction(e, this.enemies, this.party, this.game.data, this.rng);
+    return d ? { actor: e, ...d } : null;
+  }
   updateIdle(dt) {
     if (this.actionQueue.length) { this.beginAction(this.actionQueue.shift()); return; }
     if (this.mode === 'turn') {
-      if (!this.inputQueue.length && !this.pending.length) this.inputQueue = this.alive(this.party); // 新回合
+      if (!this.inputQueue.length && !this.pending.length) { // 新回合：睡着的人自动跳过
+        for (const p of this.alive(this.party)) { if (p.status.sleep) this.pending.push({ actor: p, type: 'sleep' }); else this.inputQueue.push(p); }
+      }
       if (this.inputQueue.length) { this.beginInput(this.inputQueue.shift()); return; }
       // 全员下令完毕 → 敌人决策 → 按速度排序
       const acts = this.pending; this.pending = [];
-      for (const e of this.alive(this.enemies)) {
-        const d = decideEnemyAction(e, this.enemies, this.party, this.game.data, this.rng);
-        if (d) acts.push({ actor: e, ...d });
-      }
+      for (const e of this.alive(this.enemies)) { const d = this.enemyDecision(e); if (d) acts.push(d); }
       for (const a of acts) a.prio = (a.type === 'flee' ? 1000 : 0) + (a.type === 'defend' ? 500 : 0) + a.actor.spd + this.rng.int(0, 4);
       acts.sort((a, b) => b.prio - a.prio);
       this.actionQueue = acts;
@@ -72,8 +76,9 @@ export class BattleScene {
         a.atb = Math.min(100, a.atb + a.spd * rate * dt);
         if (a.atb < 100) continue;
         a.queued = true;
-        if (a.side === 'party') this.inputQueue.push(a);
-        else { const d = decideEnemyAction(a, this.enemies, this.party, this.game.data, this.rng); if (d) this.actionQueue.push({ actor: a, ...d }); }
+        if (a.status.sleep) this.actionQueue.push({ actor: a, type: 'sleep' });
+        else if (a.side === 'party') this.inputQueue.push(a);
+        else { const d = this.enemyDecision(a); if (d) this.actionQueue.push(d); }
       }
       if (this.inputQueue.length) this.beginInput(this.inputQueue.shift());
     }
@@ -91,8 +96,11 @@ export class BattleScene {
     this.menu = this.menuAt(items, it => this.onCommand(it.value), () => this.onCancelMain());
   }
   onCancelMain() {
-    // 回合制：取消 = 回到上一个角色重新下令（FF 传统）
-    if (this.mode === 'turn' && this.pending.length) { const prev = this.pending.pop(); this.inputQueue.unshift(this.current); this.beginInput(prev.actor); }
+    // 回合制：取消 = 回到上一个（没睡着的）角色重新下令（FF 传统）
+    if (this.mode !== 'turn') return;
+    const i = this.pending.map(p => p.type !== 'sleep').lastIndexOf(true);
+    if (i < 0) return;
+    const prev = this.pending.splice(i, 1)[0]; this.inputQueue.unshift(this.current); this.beginInput(prev.actor);
   }
   onCommand(cmd) {
     if (cmd === 'attack') this.openTarget('enemy', t => this.commit({ type: 'attack', target: t }), () => this.openMain());
@@ -107,8 +115,10 @@ export class BattleScene {
     if (!items.length) items.push({ label: '（没有魔法）', disabled: true });
     this.sub = 'magic'; this.target = null;
     this.menu = this.menuAt(items, it => {
-      const s = sp[it.value];
-      this.openTarget(s.target === 'ally' ? 'party' : 'enemy', t => this.commit({ type: 'magic', spellId: it.value, target: t }), () => this.openMagic());
+      const s = sp[it.value], act = t => this.commit({ type: 'magic', spellId: it.value, target: t });
+      if (s.scope === 'all') act('all');
+      else if (s.revive) { const dead = this.party.filter(p => !p.alive); if (dead.length) this.openTargetList(dead, act, () => this.openMagic()); else audio.sfx('buzz'); }
+      else this.openTarget(s.target === 'ally' ? 'party' : 'enemy', act, () => this.openMagic());
     }, () => this.openMain());
   }
   battleItems() { return this.game.state.inventory.filter(s => this.game.data.items[s.id]?.battle); }
@@ -117,9 +127,9 @@ export class BattleScene {
     const items = this.battleItems().map(s => ({ label: data.items[s.id].name, value: s.id, right: `×${s.qty}` }));
     this.sub = 'item'; this.target = null;
     this.menu = this.menuAt(items, it => {
-      const revive = !!data.items[it.value].effect?.revive;
-      const list = this.party.filter(p => revive ? !p.alive : p.alive);
+      const item = data.items[it.value], list = this.party.filter(p => canUseOn(item, p));
       if (list.length) this.openTargetList(list, t => this.commit({ type: 'item', itemId: it.value, target: t }), () => this.openItems());
+      else audio.sfx('buzz');
     }, () => this.openMain());
   }
   openTarget(side, cb, back) { this.openTargetList(this.alive(side === 'enemy' ? this.enemies : this.party), cb, back); }
@@ -155,7 +165,7 @@ export class BattleScene {
     if (r.done) { const f = this.coDone; this.co = this.coDone = null; f?.(); }
     else this.wait = r.value ?? 0;
   }
-  beginAction(action) { this.startCo(this.execute(action), () => this.afterAction(action)); }
+  beginAction(action) { this.startCo(execute(this, action), () => this.afterAction(action)); }
   afterAction(action) {
     action.actor.atb = 0; action.actor.queued = false;
     if (this.escaped) { this.finish(); return; }
@@ -170,74 +180,12 @@ export class BattleScene {
   }
   center(a) { const [x, y, w, h] = this.actorRect(a); return [x + w / 2, y + h / 2]; }
 
-  *execute(a) {
-    const actor = a.actor;
-    if (!actor.alive) return;
-    actor.defending = false;
-    if (a.type === 'defend') { actor.defending = true; this.msg = `${actor.name} 摆出防御姿态`; audio.sfx('cursor'); yield 0.6; return; }
-    if (a.type === 'flee') {
-      this.msg = `${actor.name} 试图逃跑…`; yield 0.6;
-      const ps = this.alive(this.party), es = this.alive(this.enemies);
-      const avg = ps.reduce((s, p) => s + p.spd, 0) / ps.length, mx = Math.max(...es.map(e => e.spd));
-      if (this.canFlee && this.rng.chance(F.fleeChance(avg, mx))) { this.msg = '成功逃走了！'; this.escaped = true; audio.sfx('flee'); }
-      else { this.msg = '没能逃掉！'; audio.sfx('buzz'); }
-      yield 0.8; return;
-    }
-    if (a.type === 'item') {
-      const it = this.game.data.items[a.itemId], t = a.target;
-      if (!countItem(this.game.state.inventory, a.itemId)) { this.msg = `${it.name} 已经用完了`; yield 0.6; return; }
-      this.msg = `${actor.name} 使用了 ${it.name}！`; actor.lunge = 0.3; yield 0.4;
-      if (!canUseOn(it, t)) { this.msg += '\n没有效果'; audio.sfx('buzz'); yield 0.6; return; }
-      removeItem(this.game.state.inventory, a.itemId);
-      const out = applyItem(it, t);
-      this.fx.add(out?.revived ? 'heal' : 'spark', ...this.center(t)); audio.sfx(out?.revived ? 'heal' : 'item');
-      if (out?.hp) this.popup(t, String(out.hp), '#7cfc7c');
-      if (out?.mp) this.popup(t, String(out.mp), '#7cc4ff');
-      this.msg += '\n' + describeUse(it, t.name, out); yield 0.8;
-      return;
-    }
-    const t = this.retarget(a.target);
-    if (!t) return;
-    if (a.type === 'attack') {
-      this.msg = `${actor.name} 的攻击！`; actor.lunge = 0.3; yield 0.3;
-      const r = F.physicalAttack(actor, t, this.rng);
-      if (r.miss) { this.popup(t, 'MISS', '#ddd'); audio.sfx('miss'); this.msg += '\n没有命中'; yield 0.7; return; }
-      this.fx.add('slash', ...this.center(t)); audio.sfx(r.crit ? 'crit' : 'hit');
-      this.damage(t, r.damage);
-      this.msg += `\n${r.hits} 次命中${r.crit ? '  会心一击！' : ''}\n${t.name} 受到 ${r.damage} 伤害`;
-      yield 0.8;
-      if (!t.alive) { this.msg += `\n${t.name} 倒下了`; yield 0.5; }
-      return;
-    }
-    if (a.type === 'magic') {
-      const sp = this.game.data.spells[a.spellId];
-      if (actor.mp < sp.mp) { this.msg = `${actor.name} 的 MP 不足！`; audio.sfx('buzz'); yield 0.6; return; }
-      actor.mp -= sp.mp;
-      this.msg = `${actor.name} 施放了 ${sp.name}！`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
-      if (sp.heal) {
-        this.fx.add('heal', ...this.center(t)); audio.sfx('heal');
-        const before = t.hp;
-        t.hp = Math.min(t.maxHp, t.hp + F.healAmount(sp.power, actor, this.rng));
-        this.popup(t, String(t.hp - before), '#7cfc7c');
-        this.msg += `\n${t.name} 恢复了 ${t.hp - before} HP`; yield 0.8;
-      } else {
-        const fxName = ELEMENT_FX[sp.element] || 'spark';
-        this.fx.add(fxName, ...this.center(t)); audio.sfx(ELEMENT_FX[sp.element] || 'hit');
-        yield 0.25;
-        const r = F.magicDamage(sp.power, actor, t, sp.element, this.rng);
-        this.damage(t, r.damage);
-        if (r.mult > 1) this.msg += '\n效果拔群！'; else if (r.mult === 0) this.msg += '\n完全无效…'; else if (r.mult < 1) this.msg += '\n效果不佳…';
-        this.msg += `\n${t.name} 受到 ${r.damage} 伤害`; yield 0.8;
-        if (!t.alive) { this.msg += `\n${t.name} 倒下了`; yield 0.5; }
-      }
-    }
-  }
-
-  damage(t, dmg) {
+  damage(t, dmg, { physical = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
     if (t.side === 'party') this.fx.shake(0.2);
     this.popup(t, String(dmg), t.side === 'party' ? '#ffb0b0' : '#fff');
-    if (t.hp <= 0) { t.alive = false; if (t.side === 'enemy') t.dying = 0.5; }
+    if (physical && t.status.sleep) { delete t.status.sleep; this.popup(t, '醒了', '#90caf9'); }
+    if (t.hp <= 0) { t.alive = false; t.status = {}; if (t.side === 'enemy') t.dying = 0.5; }
   }
   popup(t, text, color) {
     const [x, y, w] = this.actorRect(t);
@@ -248,7 +196,7 @@ export class BattleScene {
     this.bgm = null; this.won = true; audio.sfx('victory');
     this.msg = '胜利！'; yield 1.0;
     const exp = this.enemies.reduce((s, e) => s + e.exp, 0), gold = this.enemies.reduce((s, e) => s + e.gold, 0);
-    const alive = this.alive(this.party);
+    const alive = this.alive(this.party), spells = this.game.data.spells;
     const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;
     this.game.state.gold += gold;
     this.msg = `获得 ${share} 经验值\n获得 ${gold} 金币`; yield 'confirm';
@@ -256,13 +204,15 @@ export class BattleScene {
       this.syncMember(a);
       for (const g of grantExp(a.member, share, this.game.data)) {
         a.level = g.level; a.hp = a.member.hp; a.mp = a.member.mp; audio.sfx('levelup');
-        this.msg = `${a.name} 升到了 ${g.level} 级！\nHP 最大值 +${g.hpUp}  MP 最大值 +${g.mpUp}`; yield 'confirm';
+        this.msg = `${a.name} 升到了 ${g.level} 级！\nHP 最大值 +${g.hpUp}  MP 最大值 +${g.mpUp}`;
+        if (g.learned.length) this.msg += `\n学会了 ${g.learned.map(id => spells[id]?.name || id).join('、')}！`;
+        yield 'confirm';
       }
     }
   }
   *defeatCo() { this.bgm = null; audio.sfx('defeat'); this.msg = '全军覆没…'; yield 1.4; this.msg = '全军覆没…\n\n（按确认键重新开始）'; yield 'confirm'; }
 
-  syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; }
+  syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; a.member.status = persistentOnly(a.status); }
   finish() {
     for (const a of this.party) this.syncMember(a);
     if (this.won && this.opts.winFlag) this.game.state.flags[this.opts.winFlag] = true;

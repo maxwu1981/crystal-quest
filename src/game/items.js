@@ -1,5 +1,6 @@
 // 道具与背包：纯逻辑，地图菜单和战斗共用。背包格式 state.inventory = [{ id, qty }]。
 import { computeStats } from './party.js';
+import { cureStatus } from './status.js';
 
 export function countItem(inv, id) { return inv.find(s => s.id === id)?.qty || 0; }
 export function addItem(inv, id, qty = 1) {
@@ -14,23 +15,25 @@ export function removeItem(inv, id, qty = 1) {
   return true;
 }
 
-// 目标形如 { hp, mp, maxHp, maxMp, alive }
+// 目标形如 { hp, mp, maxHp, maxMp, alive, status }
 export function canUseOn(item, target) {
   const e = item.effect || {};
   if (e.revive) return !target.alive;
   if (e.camp) return true;
+  if (e.cure) return target.alive && e.cure.some(s => target.status?.[s]);
   return target.alive;
 }
 
-// 对单个目标施加效果，返回 { hp, mp, revived } 或 null（无效）
+// 对单个目标施加效果，返回 { hp, mp, revived, cured } 或 null（无效）
 export function applyItem(item, target) {
-  const e = item.effect || {}, out = { hp: 0, mp: 0, revived: false };
+  const e = item.effect || {}, out = { hp: 0, mp: 0, revived: false, cured: [] };
   if (e.revive) {
     if (target.alive) return null;
     target.alive = true; target.hp = Math.max(1, Math.floor(target.maxHp * e.revive));
     out.revived = true; out.hp = target.hp; return out;
   }
   if (!target.alive) return null;
+  if (e.cure) { out.cured = cureStatus(target, e.cure); if (!out.cured.length) return null; }
   if (e.hp) { const b = target.hp; target.hp = Math.min(target.maxHp, target.hp + e.hp); out.hp = target.hp - b; }
   if (e.mp) { const b = target.mp; target.mp = Math.min(target.maxMp, target.mp + e.mp); out.mp = target.mp - b; }
   return out;
@@ -40,6 +43,7 @@ export function describeUse(item, targetName, out) {
   if (!out) return `${item.name} 没有效果`;
   if (out.revived) return `${targetName} 复活了！`;
   const parts = [];
+  if (out.cured?.length) parts.push(`${out.cured.join('、')}治好了`);
   if (out.hp) parts.push(`恢复了 ${out.hp} HP`); if (out.mp) parts.push(`恢复了 ${out.mp} MP`);
   return `${targetName} ${parts.join('、') || '没有变化'}`;
 }
@@ -47,15 +51,16 @@ export function describeUse(item, targetName, out) {
 // 地图上对持久角色使用：把 member 包装成目标再写回
 export function useItemOnMember(item, member, data) {
   const s = computeStats(member, data);
-  const t = { hp: member.hp, mp: member.mp, maxHp: s.maxHp, maxMp: s.maxMp, alive: member.hp > 0 };
+  member.status ||= {};
+  const t = { hp: member.hp, mp: member.mp, maxHp: s.maxHp, maxMp: s.maxMp, alive: member.hp > 0, status: member.status };
   const out = applyItem(item, t);
   if (out) { member.hp = t.hp; member.mp = t.mp; }
   return out;
 }
 
-// 帐篷：全员完全恢复（含复活）
+// 帐篷 / 旅馆：全员完全恢复（含复活、解除所有状态）
 export function campParty(party, data) {
-  for (const m of party) { const s = computeStats(m, data); m.hp = s.maxHp; m.mp = s.maxMp; }
+  for (const m of party) { const s = computeStats(m, data); m.hp = s.maxHp; m.mp = s.maxMp; m.status = {}; }
 }
 
 export function canEquip(item, member) { return !item.jobs || item.jobs.includes(member.jobId); }

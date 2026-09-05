@@ -1,6 +1,7 @@
 // 战斗画面的静态部分：背景、敌人名单、队伍状态栏
 import { drawText, LINE_H } from '../core/text.js';
 import { drawWindow } from '../ui/Window.js';
+import { statusTags } from '../game/status.js';
 
 export const PANEL_Y = 152, PANEL_H = 72, LEFT_W = 112;
 export const ENEMY_CENTERS = [[48, 62], [100, 82], [48, 114], [100, 132]];
@@ -34,11 +35,13 @@ export function drawPartyStatus(ctx, scene) {
   const x0 = LEFT_W;
   scene.party.forEach((p, i) => {
     const y = PANEL_Y + 8 + i * LINE_H;
+    const tags = statusTags(p.status);
     const col = !p.alive ? '#8a8a9a' : scene.current === p ? '#ffe66d' : '#fff';
     drawText(ctx, p.name, x0 + 8, y, { color: col });
-    drawText(ctx, 'HP', x0 + 56, y, { color: '#9aa4d8' });
-    drawText(ctx, String(p.hp), x0 + 96, y, { align: 'right', color: p.alive && p.hp <= p.maxHp / 4 ? '#ff8a80' : col });
-    drawText(ctx, 'MP', x0 + 102, y, { color: '#9aa4d8' });
+    tags.slice(0, 2).forEach((t, k) => drawText(ctx, t.short, x0 + 42 + k * 8, y, { color: t.color })); // 状态标签：毒 眠 盲 护
+    drawText(ctx, 'HP', x0 + 60, y, { color: '#9aa4d8' });
+    drawText(ctx, String(p.hp), x0 + 98, y, { align: 'right', color: p.alive && p.hp <= p.maxHp / 4 ? '#ff8a80' : col });
+    drawText(ctx, 'MP', x0 + 104, y, { color: '#9aa4d8' });
     drawText(ctx, String(p.mp), x0 + 136, y, { align: 'right', color: col });
     if (scene.mode === 'atb') {
       ctx.fillStyle = '#2a2a4a'; ctx.fillRect(x0 + 8, y + 11, 40, 1);
