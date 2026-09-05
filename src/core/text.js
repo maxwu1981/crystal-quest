@@ -5,13 +5,15 @@ export let PIXEL = false;
 export const LINE_H = 13;
 
 export async function initFont() {
+  const fam = '"Fusion Pixel 12px"';
   try {
-    await document.fonts.load('12px "Fusion Pixel 12px"');
-    for (const f of document.fonts) {
-      if (f.family.replace(/"/g, '') === 'Fusion Pixel 12px' && f.status === 'loaded') {
-        PIXEL = true; FONT_FAMILY = '"Fusion Pixel 12px", sans-serif'; FONT = `12px ${FONT_FAMILY}`;
-      }
-    }
+    // 触发两个子集（拉丁 / 简中）加载，再用测宽法确认字体真的可用（document.fonts 在某些环境里看不到 CSS 字体）
+    await Promise.all([document.fonts.load(`12px ${fam}`, 'HP 0123'), document.fonts.load(`12px ${fam}`, '水晶传说')]);
+    const c = document.createElement('canvas').getContext('2d');
+    const w = (font, t) => { c.font = font; return c.measureText(t).width; };
+    const sample = '水晶传说 HP 123';
+    const differs = w(`12px ${fam}, monospace`, sample) !== w('12px monospace', sample) && w(`12px ${fam}, serif`, sample) !== w('12px serif', sample);
+    if (differs) { PIXEL = true; FONT_FAMILY = `${fam}, sans-serif`; FONT = `12px ${FONT_FAMILY}`; }
   } catch { /* 没有像素字体就用系统字体 */ }
   return PIXEL;
 }

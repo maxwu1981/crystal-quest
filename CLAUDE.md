@@ -1,7 +1,7 @@
 # 水晶传说 Crystal Quest — 项目规则（Claude 必读）
 
 FF1 / FF3 / FF5 风格的 2D 回合制 JRPG。现代 JavaScript（ES Modules）+ HTML5 Canvas，
-**零运行时依赖、零构建步骤**。用静态 HTTP 服务器打开 `index.html` 即可运行。
+**零运行时依赖、零构建步骤**。运行：`python3 tools/serve.py`（禁缓存的静态服务器），打开 http://localhost:8123 。
 
 ## 目录
 ```
@@ -54,6 +54,10 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - `party.json` `[{ name, jobId, level, equipment:{weapon, armor} }]`
 - `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`、`expSplit`
 
+## 字体与声音
+- 像素字体「缝合怪 Fusion Pixel 12px」在 assets/fonts/（OFL 许可，可商用）；text.js 用测宽法检测，检测不到就退回系统字体
+- 所有声音都是 Web Audio 合成（audio.js 的 SFX / SONGS 表），没有音频文件；M 键静音
+
 ## 调试
 - URL 加 `?debug` 显示 FPS/坐标/遇敌倒计时
 - 地图上按 `B` 强制遇敌，按 `H` 全员回满
@@ -71,4 +75,5 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - [ ] 3 职业转职、更多魔法、状态异常、ATB 模式打磨（调度器已预留 `battleMode:'atb'`）
 - [ ] 4 NPC 对话、剧情标志位、多地图传送（门已是可走瓦片）
 - [ ] 5 世界地图、迷宫、Boss
-- [ ] 6 音效音乐、正式美术、平衡、发布
+- [x] 6a 音效/BGM（Web Audio 合成，src/core/audio.js）、战斗特效（src/battle/effects.js）、遇敌马赛克转场、像素字体（assets/fonts，OFL）
+- [ ] 6b 正式美术、数值平衡、打包发布

@@ -36,7 +36,7 @@ export class Game {
 
   async boot() {
     this.data = await loadData();
-    await initFont();
+    this.pixelFont = await initFont();
     this.rng = new RNG(this.data.config.seed || (Date.now() >>> 0));
     this.rngFx = new RNG(99); // 纯装饰用（NPC 闲逛等），不影响战斗/遇敌
     this.sprites = buildSprites();

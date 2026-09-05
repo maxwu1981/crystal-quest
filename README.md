@@ -6,7 +6,7 @@ FF1/3/5 风格的 2D 回合制 JRPG。纯 JavaScript + Canvas，无依赖、无�
 ES Module 不能用 `file://` 直接打开，需要任意静态 HTTP 服务器：
 
 ```bash
-python3 -m http.server 8123
+python3 tools/serve.py
 ```
 然后打开 <http://localhost:8123>（调试模式：<http://localhost:8123/?debug>）。
 没有 python3 也可以用 `ruby -run -e httpd . -p 8123`，或 VS Code 的 Live Server 插件。
