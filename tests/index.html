@@ -7,6 +7,8 @@
 </style>
 <style>body{font:14px/1.6 monospace;background:#111;color:#ddd;padding:16px} .ok{color:#7f7} .fail{color:#f77} h1{font-size:18px}</style>
 </head>
-<body><h1>Crystal Quest 测试</h1><pre id="out">运行中…</pre>
-<script type="module" src="./run.js"></script>
+<body><h1>Crystal Quest 测试</h1><p><a href="?balance" style="color:#7cc4ff">数值平衡模拟（约 10 秒）</a></p><pre id="out">运行中…</pre>
+<script type="module">
+  if (location.search.includes("balance")) import("./balance.js"); else import("./run.js");
+</script>
 </body></html>

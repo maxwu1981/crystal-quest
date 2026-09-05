@@ -14,7 +14,7 @@ export function computeStats(member, data) {
   const unarmed = job.unarmed || 0; // 武僧：空手时按等级加攻击
   return {
     maxHp: b.hp, maxMp: b.mp, str: b.str, agi: b.agi, int: b.int, vit: b.vit,
-    atk: b.str + (weapon ? weapon.atk || 0 : Math.floor(unarmed * member.level)),
+    atk: Math.floor(b.str / 2) + (weapon ? weapon.atk || 0 : Math.floor(unarmed * member.level)), // FF1 式：力量/2 + 武器，武器升级很重要
     def: Math.floor(b.vit / 2) + (armor?.def || 0),
     acc: b.acc + (weapon?.acc || 0),
     eva: b.eva + Math.floor(b.agi / 2),

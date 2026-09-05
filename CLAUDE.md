@@ -10,15 +10,18 @@ src/main.js         启动
 src/core/           引擎：Game / 固定步长循环 / 输入 / 场景栈 / 可播种随机数 / 文字
 src/field/          地图行走（网格移动、遇敌、门传送）、NPC、商店
 src/ui/DialogueScene.js 对话框
-src/battle/         战斗场景、纯函数公式、敌人 AI、角色构造
+src/battle/         战斗场景（流程/UI）、actions.js（行动协程）、纯函数公式、敌人 AI、角色构造
+src/game/status.js  状态异常定义（中毒/睡眠/黑暗/防护）
 src/ui/             FF 蓝色窗口、光标菜单
-src/menu/           主菜单 / 道具 / 装备 / 状态（透明场景，叠在地图上）
+src/menu/           主菜单 / 道具 / 装备 / 状态 / 转职 / 设置（透明场景，叠在地图上）
 src/title/          标题画面（新游戏 / 继续）
 src/game/           全局状态（可序列化）、队伍属性计算、升级
-src/assets/         代码生成的占位像素图与瓦片（以后换成 PNG 图集只改这里）
+src/assets/         代码生成的占位像素图与瓦片；art.js 在 assets/art/manifest.json 存在时用 PNG 覆盖
+assets/art/         tools/gen_art.py 用 Gemini 生成的正式美术（raw/ 是原图缓存，不进 git）
+tools/              serve.py 开发服务器、gen_art.py + pixel.py 美术管线、build.py 打包
 src/data/loader.js  加载 data/*.json
 data/               **所有游戏内容**：职业、魔法、敌人、遇敌表、地图、初始队伍
-tests/              浏览器内测试（公式 + 数据完整性）
+tests/              run.js 单元/数据测试、playtest.js 自动试玩、balance.js 数值平衡模拟（?balance）
 ```
 
 ## 架构铁律
@@ -41,9 +44,11 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - 像素级碰撞（一律网格制）
 
 ## 数据 schema
-- `jobs.json`  `{ id: { name, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:[...] } }`
-- `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', heal?:true, scope:'single' } }`
-- `enemies.json` `{ id: { name, sprite, hp, mp, atk, def, acc, eva, spd, mdef, int, crit, exp, gold, weak:[], resist:[], immune:[], spells:[], ai } }`
+- `jobs.json`  `{ id: { name, desc, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:["id" | {id, level}], unarmed?, hits? } }`
+  攻击 = 力量/2 + 武器（武僧空手 = 力量/2 + unarmed×等级，hits 是命中数倍率）
+- `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', scope:'single'|'all', heal?, status?, cure?:[状态], revive?:比例, desc } }`
+  power 为 0 且有 status = 纯状态魔法；状态 id 见 src/game/status.js（poison sleep blind protect）
+- `enemies.json` `{ id: { name, sprite, hp, mp, atk, def, acc, eva, spd, mdef, int, crit, exp, gold, weak:[], resist:[], immune:[元素或状态], spells:[], onHit?:{status, chance}, ai } }`
 - `encounters.json` `{ zoneId: { steps:[min,max], groups:[{ enemies:[ids], weight }] } }`
 - `maps/*.json` `{ name, encounterZone|null, spawn:{x,y}, legend:{ 字符: {tile, solid?, encounter?, counter?} }, rows:[字符串],
   events:[{x,y,type:'warp',to:{map,x,y,facing}}], npcs:[{id,name,sprite,x,y,dir,wander?,radius?,script?,dialogue:[变体]}] }`
@@ -54,7 +59,8 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - `config.json` `maps:[加载的地图 id 列表]`
 - `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor', effect?:{hp|mp|revive|camp}, atk?, def?, acc?, price, jobs?:[], battle?, field?, desc? } }`
 - `party.json` `[{ name, jobId, level, equipment:{weapon, armor} }]`
-- `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`、`expSplit`
+- `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`（玩家可在设置里覆盖，存 state.settings）、`expSplit`
+- `state.party[i].status` 持久状态（目前只有 poison）；`state.settings` 设置；`state.flags.jobUnlocked` 转职解锁（村长给碎片）
 
 ## 字体与声音
 - 像素字体「缝合怪 Fusion Pixel 12px」在 assets/fonts/（OFL 许可，可商用）；text.js 用测宽法检测，检测不到就退回系统字体
@@ -63,6 +69,7 @@ tests/              浏览器内测试（公式 + 数据完整性）
 ## 调试
 - URL 加 `?debug` 显示 FPS/坐标/遇敌倒计时
 - 地图上按 `B` 强制遇敌，按 `H` 全员回满
+- 数值平衡：`tests/?balance` 跑模拟；目标是普通遇敌 2–3 回合、Boss 7 级约 50%–90% 胜率、9 级稳赢
 - 自动试玩：控制台 `const t = await import('/tests/playtest.js'); await t.runAll()`（同步步进，不依赖真实按键）
 
 ## 剧情设定（自创，勿用 SE 名词）
@@ -74,8 +81,9 @@ tests/              浏览器内测试（公式 + 数据完整性）
 - [x] 1 垂直切片：地图行走 + 步数遇敌 + 回合制战斗 + 胜利/失败/逃跑 + 经验升级
 - [x] 2a 标题画面、主菜单（X 键）、道具、装备、状态、存档/读档（localStorage）、战斗中道具
 - [x] 2b 对话框（打字机/翻页/选项）、NPC（闲逛、隔柜台说话、按标志位选台词）、门传送、旅馆、商店、剧情前提
-- [ ] 3 职业转职、更多魔法、状态异常、ATB 模式打磨（调度器已预留 `battleMode:'atb'`）
-- [ ] 4 NPC 对话、剧情标志位、多地图传送（门已是可走瓦片）
-- [x] 5 回音洞窟三层（宝箱/楼梯/Boss 剧情战/水晶/结局滚动字幕）；世界地图与飞空艇未做
+- [x] 3 状态异常、按等级学魔法、全体魔法、转职（6 职业）、设置菜单（回合制/ATB 切换）
+- [x] 4 NPC 对话、剧情标志位、多地图传送（在 2b 里一并完成）
+- [x] 5 回音洞窟三层（宝箱/楼梯/Boss 剧情战/水晶/结局滚动字幕）、世界地图「铃兰平原」；飞空艇未做（超出垂直切片范围）
 - [x] 6a 音效/BGM（Web Audio 合成，src/core/audio.js）、战斗特效（src/battle/effects.js）、遇敌马赛克转场、像素字体（assets/fonts，OFL）
-- [ ] 6b 正式美术、数值平衡、打包发布
+- [x] 6b 数值平衡（tests/balance.js）、打包（tools/build.py）、Gemini 美术管线（tools/gen_art.py，需要 API key 才能真正出图）
+- [ ] 以后：第二个城镇 / 更多迷宫 / 飞空艇 / 真正的音乐文件 / 手柄与触屏

@@ -3,3 +3,4 @@ node_modules/
 *.log
 .gemini_key
 assets/art/raw/
+dist/
