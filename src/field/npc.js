@@ -2,6 +2,7 @@
 import { TILE } from '../assets/tiles.js';
 import { addItem } from '../game/items.js';
 import { DIRS, lerp } from './grid.js';
+import { drawArt, artH } from '../core/draw.js';
 
 const NPC_STEP_TIME = 0.28;
 
@@ -58,6 +59,6 @@ export class NPC {
     const [px, py] = this.renderPos();
     const frame = this.moving ? Math.floor(this.anim * 8) % 2 : 0;
     const spr = sprites[`${this.sprite}_${this.dir}_${frame}`] || sprites[`man_${this.dir}_0`];
-    ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY) - (spr.height - TILE));
+    drawArt(ctx, spr, Math.round(px - camX), Math.round(py - camY) - (artH(spr) - TILE));
   }
 }

@@ -1,5 +1,6 @@
 // 地图行走：网格移动、镜头跟随、步数制遇敌、门传送、NPC 对话。
 import { TILE } from '../assets/tiles.js';
+import { drawArt, artH } from '../core/draw.js';
 import { drawText } from '../core/text.js';
 import { drawWindow } from '../ui/Window.js';
 import { healFull } from '../game/party.js';
@@ -193,18 +194,18 @@ export class FieldScene {
     const x0 = Math.max(0, Math.floor(camX / TILE)), y0 = Math.max(0, Math.floor(camY / TILE));
     const x1 = Math.min(map.w - 1, Math.ceil((camX + W) / TILE)), y1 = Math.min(map.h - 1, Math.ceil((camY + H) / TILE));
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-      ctx.drawImage(this.game.tiles[map.cells[y * map.w + x].tile], x * TILE - camX, y * TILE - camY);
+      drawArt(ctx, this.game.tiles[map.cells[y * map.w + x].tile], x * TILE - camX, y * TILE - camY);
     }
     for (const ev of Object.values(map.events)) {
       if (ev.type !== 'chest') continue;
-      ctx.drawImage(this.game.tiles[this.chestOpened(ev) ? 'chest_open' : 'chest'], ev.x * TILE - camX, ev.y * TILE - camY);
+      drawArt(ctx, this.game.tiles[this.chestOpened(ev) ? 'chest_open' : 'chest'], ev.x * TILE - camX, ev.y * TILE - camY);
     }
     // 角色按 y 排序绘制
     const leader = this.game.state.party[0];
     const frame = p.moving ? Math.floor(this.animT * 8) % 2 : 0;
     const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
     const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
-    drawables.push({ y: py, draw: () => ctx.drawImage(spr, Math.round(px - camX), Math.round(py - camY) - (spr.height - TILE)) }); // 高精灵脚贴格子底
+    drawables.push({ y: py, draw: () => drawArt(ctx, spr, Math.round(px - camX), Math.round(py - camY) - (artH(spr) - TILE)) }); // 高精灵脚贴格子底
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
     if (this.poisonT > 0) { ctx.fillStyle = 'rgba(120,40,160,0.35)'; ctx.fillRect(0, 0, W, H); }
     if (this.nameT > 0 && map.name) {

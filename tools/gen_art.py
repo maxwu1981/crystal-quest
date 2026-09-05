@@ -85,7 +85,8 @@ TILES = {  # 对应 src/assets/tiles.js 的名字
     'town':          'a small village of red-roofed houses seen from far above, on grass',
     'bridge':        'a wooden plank bridge crossing blue water, seen from above',
 }
-CHAR_SIZE = (16, 24)
+ART = 2  # 与 src/core/draw.js 的 ART 保持一致：所有输出尺寸都是逻辑尺寸的 ART 倍
+CHAR_SIZE = (16 * ART, 24 * ART)
 
 def assets():
     for cid, desc in CHARACTERS.items():
@@ -93,10 +94,10 @@ def assets():
             yield {'kind': 'char', 'id': cid, 'view': view, 'file': f'char_{cid}_{view}.png', 'size': CHAR_SIZE,
                    'prompt': f'{STYLE} A single chibi RPG character sprite, about 2 heads tall, full body, standing still, arms at the sides, {vdesc}, {MAGENTA} {desc}'}
     for eid, (desc, size) in ENEMIES.items():
-        yield {'kind': 'enemy', 'id': eid, 'file': f'enemy_{eid}.png', 'size': (size, size),
+        yield {'kind': 'enemy', 'id': eid, 'file': f'enemy_{eid}.png', 'size': (size * ART, size * ART),
                'prompt': f'{STYLE} A single monster sprite for a turn-based RPG battle screen, full body, facing slightly to the right toward the player, {MAGENTA} {desc}'}
     for tid, desc in TILES.items():
-        yield {'kind': 'tile', 'id': tid, 'file': f'tile_{tid}.png', 'size': (16, 16),
+        yield {'kind': 'tile', 'id': tid, 'file': f'tile_{tid}.png', 'size': (16 * ART, 16 * ART),
                'prompt': f'{STYLE} A single top-down terrain tile for a 2D RPG overworld map: {desc}. Seamless, filling the whole square image edge to edge, no border, no frame, no margin, no background color showing.'}
 
 # ---------- Gemini ----------

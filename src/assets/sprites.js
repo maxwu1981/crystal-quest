@@ -1,6 +1,7 @@
 // 占位像素图：人物由代码绘制（4 职业 × 4 方向 × 2 帧），敌人用文字网格像素画。
 // 换正式素材时只需让 buildSprites() 返回同名 canvas/Image 即可。
 import { ENEMY_ART } from './enemyArt.js';
+import { ART, artCanvas } from '../core/draw.js';
 
 const DIRS = ['down', 'up', 'left', 'right'];
 
@@ -55,15 +56,16 @@ function drawHumanoid(ctx, p, dir, frame) {
 }
 
 function humanoid(p, dir, frame) {
-  const c = canvas(16, 16), ctx = c.getContext('2d');
-  if (dir === 'right') { ctx.translate(16, 0); ctx.scale(-1, 1); drawHumanoid(ctx, p, 'left', frame); }
-  else drawHumanoid(ctx, p, dir, frame);
-  return c;
+  return artCanvas(16, 16, ctx => {
+    if (dir === 'right') { ctx.translate(16, 0); ctx.scale(-1, 1); drawHumanoid(ctx, p, 'left', frame); }
+    else drawHumanoid(ctx, p, dir, frame);
+  });
 }
 
 // 倒地：躺倒 + 变灰（任意尺寸：w×h 的图旋转后是 h×w）
 export function downed(src) {
   const w = src.width, h = src.height, c = canvas(h, w), ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
   ctx.translate(h / 2, w / 2); ctx.rotate(Math.PI / 2); ctx.drawImage(src, -w / 2, -h / 2);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = 'source-atop'; ctx.fillStyle = 'rgba(90,90,110,0.65)'; ctx.fillRect(0, 0, h, w);
@@ -73,11 +75,11 @@ export function downed(src) {
 export function spriteFromRows(rows, palette, name = '?') {
   const h = rows.length, w = Math.max(...rows.map(r => r.length));
   rows.forEach((r, i) => { if (r.length !== w) console.warn(`精灵 ${name} 第 ${i} 行长度 ${r.length} ≠ ${w}`); });
-  const c = canvas(w, h), ctx = c.getContext('2d');
+  const c = canvas(w * ART, h * ART), ctx = c.getContext('2d');
   for (let y = 0; y < h; y++) for (let x = 0; x < rows[y].length; x++) {
     const ch = rows[y][x]; if (ch === '.' || ch === ' ') continue;
     const col = palette[ch]; if (!col) { console.warn(`精灵 ${name} 未知颜色字符 '${ch}'`); continue; }
-    ctx.fillStyle = col; ctx.fillRect(x, y, 1, 1);
+    ctx.fillStyle = col; ctx.fillRect(x * ART, y * ART, ART, ART);
   }
   return c;
 }

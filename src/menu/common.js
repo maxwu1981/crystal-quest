@@ -4,12 +4,14 @@ import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { drawCursor } from '../ui/Menu.js';
 import { computeStats } from '../game/party.js';
 import { statusTags } from '../game/status.js';
+import { artW, artH } from '../core/draw.js';
 
 export const PARTY_W = 176, ROW_H = 48;
 
-// 按整数倍放大画精灵，高度不超过 maxH，底部对齐在 y + maxH（16×16 占位图 ×2，16×24 正式图 ×2 或 ×1）
+// 按整数倍放大画精灵（逻辑尺寸），高度不超过 maxH，底部对齐在 y + maxH
 export function drawSprite(ctx, img, x, y, maxH) {
-  const s = Math.max(1, Math.floor(maxH / img.height)), w = img.width * s, h = img.height * s;
+  const iw = artW(img), ih = artH(img);
+  const s = Math.max(1, Math.floor(maxH / ih)), w = iw * s, h = ih * s;
   ctx.drawImage(img, Math.round(x + (maxH - w) / 2), Math.round(y + maxH - h), w, h);
 }
 

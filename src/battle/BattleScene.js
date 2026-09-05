@@ -11,6 +11,7 @@ import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, d
 import { grantExp } from '../game/party.js';
 import { canUseOn } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
+import { drawArt, artW, artH } from '../core/draw.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
@@ -223,11 +224,11 @@ export class BattleScene {
   actorRect(a) {
     if (a.side === 'party') {
       const i = this.party.indexOf(a), spr = this.game.sprites[`${a.jobId}_left_0`];
-      return [PARTY_X - (this.current === a ? 6 : 0), PARTY_Y0 + i * PARTY_DY + 16 - spr.height, spr.width, spr.height];
+      return [PARTY_X - (this.current === a ? 6 : 0), PARTY_Y0 + i * PARTY_DY + 16 - artH(spr), artW(spr), artH(spr)];
     }
     const i = this.enemies.indexOf(a), spr = this.game.sprites['enemy_' + a.sprite];
     const [cx, cy] = ENEMY_CENTERS[i] || ENEMY_CENTERS[0];
-    return [Math.round(cx - spr.width / 2), Math.round(cy - spr.height / 2), spr.width, spr.height];
+    return [Math.round(cx - artW(spr) / 2), Math.round(cy - artH(spr) / 2), artW(spr), artH(spr)];
   }
   lungeOffset(a) { return a.lunge > 0 ? Math.round(10 * Math.sin((0.3 - a.lunge) / 0.3 * Math.PI)) : 0; }
   blinking(a) { return a.flash > 0 && Math.floor(a.flash * 30) % 2 === 0; }
@@ -241,15 +242,15 @@ export class BattleScene {
       if (!e.alive && !(e.dying > 0)) continue;
       if (this.blinking(e)) continue;
       const [x, y] = this.actorRect(e);
-      if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); ctx.drawImage(this.game.sprites['enemy_' + e.sprite], x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
-      ctx.drawImage(this.game.sprites['enemy_' + e.sprite], x + this.lungeOffset(e), y);
+      if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
+      drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x + this.lungeOffset(e), y);
     }
     for (const p of this.party) {
       if (this.blinking(p)) continue;
       const [x, y] = this.actorRect(p);
       const bob = (this.current === p || (this.won && p.alive)) && Math.floor(this.time * 4) % 2 ? 1 : 0;
       const key = p.alive ? `${p.jobId}_left_${bob}` : `${p.jobId}_downed`;
-      ctx.drawImage(this.game.sprites[key], x - this.lungeOffset(p), y - (this.won && p.alive ? bob * 2 : 0));
+      drawArt(ctx, this.game.sprites[key], x - this.lungeOffset(p), y - (this.won && p.alive ? bob * 2 : 0));
     }
     this.fx.render(ctx);
     if (this.phase === 'input' && this.sub === 'target') {

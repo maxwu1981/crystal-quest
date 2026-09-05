@@ -9,6 +9,7 @@ import { loadData } from '../data/loader.js';
 import { buildSprites } from '../assets/sprites.js';
 import { buildTiles } from '../assets/tiles.js';
 import { loadArt } from '../assets/art.js';
+import { ART, LOGICAL_W, LOGICAL_H } from './draw.js';
 import { newGameState } from '../game/state.js';
 import { FieldScene } from '../field/FieldScene.js';
 import { BattleScene } from '../battle/BattleScene.js';
@@ -17,9 +18,10 @@ import { TitleScene } from '../title/TitleScene.js';
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
+    canvas.width = LOGICAL_W * ART; canvas.height = LOGICAL_H * ART;
     this.ctx = canvas.getContext('2d');
     this.ctx.imageSmoothingEnabled = false;
-    this.W = canvas.width; this.H = canvas.height;
+    this.W = LOGICAL_W; this.H = LOGICAL_H;
     this.input = new Input();
     this.scenes = new SceneStack();
     this.fade = { alpha: 0, dir: 0, speed: 4, color: '#000', onMid: null };
@@ -30,6 +32,7 @@ export class Game {
   }
 
   fitCanvas() {
+    // 显示尺寸按逻辑分辨率取整数倍，保证物理像素也是整数倍（不糊）
     const scale = Math.max(1, Math.floor(Math.min(innerWidth / this.W, (innerHeight - 24) / this.H)));
     this.canvas.style.width = this.W * scale + 'px';
     this.canvas.style.height = this.H * scale + 'px';
@@ -56,9 +59,10 @@ export class Game {
 
   // 淡出 → 执行 onMid（换场景）→ 淡入。转场期间场景冻结。
   fadeTo(onMid, { color = '#000', speed = 4, mosaic = false } = {}) {
-    if (mosaic) { // 马赛克转场：先把当前画面存下来
+    if (mosaic) { // 马赛克转场：先把当前画面按逻辑分辨率存一份
       this.snap ??= document.createElement('canvas'); this.snap.width = this.W; this.snap.height = this.H;
-      this.snap.getContext('2d').drawImage(this.canvas, 0, 0);
+      const sc = this.snap.getContext('2d'); sc.imageSmoothingEnabled = false;
+      sc.drawImage(this.canvas, 0, 0, this.W, this.H);
       this.tmp ??= document.createElement('canvas'); this.tmp.width = this.W; this.tmp.height = this.H;
     }
     this.fade = { alpha: 0, dir: 1, speed, color, onMid, mosaic };
@@ -108,6 +112,8 @@ export class Game {
 
   render(alpha, stats) {
     const ctx = this.ctx;
+    ctx.setTransform(ART, 0, 0, ART, 0, 0); // 之后所有绘制都用 256×224 逻辑坐标
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, this.W, this.H);
     this.scenes.render(ctx, alpha);
     const f = this.fade;

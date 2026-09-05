@@ -1,4 +1,6 @@
-// 程序生成的 16×16 占位瓦片。换正式素材时：把这里改成从 PNG 图集切图即可。
+// 程序生成的占位瓦片。逻辑尺寸 16×16，实际画布是 16*ART（美术精度倍率，见 core/Game.js）。
+// 换正式素材时：assets/art/tile_*.png 会覆盖这里，只要 PNG 是 16*ART 见方即可。
+import { artCanvas } from '../core/draw.js';
 export const TILE = 16;
 
 function fill(ctx, c) { ctx.fillStyle = c; ctx.fillRect(0, 0, TILE, TILE); }
@@ -49,10 +51,6 @@ const DRAW = {
 
 export function buildTiles(rng) {
   const out = {};
-  for (const name of Object.keys(DRAW)) {
-    const c = document.createElement('canvas'); c.width = TILE; c.height = TILE;
-    DRAW[name](c.getContext('2d'), rng);
-    out[name] = c;
-  }
+  for (const name of Object.keys(DRAW)) out[name] = artCanvas(TILE, TILE, ctx => DRAW[name](ctx, rng));
   return out;
 }
