@@ -24,6 +24,30 @@ export function drawRatio(ctx, cur, max, right, y, color) {
   drawText(ctx, String(cur), right - measure(ctx, tail), y, { align: 'right', color });
 }
 
+// 菜单里的角色小像：慢慢转一圈，顺带一点待机动作。
+// 原本四个人一律画 `_down_0` 杵在那不动，而有的职业「正面」画得偏侧，
+// 于是看起来是「一个侧面三个正面」。改成让他们**同步**转——
+// 不同步的话任一瞬间又会是各朝各的，等于没修。
+//
+// 时间用挂钟：菜单几个场景各自独立、没有共享的 dt 累加器，
+// 而这只影响渲染，不进逻辑也不进存档，自动试玩同步步进时它几乎不动，不影响可复现性。
+const TURN = ['down', 'left', 'up', 'right'];   // 转向顺序：正面 → 左 → 背面 → 右
+const HOLD = 1.15;                              // 每个朝向停 1.15 秒，转一圈约 4.6 秒
+const STEP_AT = 0.72;                           // 一个朝向内过了 72% 就抬脚，转身才不是硬切
+const BOB_T = 2.6;                              // 轻微起伏的周期
+
+export function portrait(game, jobId) {
+  const t = performance.now() / 1000;
+  const k = t / HOLD;
+  const dir = TURN[Math.floor(k) % TURN.length];
+  const phase = k % 1;
+  // 快要换向的那段时间踏一步：偶数圈迈左脚、奇数圈迈右脚，肩和手跟着动
+  const frame = phase > STEP_AT ? (Math.floor(k) % 2 ? 2 : 1) : 0;
+  const img = game.sprites[`${jobId}_${dir}_${frame}`] || game.sprites[`${jobId}_down_0`];
+  const bob = Math.sin(t * (2 * Math.PI / BOB_T)) > 0.6 ? -1 : 0;   // 1px，慢
+  return { img, bob };
+}
+
 export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, cursor = -1 } = {}) {
   drawWindow(ctx, x, y, w, h);
   game.state.party.forEach((m, i) => {
@@ -32,7 +56,8 @@ export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, 
     if (i) drawDivider(ctx, x + 8, ry - 5, w - 16); // 人与人之间刻一道线，四行才不会糊成一片
     // 选中整行铺底（画在精灵之前，免得把角色也染上金色），箭头只负责指位置
     if (cursor === i) { drawHighlight(ctx, x + 5, ry - 2, w - 10, 48); drawCursor(ctx, x + 6, ry + 20); }
-    drawSprite(ctx, game.sprites[`${m.jobId}_down_0`], x + 6, ry, 48); // 完整一格，不再被下一行挤掉
+    const po = portrait(game, m.jobId);
+    drawSprite(ctx, po.img, x + 6, ry + po.bob, 48); // 完整一格，不再被下一行挤掉
     const tx = x + 46, right = x + w - 8, ty = ry + 2; // 文字整体在图右侧
     const col = dead ? UI.gray : UI.text;
     // 第一行：名字（亮）+ 职业（暗、右对齐）。职业是补充信息，不该和名字抢

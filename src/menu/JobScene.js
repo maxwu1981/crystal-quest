@@ -3,7 +3,7 @@ import { Menu } from '../ui/Menu.js';
 import { drawWindow, drawDivider, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, changeJob, spellsFor, equipmentAfterJobChange } from '../game/party.js';
-import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W } from './common.js';
+import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W, portrait } from './common.js';
 import { audio } from '../core/audio.js';
 
 const LEFT_W = 96;
@@ -56,7 +56,8 @@ export class JobScene {
     const { equipment: nextEquip, removed } = equipmentAfterJobChange(m.equipment, id, data);
     const cur = computeStats(m, data), next = computeStats({ ...m, jobId: id, equipment: nextEquip }, data);
     drawWindow(ctx, LEFT_W, 0, 256 - LEFT_W, 224);
-    drawSprite(ctx, g.sprites[`${id}_down_0`], LEFT_W + 8, 8, 48);
+    const po = portrait(g, id);
+    drawSprite(ctx, po.img, LEFT_W + 8, 8 + po.bob, 48);
     drawText(ctx, `${m.name}  Lv ${m.level}`, LEFT_W + 60, 12, { color: UI.text });
     drawText(ctx, `${this.jobs[m.jobId].name} → ${job.name}`, LEFT_W + 60, 12 + LINE_H, { color: UI.accent });
     wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, 3).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: UI.dim }));

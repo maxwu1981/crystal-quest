@@ -3,7 +3,7 @@ import { drawWindow, drawDivider, drawGauge, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, memberSpells } from '../game/party.js';
 import { expForLevel } from '../battle/formulas.js';
-import { drawSprite, drawRatio } from './common.js';
+import { drawSprite, drawRatio, portrait } from './common.js';
 import { statusTags } from '../game/status.js';
 
 // 这一页信息最杂，全靠三样东西分层：暗色的标签 vs 亮色的数值、
@@ -25,7 +25,8 @@ export class StatusScene {
     drawWindow(ctx, 0, 0, 256, 224);
 
     // ---- 身份 ----
-    drawSprite(ctx, g.sprites[`${m.jobId}_down_0`], 12, 12, 56);
+    const po = portrait(g, m.jobId);
+    drawSprite(ctx, po.img, 12, 12 + po.bob, 56);
     drawText(ctx, m.name, 76, 12, { color: UI.accent });                       // 名字是这一页的标题，给暗金
     drawText(ctx, '← → 换人   X 返回', NUM_R, 12, { align: 'right', color: UI.dim }); // 操作提示放页首右上角，把页尾整行让给魔法
     drawText(ctx, `${job.name}  Lv ${m.level}`, 76, 25, { color: UI.dim });

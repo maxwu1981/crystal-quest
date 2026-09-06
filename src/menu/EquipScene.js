@@ -4,7 +4,7 @@ import { drawWindow, drawDivider, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
-import { drawPartyPanel, drawSprite, stepCursor, PARTY_W } from './common.js';
+import { drawPartyPanel, drawSprite, stepCursor, PARTY_W, portrait } from './common.js';
 import { icons } from '../assets/art.js';
 import { itemStats } from '../game/shop.js';
 
@@ -62,7 +62,8 @@ export class EquipScene {
     }
     const m = this.member, job = this.game.data.jobs[m.jobId], { cur, next } = this.previewStats();
     drawWindow(ctx, 0, 0, 256, 56);
-    drawSprite(ctx, this.game.sprites[`${m.jobId}_down_0`], 8, 8, 40);
+    const po = portrait(this.game, m.jobId);
+    drawSprite(ctx, po.img, 8, 8 + po.bob, 40);
     drawText(ctx, `${m.name}  ${job.name}  Lv ${m.level}`, 52, 10, { color: UI.text });
     const stat = (label, a, b, x) => {
       const y = 10 + LINE_H + 4;
