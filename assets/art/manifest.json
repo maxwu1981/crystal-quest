@@ -83,7 +83,10 @@
     "skeleton": "enemy_skeleton.png",
     "tigergran": "enemy_tigergran.png",
     "stinkbug": "enemy_stinkbug.png",
-    "muntjac": "enemy_muntjac.png"
+    "muntjac": "enemy_muntjac.png",
+    "viper": "enemy_viper.png",
+    "paperkid": "enemy_paperkid.png",
+    "earthox": "enemy_earthox.png"
   },
   "tiles": {
     "cave_floor": "tile_cave_floor.png",

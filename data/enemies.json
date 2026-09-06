@@ -318,7 +318,6 @@
   },
   "viper": {
     "name": "龟壳花",
-    "sprite": "wolf",
     "hp": 33,
     "mp": 0,
     "atk": 14,
@@ -374,7 +373,6 @@
   },
   "paperkid": {
     "name": "纸糊童子",
-    "sprite": "goblin",
     "hp": 30,
     "mp": 20,
     "atk": 8,
@@ -404,7 +402,6 @@
   },
   "earthox": {
     "name": "地牛",
-    "sprite": "wolf",
     "hp": 175,
     "mp": 0,
     "atk": 23,
