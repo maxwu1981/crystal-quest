@@ -460,13 +460,14 @@ test('商店只卖非神话装备，宝箱/掉落才有神话装备', () => {
   }
 });
 
-// 收集全部获取途径：宝箱 / Boss 掉落 / NPC 赠予
+// 收集全部获取途径：商店 / 宝箱 / Boss 掉落 / NPC 赠予
 function itemSources() {
   const src = new Map();
   const add = (id, where) => { if (!id) return; if (!src.has(id)) src.set(id, []); src.get(id).push(where); };
   for (const [mid, md] of Object.entries(data.maps)) {
     for (const ev of md.events || []) add(ev.item, `${mid} 宝箱 ${ev.id || ev.x + ',' + ev.y}`);
     for (const n of md.npcs || []) {
+      for (const id of n.script?.items || []) add(id, `${mid} ${n.name} 商店`);
       for (const r of n.script?.reward || []) add(r.id, `${mid} ${n.name} 掉落`);
       for (const v of n.dialogue || []) for (const g of v.give?.items || []) add(g.id, `${mid} ${n.name} 赠予`);
     }
@@ -474,10 +475,59 @@ function itemSources() {
   return src;
 }
 
+// 写在前面、但本作范围内没有用上的装备阶梯。
+//
+// 每条装备线的材质表都写到了 tier 11，而游戏实际只用到 tier 5（商店卖到钢）
+// 再直接跳到 tier 11 的神话装备（宝箱给）。中间这 23 件属性、价格、职业限制都写好了，
+// 但商店不卖、宝箱没有、没人给——玩家永远见不到。
+//
+// **没有删，也没有硬塞进游戏**：这是个 1–2 小时的垂直切片，塞 23 件装备会撑坏节奏；
+// 而删掉又会让以后想扩展的人重写一遍阶梯。所以显式列在这里，
+// 意思是「知道它们拿不到，这是有意留白」——**新出现的孤儿会被下面那条测试当场抓住**。
+//
+// 顺带一提，这批断档正是 Boss 难度全靠开箱驱动的原因：
+// 玩家的强度只有「商店 tier 5」和「神话 tier 11」两档，中间没有过渡。
+// 详见 CLAUDE.md 的 Boss 难度曲线一节。
+const UNUSED_TIERS = new Set([
+  'silver_sword', 'mythril_sword', 'adamant_sword', 'meteor_sword', 'dragon_sword',
+  'silver_dagger', 'mythril_dagger', 'adamant_dagger', 'meteor_dagger',
+  'silver_knuckle', 'mythril_knuckle', 'adamant_claw', 'dragon_claw',
+  'silver_staff', 'mythril_staff', 'star_staff',
+  'silver_armor', 'mythril_armor', 'adamant_armor', 'meteor_armor', 'dragon_armor',
+  'mythril_robe', 'star_robe',
+]);
+
 test('每件神话装备都真的拿得到（之前 23 件里有 15 件玩家永远见不到）', () => {
   const src = itemSources();
   const missing = Object.entries(data.items).filter(([id, it]) => it.myth && !src.has(id)).map(([id]) => id);
   assert(!missing.length, `这些神话装备定义了却没有任何出处：${missing.join(' ')}`);
+});
+
+test('每件装备都拿得到——普通装备也要查，不只神话装备', () => {
+  // 原本只有「每件神话装备都拿得到」那一条，`it.myth` 一过滤，
+  // 普通装备线就没人守了：实际有 23 件 tier 6–10 定义完整却永远见不到，
+  // 一直没被发现。这条把范围放到全部装备，已知留白的走 UNUSED_TIERS 白名单。
+  const src = itemSources();
+  const missing = [];
+  for (const [id, it] of Object.entries(data.items)) {
+    if (!['weapon', 'armor', 'accessory'].includes(it.type)) continue;
+    if (src.has(id) || UNUSED_TIERS.has(id)) continue;
+    missing.push(`${id}（${it.name}）`);
+  }
+  assert(!missing.length,
+    '这些装备定义了却没有任何出处（商店/宝箱/掉落/赠予都没有）：\n      ' + missing.join('\n      ')
+    + '\n      要么给它一个出处，要么加进 tests/run.js 的 UNUSED_TIERS 并说明为什么留白');
+});
+
+test('UNUSED_TIERS 白名单不能过期：里面的东西如果已经能拿到了，就该从名单里去掉', () => {
+  // 白名单最怕的是「加进去就忘了」。哪天有人给银剑加了出处，
+  // 名单不清理的话，下次再有孤儿又会被这条陈旧的白名单放过去。
+  const src = itemSources();
+  const stale = [...UNUSED_TIERS].filter(id => src.has(id));
+  assert(!stale.length,
+    `这些已经拿得到了，请从 UNUSED_TIERS 里删掉：${stale.join(' ')}`);
+  const gone = [...UNUSED_TIERS].filter(id => !data.items[id]);
+  assert(!gone.length, `UNUSED_TIERS 里有不存在的道具：${gone.join(' ')}`);
 });
 
 test('神话装备的职业限制合法，且不会出现「拿得到但全队没人能装」', () => {
