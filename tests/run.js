@@ -16,6 +16,7 @@ import { execute, inflict } from '../src/battle/actions.js';
 import { MIRROR, NO_TOUCH } from '../src/assets/terrain.js';
 import { U, u, us } from '../src/assets/terrainBits.js';
 import { ART, snap } from '../src/core/draw.js';
+import { TILE_FX } from '../src/assets/tiles.js';
 
 const results = [];
 const assert = (c, m = 'assert') => { if (!c) throw new Error(m); };
@@ -615,6 +616,28 @@ test('每只怪都能取到自己的美术，没有指向不存在的图', () =>
     if (!(key in artSizes.enemies)) miss.push(`${id}${e.sprite ? `（借用 ${e.sprite}）` : ''}`);
   }
   assert(!miss.length, '这些怪取不到美术：' + miss.join(' '));
+});
+
+test('瓦片动画的循环周期不能太快（防闪）', () => {
+  // 全项目的规矩：位移动画周期 ≥1.5 秒。瓦片是最占面积的一类——
+  // 满屏两百多格一起变，人眼会直接读成「闪」而不是「在动」，所以这里卡得更紧。
+  // 现存六种都在 4.8–6.4 秒，留出余量卡在 3 秒。
+  const bad = [];
+  for (const [id, spec] of Object.entries(TILE_FX)) {
+    const period = spec.n * spec.dur;
+    if (period < 3) bad.push(`${id} 一圈只有 ${period.toFixed(1)}s`);
+  }
+  assert(!bad.length, '这些瓦片动画太快，会看成闪烁：' + bad.join('，'));
+});
+
+test('每一种魔法属性都有自己的图标形状，不能退回无属性', () => {
+  // 战斗里的魔法列表靠属性图标让玩家一眼分辨该不该对这只怪用。
+  // 新加一种属性却忘了配图标，会静默退回「无属性宝珠」——
+  // 列表看起来正常，但两个不同属性的魔法长得一模一样。
+  const HAVE = new Set(['fire', 'thunder', 'ice', 'dark', 'light', 'poison']);
+  const miss = new Set();
+  for (const sp of Object.values(data.spells)) if (sp.element && !HAVE.has(sp.element)) miss.add(sp.element);
+  assert(!miss.size, '这些属性没有配图标（menu/icons.js 的 ELEM_SHAPE）：' + [...miss].join(' '));
 });
 
 const out = document.getElementById('out');
