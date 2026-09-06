@@ -31,11 +31,23 @@ async function measureArt() {
       const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
       const x = c.getContext('2d'); x.drawImage(im, 0, 0);
       const d = x.getImageData(0, 0, im.width, im.height).data;
-      let y0 = im.height, y1 = -1;
-      for (let y = 0; y < im.height; y++) for (let px = 0; px < im.width; px++) {
-        if (d[(y * im.width + px) * 4 + 3] > 8) { if (y < y0) y0 = y; if (y > y1) y1 = y; break; }
+      // 逐行统计：实心像素数与左右边界。只量身高抓不出「等高但胖瘦两样」，
+      // 实际踩过——补生成的拳头师侧面站姿比他自己的侧面迈步少 41% 的实心面积。
+      let y0 = im.height, y1 = -1, mass = 0;
+      const span = [];
+      for (let y = 0; y < im.height; y++) {
+        let lo = -1, hi = -1, n = 0;
+        for (let px = 0; px < im.width; px++) {
+          if (d[(y * im.width + px) * 4 + 3] > 8) { if (lo < 0) lo = px; hi = px; n++; }
+        }
+        span.push(n ? [lo, hi, n] : null);
+        if (n) { if (y < y0) y0 = y; if (y > y1) y1 = y; mass += n; }
       }
-      if (y1 >= 0) out.push({ cid, view, ratio: (y1 - y0 + 1) / im.height, w: im.width, h: im.height });
+      if (y1 < 0) continue;
+      const H = y1 - y0 + 1;
+      const bandW = (a, b) => { let w = 0; for (let y = Math.round(y0 + H * a); y < Math.round(y0 + H * b); y++) { const r = span[y]; if (r) w = Math.max(w, r[1] - r[0] + 1); } return w; };
+      void bandW;   // 宽度带留着备查，但不做门禁：迈步时腿张开、手臂摆动会把任何宽度指标带偏
+      out.push({ cid, view, ratio: H / im.height, w: im.width, h: im.height, mass });
     }
   }
   return out;
@@ -472,6 +484,27 @@ test('正式美术：所有角色精灵一样高、尺寸一致（防止某个�
   const worst = artRows.slice().sort((a, b) => a.ratio - b.ratio)[0];
   assert(hi - lo <= 0.12, `角色身高不一致 ${(lo*100).toFixed(0)}%–${(hi*100).toFixed(0)}%，最矮的是 ${worst.cid}_${worst.view}`);
   assert(lo > 0.8, `${worst.cid}_${worst.view} 只占画布高度 ${(worst.ratio*100).toFixed(0)}%，角色应该几乎占满`);
+});
+
+test('正式美术：同一角色同一方向，站姿与迈步帧必须是同一个体型', () => {
+  if (!artRows || !artRows.length) return;
+  // 只量身高会漏掉「等高但胖瘦两样」——实际踩过：补生成的拳头师侧面站姿
+  // 比他自己的侧面迈步少 41% 的实心面积，两张都是 46px 高，旧体检一路绿灯。
+  // 只卡实心面积：宽度类指标会被姿势带偏（腿张开、手臂摆动、斗笠帽尖高低），不可靠。
+  // 数值抓不到「站着戴斗笠、走起来变兜帽」这种服装漂移，那要靠
+  // `python3 tools/proportion_check.py --sheet` 导出的对照图人眼看。
+  const by = {};
+  for (const r of artRows) (by[r.cid] ||= {})[r.view] = r;
+  const bad = [];
+  for (const [cid, views] of Object.entries(by)) {
+    for (const v of ['down', 'up', 'left', 'right']) {
+      const a = views[v], b = views[v + '_walk'];
+      if (!a || !b) continue;
+      const dev = Math.abs(a.mass - b.mass) / Math.max(a.mass, b.mass);
+      if (dev > 0.30) bad.push(`${cid}/${v} 的实心面积差 ${(dev * 100).toFixed(0)}%（${a.mass} vs ${b.mass}）`);
+    }
+  }
+  assert(!bad.length, '这些帧的体型对不上，看起来像两个人：\n      ' + bad.join('\n      '));
 });
 
 const out = document.getElementById('out');

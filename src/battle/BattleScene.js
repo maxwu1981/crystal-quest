@@ -7,7 +7,7 @@ import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
 import { execute } from './actions.js';
 import { Effects } from './effects.js';
-import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
+import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, makeBackdrop, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
 import { grantExp } from '../game/party.js';
 import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
@@ -27,6 +27,9 @@ export class BattleScene {
     this.canFlee = opts.canFlee !== false;
     this.phase = 'intro'; this.timer = 0.5; this.time = 0;
     this.msg = ''; this.popups = []; this.fx = new Effects(game.rngFx);
+    // 按地形选战斗背景。随机细节（星星、钟乳石…）在这里一次性掷定，render 只读——
+    // 每帧重掷会让整片背景变成雪花。
+    this.backdrop = makeBackdrop(game, opts);
     this.pending = [];      // turn 模式：本回合已下达、未执行的指令
     this.inputQueue = [];   // 等待玩家下令的角色
     this.actionQueue = [];  // 待执行的行动
@@ -239,17 +242,35 @@ export class BattleScene {
   lungeOffset(a) { return a.lunge > 0 ? Math.round(10 * Math.sin((0.3 - a.lunge) / 0.3 * Math.PI)) : 0; }
   blinking(a) { return a.flash > 0 && Math.floor(a.flash * 30) % 2 === 0; }
 
+  // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
+  // 只有 ±1 逻辑像素、周期 2.6–3.0 秒，并按队列序号错开相位与周期——
+  // 一起同步上下会立刻变成「在抖」，这里宁可含蓄到几乎看不出来。
+  // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
+  idleBob(e) {
+    if (!e.alive || e.flash > 0) return 0;
+    const i = this.enemies.indexOf(e);
+    return Math.round(Math.sin(this.time * (Math.PI * 2) / (2.6 + (i % 3) * 0.2) + i * 0.9));
+  }
+  // 濒死：HP 不到四分之一。FF6 会换成喘息的濒死姿势，我们只有站立帧，
+  // 就用 1–2 像素的缓慢下沉（2 秒一个来回）来表示「站不太住了」，配合面板的告警色。
+  // 胜利雀跃时不下沉：两个位移叠在一起会互相抵消，看起来只像跳得不齐。
+  faintSink(p) {
+    if (!p.alive || this.won || p.hp * 4 > p.maxHp) return 0;
+    const i = this.party.indexOf(p);
+    return 1 + Math.round(0.5 + 0.5 * Math.sin(this.time * Math.PI + i * 1.3));
+  }
+
   render(ctx) {
     const { W } = this.game;
     const [sx, sy] = this.fx.offset();
     ctx.save(); ctx.translate(sx, sy);
-    drawBackground(ctx, W);
+    drawBackground(ctx, W, this.backdrop, this.time);
     for (const e of this.enemies) {
       if (!e.alive && !(e.dying > 0)) continue;
       if (this.blinking(e)) continue;
       const [x, y] = this.actorRect(e);
       if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
-      drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x + this.lungeOffset(e), y);
+      drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x + this.lungeOffset(e), y + this.idleBob(e));
     }
     for (const p of this.party) {
       if (this.blinking(p)) continue;
@@ -260,7 +281,7 @@ export class BattleScene {
       // 胜利时的雀跃改成整体上下跳，同样不换帧。
       const cheer = this.won && p.alive && Math.floor(this.time * 3) % 2 ? 2 : 0;
       const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
-      const dx = x - this.lungeOffset(p), dy = y - cheer;
+      const dx = x - this.lungeOffset(p), dy = y - cheer + this.faintSink(p);
       drawArt(ctx, this.game.sprites[key], dx, dy);
       if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, g, dx, dy); // 装备叠加
     }

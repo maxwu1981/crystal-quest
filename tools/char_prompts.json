@@ -1,0 +1,34 @@
+{
+ "_why": "每个角色的权威外观描述。补生成任何一帧都必须用这里的文字，不要临时另写——各帧分批生成、描述漂移，正是「站着戴斗笠、走起来变兜帽」这类问题的根源。build 一栏专门锁体型，因为 fit='height' 只归一化身高，胖瘦是不管的。改这里之前先看 tools/proportion_check.py 的体检结果。",
+ "boxer": {
+  "name": "拳头师 阿勇",
+  "look": "a young martial artist boy with short bright blond hair and a straight fringe, wearing dark red leather armour over a darker red tunic, a brown belt, brown boots, and cloth wraps on both hands",
+  "build": "LARGE head with a big voluminous mop of blond hair — head including hair is about ONE THIRD of his total height (classic chibi SNES proportion, not realistic). Body is STOCKY and solid: broad shoulders, thick arms and thick legs. NOT slim, NOT realistic proportions"
+ },
+ "hunter": {
+  "name": "山猎人 巴冷",
+  "look": "a young hunter with tousled orange hair (NO hood, NO hat, the hair is always visible), a teal-green tunic with a leather belt, brown trousers and tall brown boots",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium, wiry but not thin: shoulders about one and a third head-widths, normal SNES proportions"
+ },
+ "general": {
+  "name": "家将 (转职用)",
+  "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on the forearms, brown hair tied in a small topknot",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). lean and athletic, narrow waist, visible bare arms"
+ },
+ "herbwife": {
+  "name": "青草婆 秀琴",
+  "look": "a herbalist woman in a long deep indigo-blue hooded robe with a warm cream-yellow scalloped trim along the hem, holding a plain wooden staff",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). the robe falls straight down in a narrow column and does NOT flare out into a wide bell; shoulders about one and a quarter head-widths"
+ },
+ "talisman": {
+  "name": "符仔仙 文彬",
+  "look": "a small sinister spellcaster in a WIDE-BRIMMED TALL POINTED witch hat (always the wide flat brim, never a hood) and a long charcoal-brown robe, face entirely in shadow under the brim with only glowing yellow eyes visible, holding a plain wooden staff",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and squat, the hat brim is the widest part of the silhouette and is clearly wider than the shoulders"
+ },
+ "peddler": {
+  "name": "走贩 (转职用)",
+  "look": "a travelling pedlar with shoulder-length blond hair under a wide-brimmed olive-green felt hat with a single white feather, an olive-green travelling coat, brown boots, a bulky pack on his back and a short sword at his hip",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
+ },
+ "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。"
+}
