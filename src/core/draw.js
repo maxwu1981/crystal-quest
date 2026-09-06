@@ -5,6 +5,17 @@
 export const ART = 6;
 export const LOGICAL_W = 256, LOGICAL_H = 224;
 
+// 把一个逻辑坐标对齐到**物理**像素网格。
+//
+// 程序化特效原本一律 `Math.round(x)`，那是对齐到**逻辑**网格——等于强行让粒子
+// 每次至少移动 ART 个物理像素。ART=2 时一步 2px 还看得过去，提到 6 之后
+// 一步就是 6px，火星和毒气变成一格一格往上蹦，而旁边的美术精度已经是原来的六倍，
+// 一眼就看出特效比画面粗。
+//
+// 对齐到物理网格能同时要两头：边缘仍然是硬的（像素画不能有半透明的毛边），
+// 但运动的最小步长变成 1 个物理像素，跟着 ART 一起变细。
+export const snap = v => Math.round(v * ART) / ART;
+
 export const artW = img => img.width / ART;
 export const artH = img => img.height / ART;
 

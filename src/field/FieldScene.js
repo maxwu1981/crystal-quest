@@ -1,7 +1,7 @@
 // 地图行走：网格移动、镜头跟随、步数制遇敌、门传送、NPC 对话。
 import { TILE, TILE_FX, tileFrames } from '../assets/tiles.js';
 import { buildTerrainFx } from '../assets/terrain.js';
-import { drawArt, artH } from '../core/draw.js';
+import { drawArt, artH, snap } from '../core/draw.js';
 import { RNG } from '../core/RNG.js';
 import { layersFor } from '../assets/equip.js';
 import { drawText } from '../core/text.js';
@@ -358,7 +358,7 @@ export class FieldScene {
           const u = ph % 1;
           ctx.globalAlpha = Math.sin(u * Math.PI) * 0.75;
           ctx.fillStyle = '#fff4c8';
-          ctx.fillRect(Math.round(bx + 3 + ((i * 7 + Math.floor(ph) * 5) % 10)), Math.round(by + 11 - u * 9), 1, 1);
+          ctx.fillRect(snap(bx + 3 + ((i * 7 + Math.floor(ph) * 5) % 10)), snap(by + 11 - u * 9), 1, 1);
         }
         ctx.restore();
       }
@@ -398,7 +398,7 @@ export class FieldScene {
       for (const m of fx.motes) {
         const sx = ox + mod(m.x + m.vx * t + Math.sin(t * m.f + m.ph) * m.amp - camX * m.par, fx.bw);
         const sy = oy + mod(m.y + m.vy * t - camY * m.par, fx.bh);
-        ctx.fillStyle = m.c; ctx.fillRect(Math.round(sx), Math.round(sy), 1, 1);
+        ctx.fillStyle = m.c; ctx.fillRect(snap(sx), snap(sy), 1, 1);
       }
     }
     const v = fx.mood?.vig;

@@ -1,4 +1,6 @@
 // 战斗特效：纯渲染，不碰战斗逻辑。effects.add('fire', x, y) 即可。
+import { snap } from '../core/draw.js';
+
 export class Effects {
   constructor(rng) { this.rng = rng; this.list = []; this.shakeT = 0; }
   add(kind, x, y, opts) { const make = FX[kind]; if (make) this.list.push(make(x, y, this.rng, opts || {})); }
@@ -33,7 +35,7 @@ const FX = {
         const d = q.v * p;
         ctx.globalAlpha = (1 - p) ** 1.5;
         ctx.fillStyle = '#ffe9b0';
-        ctx.fillRect(Math.round(Math.cos(q.a) * d), Math.round(Math.sin(q.a) * d), q.s, q.s);
+        ctx.fillRect(snap(Math.cos(q.a) * d), snap(Math.sin(q.a) * d), q.s, q.s);
       }
     } };
   },
@@ -91,7 +93,7 @@ const FX = {
         const d = q.v * p;
         ctx.globalAlpha = (1 - p) ** 1.4;
         ctx.fillStyle = p < 0.4 ? '#fff1e6' : '#c2453c';
-        ctx.fillRect(Math.round(Math.cos(q.a) * d * dir), Math.round(Math.sin(q.a) * d + p * p * 10), q.s, q.s);
+        ctx.fillRect(snap(Math.cos(q.a) * d * dir), snap(Math.sin(q.a) * d + p * p * 10), q.s, q.s);
       }
     } };
   },
@@ -105,7 +107,7 @@ const FX = {
         const lp = (p - q.d) / (1 - q.d); if (lp <= 0) continue;
         ctx.globalAlpha = (1 - lp) ** 1.2 * 0.8;
         ctx.fillStyle = lp < 0.4 ? '#efe6cc' : '#8b8474';   // 先亮后暗，像烧尽的灰
-        ctx.fillRect(Math.round(x + q.dx + Math.sin(lp * 3 + q.dx) * 2), Math.round(y + q.dy - q.v * lp), q.s, q.s);
+        ctx.fillRect(snap(x + q.dx + Math.sin(lp * 3 + q.dx) * 2), snap(y + q.dy - q.v * lp), q.s, q.s);
       }
     } };
   },
@@ -132,7 +134,7 @@ const FX = {
         ctx.globalAlpha = (1 - lp) ** 0.8;
         ctx.fillStyle = lp < 0.22 ? '#fff8e0' : lp < 0.5 ? '#ffd23f' : lp < 0.78 ? '#ff6a1f' : '#8c2b12';
         const sway = Math.sin(lp * 5 + q.w * 6.28) * 3 * lp;   // 火舌摇一下，不是直上直下
-        ctx.fillRect(Math.round(x + q.dx + sway), Math.round(y + 8 - q.vy * lp), q.s, q.s);
+        ctx.fillRect(snap(x + q.dx + sway), snap(y + 8 - q.vy * lp), q.s, q.s);
       }
     } };
   },
@@ -175,7 +177,7 @@ const FX = {
         const lp = (p - q.d) / 0.55; if (lp <= 0 || lp >= 1) continue;
         ctx.globalAlpha = (1 - lp) ** 0.7;
         ctx.fillStyle = lp < 0.5 ? '#eaffee' : '#69f0ae';
-        ctx.fillRect(Math.round(x + q.dx), Math.round(y + 10 - 28 * lp), q.s, q.s);
+        ctx.fillRect(snap(x + q.dx), snap(y + 10 - 28 * lp), q.s, q.s);
       }
     } };
   },
@@ -189,7 +191,7 @@ const FX = {
         const dist = lp < 0.45 ? q.r * (1 - inward) : (lp - 0.45) / 0.55 * 26;
         ctx.globalAlpha = lp < 0.45 ? 1 : (1 - (lp - 0.45) / 0.55);
         ctx.fillStyle = lp < 0.45 ? '#e8f8ff' : '#5cc8f5';
-        const cx = Math.round(x + Math.cos(q.a) * dist), cy = Math.round(y + Math.sin(q.a) * dist);
+        const cx = snap(x + Math.cos(q.a) * dist), cy = snap(y + Math.sin(q.a) * dist);
         const h = q.s;
         ctx.fillRect(cx, cy - h, 1, h * 2); ctx.fillRect(cx - h, cy, h * 2, 1);   // 六角雪花的两笔
         ctx.fillRect(cx - h + 1, cy - h + 1, 1, 1); ctx.fillRect(cx + h - 1, cy + h - 1, 1, 1);
@@ -210,7 +212,7 @@ const FX = {
         ctx.globalAlpha = (0.95 - lp * 0.95);
         ctx.fillStyle = lp < 0.45 ? '#d7a3e8' : '#6a1b8a';
         const sway = Math.sin(lp * 4 + q.w * 6.28) * 4 * lp;    // 毒气是飘的，不是直冲
-        ctx.fillRect(Math.round(x + q.dx + sway), Math.round(y + 8 - 22 * lp), q.s, q.s);
+        ctx.fillRect(snap(x + q.dx + sway), snap(y + 8 - 22 * lp), q.s, q.s);
       }
     } };
   },
@@ -232,6 +234,6 @@ const FX = {
   } }),
   spark: (x, y) => ({ t: 0, dur: 0.4, render(ctx, p) {
     ctx.globalAlpha = 1 - p; ctx.fillStyle = '#fff'; const r = 4 + p * 10;
-    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.fillRect(Math.round(x + Math.cos(a) * r), Math.round(y + Math.sin(a) * r), 2, 2); }
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.fillRect(snap(x + Math.cos(a) * r), snap(y + Math.sin(a) * r), 2, 2); }
   } }),
 };

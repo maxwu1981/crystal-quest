@@ -4,6 +4,7 @@ import { drawWindow, drawGauge, drawHighlight, UI } from '../ui/Window.js';
 import { drawRatio } from '../menu/common.js';
 import { statusTags } from '../game/status.js';
 import { RNG } from '../core/RNG.js';
+import { snap } from '../core/draw.js';
 
 export const PANEL_Y = 152, PANEL_H = 72, LEFT_W = 112;
 export const ENEMY_CENTERS = [[48, 62], [100, 82], [48, 114], [100, 132]];
@@ -265,7 +266,7 @@ function drawShrine(ctx, W, bg, t) {
   ctx.fillStyle = '#2b2740'; // 地上摆成一圈的祭石：火塘的边
   for (let i = 0; i < 13; i++) {
     const a = Math.PI * (i / 12);
-    ctx.fillRect(Math.round(128 - Math.cos(a) * 74), Math.round(136 + Math.sin(a) * 9), 4, 2);
+    ctx.fillRect(snap(128 - Math.cos(a) * 74), snap(136 + Math.sin(a) * 9), 4, 2);
   }
   // 火塘里剩下的一点炭：出火熄掉之后就只剩这个了。5.5 秒一次的极暗起伏
   const k = 0.5 + 0.5 * Math.sin(t * (Math.PI * 2) / 5.5);
