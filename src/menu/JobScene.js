@@ -2,7 +2,7 @@
 import { Menu } from '../ui/Menu.js';
 import { drawWindow } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
-import { computeStats, changeJob, spellsFor } from '../game/party.js';
+import { computeStats, changeJob, spellsFor, equipmentAfterJobChange } from '../game/party.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W } from './common.js';
 import { audio } from '../core/audio.js';
 
@@ -49,7 +49,10 @@ export class JobScene {
     }
     this.jobMenu.render(ctx);
     const m = this.member, id = this.jobMenu.item.value, job = this.jobs[id];
-    const cur = computeStats(m, data), next = computeStats({ ...m, jobId: id }, data);
+    // 预览必须和 changeJob 走同一套规则：新职业装不了的武器/防具先按卸下算，
+    // 否则会拿着现在的装备去算新职业，攻防虚高，转完对不上。
+    const { equipment: nextEquip, removed } = equipmentAfterJobChange(m.equipment, id, data);
+    const cur = computeStats(m, data), next = computeStats({ ...m, jobId: id, equipment: nextEquip }, data);
     drawWindow(ctx, LEFT_W, 0, 256 - LEFT_W, 224);
     drawSprite(ctx, g.sprites[`${id}_down_0`], LEFT_W + 8, 8, 48);
     drawText(ctx, `${m.name}  Lv ${m.level}`, LEFT_W + 60, 12);
@@ -61,6 +64,12 @@ export class JobScene {
       drawText(ctx, k, LEFT_W + 8, y, { color: '#8a8468' }); drawText(ctx, String(a), LEFT_W + 72, y, { align: 'right' });
       drawText(ctx, '→', LEFT_W + 80, y, { color: '#8a8468' }); drawText(ctx, String(b), LEFT_W + 124, y, { align: 'right', color: b > a ? '#9ecf7a' : b < a ? '#c8705a' : '#fff' });
     });
+    // 属性掉得多通常是因为装备被卸了，直接说明白，省得玩家以为数字算错了。
+    // 只有一行位置（下面 204 就是操作提示），装备名太长就截断加省略号
+    if (removed.length) {
+      const ls = wrapText(ctx, `卸下 ${removed.map(r => data.items[r.id].name).join('、')}`, 256 - LEFT_W - 24);
+      drawText(ctx, ls[0] + (ls.length > 1 ? '…' : ''), LEFT_W + 8, 188, { color: '#c8705a' });
+    }
     drawText(ctx, 'Z 确认   X 返回', 256 - 8, 204, { align: 'right', color: '#8a8468' });
   }
 }

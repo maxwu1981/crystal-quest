@@ -74,7 +74,12 @@ export class EquipScene {
       drawWindow(ctx, 0, 112, 256, 112);
       const it = this.game.data.items[m.equipment[SLOTS[this.slotMenu.cursor][0]]];
       if (it) {
-        const ic = it.icon && icons[it.icon];               // 神话装备的专属造型
+        // 神话装备的专属小图。icons 由 assets/art/manifest.json 的 "icons" 填充（见 assets/art.js）。
+        // 现在 manifest 里 "icons" 还是空的（美术只出了角色/敌人/地形），所以这里恒为 undefined、
+        // 布局恒走 tx = 8 那一支——这不是 bug。data/items.json 里每件神话装备的 icon id 已经齐了
+        // （tests/run.js「神话装备：都有造型 id」在管着），美术管线（tools/gen_art.py、
+        // tools/import_downloads.py）也已经会往 manifest.icons 写文件名，补上图就自动显示，不用改代码。
+        const ic = it.icon && icons[it.icon];
         const tx = ic ? 40 : 8, tw = ic ? 208 : 240;
         if (ic) drawSprite(ctx, ic, 6, 132, 28);
         drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? '#e6c46a' : '#fff' });

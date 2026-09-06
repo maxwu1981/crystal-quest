@@ -1,5 +1,8 @@
 // 角色属性计算与升级。角色持久数据只存 {name, jobId, level, exp, hp, mp, equipment, status}，其余全部推导。
 import { expForLevel } from '../battle/formulas.js';
+// items.js 反过来也 import 本模块的 computeStats；两边都只在函数体里互相调用，
+// 顶层没有任何调用，所以这个 ESM 循环引用是安全的。
+import { addItem, canEquip } from './items.js';
 
 export const STAT_KEYS = ['hp', 'mp', 'str', 'agi', 'int', 'vit', 'acc', 'eva'];
 
@@ -60,16 +63,30 @@ export function healFull(member, data) {
   member.hp = s.maxHp; member.mp = s.maxMp; member.status = {};
 }
 
+// 转职会挑职业的槽位：饰品谁都能戴，所以只查武器和防具。
+const JOB_SLOTS = ['weapon', 'armor'];
+
+// 转职后身上还留得住的装备：新职业装不了的武器/防具算作卸下。
+// 返回 { equipment: 转职后的装备表（不改原对象）, removed: [{ slot, id }] }。
+// 转职预览（menu/JobScene）和真正的 changeJob 都走这里，保证预览的属性和转完的结果一致。
+export function equipmentAfterJobChange(equipment, jobId, data) {
+  const kept = { ...equipment }, removed = [];
+  for (const slot of JOB_SLOTS) {
+    const id = kept[slot], it = id && data.items[id];
+    if (it && !canEquip(it, { jobId })) { kept[slot] = null; removed.push({ slot, id }); }
+  }
+  return { equipment: kept, removed };
+}
+
 // 转职：换职业、卸下不能装备的装备（放回背包）、HP/MP 按新上限截断。返回卸下的道具 id 列表。
 export function changeJob(member, jobId, inv, data) {
   if (!data.jobs[jobId]) return null;
   member.jobId = jobId;
-  const removed = [];
-  for (const slot of ['weapon', 'armor']) {
-    const id = member.equipment[slot], it = id && data.items[id];
-    if (it && it.jobs && !it.jobs.includes(jobId)) { member.equipment[slot] = null; inv.push({ id, qty: 1 }); removed.push(id); }
-  }
+  const { removed } = equipmentAfterJobChange(member.equipment, jobId, data);
+  // 用 addItem 而不是 inv.push：背包里已经有同款时要并进那一堆，
+  // 否则会出现两行「铁剑 ×1」，而 countItem / removeItem 只认第一堆。
+  for (const { slot, id } of removed) { member.equipment[slot] = null; addItem(inv, id, 1); }
   const s = computeStats(member, data);
   member.hp = Math.max(1, Math.min(member.hp, s.maxHp)); member.mp = Math.min(member.mp, s.maxMp);
-  return removed;
+  return removed.map(r => r.id);
 }

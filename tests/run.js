@@ -9,7 +9,7 @@ import { newGameState } from '../src/game/state.js';
 import { wrapText } from '../src/core/text.js';
 import { pickVariant, applyVariant } from '../src/field/npc.js';
 import { buyItem, sellItem } from '../src/game/shop.js';
-import { spellsFor, changeJob, healFull } from '../src/game/party.js';
+import { spellsFor, changeJob, healFull, equipmentAfterJobChange } from '../src/game/party.js';
 import { STATUS, cureStatus, persistentOnly } from '../src/game/status.js';
 import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
 import { execute, inflict } from '../src/battle/actions.js';
@@ -261,12 +261,36 @@ test('spellsFor：按等级学魔法；升级时 learned 列出新魔法', () =>
   const m = { jobId: 'talisman', level: 1, exp: 0, hp: 5, mp: 5, equipment: {} };
   const g = grantExp(m, F.expForLevel(2), data); assert(g[0].learned.join() === 'ice', `学会 ${g[0].learned}`);
 });
-test('changeJob：换职业卸下不能装的装备并放回背包，HP 截断', () => {
+test('changeJob：卸下不能装的装备并堆回背包，HP 截断，预览与实际一致', () => {
   const m = { jobId: 'boxer', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'iron_sword', armor: 'iron_armor' }, status: {} }, inv = [];
   const removed = changeJob(m, 'talisman', inv, data);
   assert(removed.length === 2 && inv.length === 2 && m.equipment.weapon === null, '卸装备'); assert(m.hp === computeStats(m, data).maxHp, 'HP 截断');
   assert(changeJob(m, 'nope', inv, data) === null);
-  const monk = { jobId: 'general', level: 4, equipment: {} }; assert(computeStats(monk, data).atk > computeStats({ ...monk, equipment: { weapon: 'knuckle' } }, data).atk - 3, '武僧空手攻击');
+
+  // 卸下的装备要并进背包里已有的那一堆（以前用 inv.push，会多出一行「铁剑 ×1」，countItem 只认第一堆）
+  const dup = { jobId: 'boxer', level: 1, exp: 0, hp: 10, mp: 0, equipment: { weapon: 'iron_sword', armor: null }, status: {} };
+  const dupInv = [{ id: 'iron_sword', qty: 1 }];
+  changeJob(dup, 'talisman', dupInv, data);
+  assert(dupInv.length === 1 && countItem(dupInv, 'iron_sword') === 2, `卸下的装备应并堆：${JSON.stringify(dupInv)}`);
+
+  // 转职预览（JobScene）要和转完的结果对得上：装不了的武器防具在预览时就该按卸下算
+  const pv = { jobId: 'boxer', level: 7, exp: 0, hp: 50, mp: 0, equipment: { weapon: 'iron_sword', armor: 'iron_armor', accessory: null }, status: {} };
+  const preview = computeStats({ ...pv, jobId: 'herbwife', equipment: equipmentAfterJobChange(pv.equipment, 'herbwife', data).equipment }, data);
+  changeJob(pv, 'herbwife', [], data);
+  const actual = computeStats(pv, data);
+  assert(preview.atk === actual.atk && preview.def === actual.def, `预览 ${preview.atk}/${preview.def} 应等于转职后 ${actual.atk}/${actual.def}`);
+
+  // 武僧（家将）空手：攻击按 unarmed × 等级算。就地造两件临时武器做对照，不依赖 items.json 里的具体拳套 id
+  const d2 = { ...data, items: { ...data.items,
+    test_weak_fist: { name: '测试破拳套', type: 'weapon', atk: 1, jobs: ['general'] },
+    test_strong_fist: { name: '测试利爪', type: 'weapon', atk: 30, jobs: ['general'] } } };
+  const monk = { jobId: 'general', level: 4, equipment: {} };
+  const bare = computeStats(monk, d2).atk;
+  const weak = computeStats({ ...monk, equipment: { weapon: 'test_weak_fist' } }, d2).atk;
+  const strong = computeStats({ ...monk, equipment: { weapon: 'test_strong_fist' } }, d2).atk;
+  assert(bare > weak, `武僧空手(${bare}) 该强过 atk 1 的破武器(${weak})`);
+  assert(strong > bare, `拿好武器(${strong}) 该强过空手(${bare})`);
+  assert(computeStats({ ...monk, level: 8 }, d2).atk > bare, '武僧空手攻击应随等级成长');
 });
 test('魔法 / 道具 / 敌人数据字段合法', () => {
   for (const [id, sp] of Object.entries(data.spells)) {

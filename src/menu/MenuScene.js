@@ -20,7 +20,7 @@ export class MenuScene {
       items: ITEMS.map(([label, value]) => ({ label, value, disabled: (value === 'load' && !loadGame()) || (value === 'job' && !game.state.flags.jobUnlocked) })),
       x: PARTY_W, y: 0, w: 256 - PARTY_W, h: MENU_H,
       onSelect: it => this.select(it.value), onCancel: () => game.scenes.pop(),
-      onDisabled: it => this.flash(it.value === 'load' ? '没有可想起的' : '需要记名的碎片'),
+      onDisabled: it => this.flash(it.value === 'load' ? '没有可想起的' : '还没拿到六堆令旗'),
     });
   }
   flash(t) { this.msg = t; this.msgT = 1.5; }
