@@ -68,7 +68,10 @@ const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'flo
 // **只翻水平**：这些瓦片的明暗都是「上方来光」，垂直翻会把受光面翻到底下去。
 // 有方向含义的（楼梯、门、屋顶、桥、柜台）一个都不能进这张表。
 // 草和沙没进来是因为它们的底纹近乎均匀，翻了也看不出差别，白占一份缓存。
-const MIRROR = new Set(['mountain', 'forest', 'cave_wall', 'cave_floor']);
+//
+// 树也在里面。抠底合成图（草地 + 抠好的树）整张翻过去连草底一起翻了，但草是近乎均匀的纹理，
+// 翻了看不出来；而树形一翻，大地图上那一列十几棵一模一样、还等距排开的树就散了。
+const MIRROR = new Set(['mountain', 'forest', 'cave_wall', 'cave_floor', 'tree']);
 
 // 把一组帧整体做水平镜像，返回和 anim 条目同形的记录（f/k/dur/ts），
 // 这样渲染时挑帧的算法可以和普通动画瓦片共用一套。
@@ -137,6 +140,9 @@ export function buildTerrainFx(map, tiles, mapId, anim) {
       if (bit & 15) { if (t === 'water') water |= bit; else if (me === 'water' && !NO_TOUCH.has(t)) land |= bit; }
     }
     const inert = NO_TOUCH.has(me) || CASTER[me] !== undefined;
+    // 镜像的骰子在这里**无条件**掷一次：不这样序列就会跟着地图上瓦片的分布走，
+    // 换一张地图整个图案都变。抠底合成图和普通瓦片共用这一次结果。
+    const mir = mrng.next() < 0.5 && MIRROR.has(me);
     // 同一张过渡图铺满一条接缝，锯齿会以一格为周期复读，一眼就看出是拼的。
     // 烘 4 个版本、按坐标挑：横着走 x 每 +1 换一个，竖着走 y 每 +1 也换，就散开了。
     const vr = (x * 5 + y * 3) & 3;
@@ -170,7 +176,8 @@ export function buildTerrainFx(map, tiles, mapId, anim) {
         const c2 = cnt[t] = (cnt[t] || 0) + 1;
         if (c2 > bn) { bn = c2; best = t; }
       }
-      const rec = best && baked(`seam|${me}|${best}`, () => seamRecord(tiles[best], tiles[me], me));
+      const raw = best && baked(`seam|${me}|${best}`, () => seamRecord(tiles[best], tiles[me], me));
+      const rec = raw && mir ? mirrorRec(`seam|${me}|${best}`, raw, null) : raw;
       if (rec) { base[i] = rec; if (rec.f.length > 1 && !seamList.includes(rec)) seamList.push(rec); }
     }
     // 2) 水岸：水格涌浪花，陆地格湿一条边。
@@ -195,10 +202,8 @@ export function buildTerrainFx(map, tiles, mapId, anim) {
     // 浓度只有两档（1 = 崖壁石墙，0.6 = 树木家具），一格只画一张，不叠。
     if (!inert && (cast & (N | W | NW))) push(shd, baked(`sh|${cast}|${castK}`, () => shadowTile(cast, castK)));
 
-    // 5) 镜像变体。必须**无条件**取这一次随机数（哪怕这格根本不镜像），
-    // 否则序列会跟着地图上瓦片的分布走，换一张地图就全变了。
-    // 让给抠底合成图（树/水晶）：那种是「草地 + 抠好的树」，翻转会把草底也翻了。
-    if (mrng.next() < 0.5 && !base[i] && MIRROR.has(me)) {
+    // 5) 普通瓦片的镜像变体（抠底合成图那一类已经在 1b 里换过了）。
+    if (mir && !base[i]) {
       const rec = mirrorRec(me, anim?.[me], tiles?.[me]);
       if (rec) { base[i] = rec; if (rec.f.length > 1 && !seamList.includes(rec)) seamList.push(rec); }
     }
