@@ -49,7 +49,18 @@
    "up_walk": "char_herbwife_up_walk.png"
   }
  },
- "enemies": {},
+ "enemies": {
+  "bee": "enemy_bee.png",
+  "goblin": "enemy_goblin.png",
+  "mandrake": "enemy_mandrake.png",
+  "slime": "enemy_slime.png",
+  "wolf": "enemy_wolf.png",
+  "bat": "enemy_bat.png",
+  "darkslime": "enemy_darkslime.png",
+  "ghost": "enemy_ghost.png",
+  "knight": "enemy_knight.png",
+  "skeleton": "enemy_skeleton.png"
+ },
  "tiles": {},
  "icons": {}
 }
