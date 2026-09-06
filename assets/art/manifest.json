@@ -79,7 +79,12 @@
   "chest_open": "tile_chest_open.png",
   "crystal": "tile_crystal.png",
   "stairs_down": "tile_stairs_down.png",
-  "stairs_up": "tile_stairs_up.png"
+  "stairs_up": "tile_stairs_up.png",
+  "bed": "tile_bed.png",
+  "bridge": "tile_bridge.png",
+  "cave_entrance": "tile_cave_entrance.png",
+  "counter": "tile_counter.png",
+  "town": "tile_town.png"
  },
  "icons": {}
 }

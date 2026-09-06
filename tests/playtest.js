@@ -79,18 +79,20 @@ export function skipDialogue(g, drv, max = 40) {
   while (g.scenes.top.constructor.name === 'DialogueScene' && n++ < max) { g.scenes.top.shown = 1e9; drv.tick(1); if (g.scenes.top.menu) break; drv.key('confirm'); }
 }
 
-// 村庄流程：走进村长家 → 对话 → 拿到任务和 100 金币 → 走出来
+// 村庄流程：走进昌黎祠 → 对话 → 拿到任务和 100 金币 → 走出来
+// 坐标随 36×34 的新村庄地图：出生点 (15,17) → 庙门 (6,16) → 庙内庙祝 (6,2)
 export function playVillage(g) {
   const drv = makeDriver(g); toField(g);
+  g.scenes.top.loadMap('village', 15, 17, 'down'); drv.tick(3);  // 不依赖前面的测试把人留在哪
   const goldBefore = g.state.gold;
-  walk(g, drv, 'left', 10); walk(g, drv, 'up', 2); drv.tick(40);
+  walk(g, drv, 'left', 9); walk(g, drv, 'up', 1); drv.tick(40);  // 沿庙前街往西 → 踏上庙门
   const inside = g.state.map.id;
-  walk(g, drv, 'up', 3);
+  walk(g, drv, 'up', 6);                                          // 庙内 (6,9) → 走到庙祝面前 (6,3)
   drv.key('confirm');
   const talked = g.scenes.top.constructor.name;
   skipDialogue(g, drv);
   const after = { questStarted: !!g.state.flags.questStarted, gold: g.state.gold, top: g.scenes.top.constructor.name };
-  walk(g, drv, 'down', 4); drv.tick(40);
+  walk(g, drv, 'down', 7); drv.tick(40);                          // 回头出庙门 (6,10)
   return { goldBefore, inside, talked, ...after, backTo: g.state.map };
 }
 
