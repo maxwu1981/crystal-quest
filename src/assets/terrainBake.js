@@ -59,14 +59,16 @@ function fringeShape(g, rng, mask, base, jag) {
     if (!(mask & bit)) continue;
     const d = depth[bit] = tongues(rng, base, jag);
     for (let i = 0; i < PX; i++) fillSide(g, bit, i, 0, d[i]);
+    // 主舌头前面再撒几粒碎的，边缘才不像一条整齐的曲线。
+    // 数量不随 ART 变（一格就该有这么几粒），但偏移和厚度是物理像素，要换算。
     for (let k = 0; k < 6; k++) {
-      const i = rng.int(1, PX - 3), off = d[i] + 1 + rng.int(0, 3);
-      if (off < PX - 3) fillSide(g, bit, i, off, off + rng.int(1, 2));
+      const i = rng.int(1, PX - u(3)), off = d[i] + u(1) + rng.int(0, u(3));
+      if (off < PX - u(3)) fillSide(g, bit, i, off, off + u(rng.int(1, 2)));
     }
   }
   for (const [bit, dx, dy, need] of CORNERS) {
     if (!(mask & bit) || (mask & need)) continue;
-    const r = Math.max(2, base);                        // 只在对角单独挨着时补一小块三角
+    const r = Math.max(u(2), base);                     // 只在对角单独挨着时补一小块三角（base 已由调用方换算）
     for (let k = 0; k < r; k++) {
       const w = r - k;
       g.fillRect(dx > 0 ? PX - w : 0, dy > 0 ? PX - 1 - k : k, w, 1);
@@ -328,7 +330,9 @@ function blotch(g, rng, color, a) {
   const cx = rng.int(rx + 1, PX - rx - 2), cy = rng.int(ry + 1, PX - ry - 2);
   g.fillStyle = color;
   for (let dy = -ry; dy <= ry; dy++) {
-    const w = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry + 0.5)))) + rng.int(-1, 1);
+    // 宽度抖一下，边缘才不规整。抖幅也得跟着 U 放大——
+    // 半径已经是 12–21 物理像素了，再抖 ±1 等于没抖，斑块会变成一个标准椭圆。
+    const w = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry + 0.5)))) + us(rng.int(-1, 1));
     if (w <= 0) continue;
     const y = cy + dy;
     if (Math.abs(dy) >= ry - 1) { for (let x = cx - w; x <= cx + w; x += 2) g.fillRect(x, y, 1, 1); }
