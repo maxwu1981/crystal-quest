@@ -72,6 +72,33 @@ class Handler(BaseHTTPRequestHandler):
         self.reply(200, {'count': len(files), 'files': files, 'manifest': load_manifest()})
 
     def do_POST(self):
+        # 表单提交（application/x-www-form-urlencoded）：浏览器把它当导航，不受 CORS / PNA 限制
+        ctype = self.headers.get('Content-Type', '')
+        if 'x-www-form-urlencoded' in ctype:
+            from urllib.parse import parse_qs
+            n = int(self.headers.get('Content-Length') or 0)
+            q = parse_qs(self.rfile.read(n).decode('utf-8', 'replace'))
+            # 支持一次传多张：字段 f0/d0, f1/d1, ...（或单张的 f/d）
+            pairs = []
+            if q.get('f'): pairs.append(((q.get('f') or [''])[0], (q.get('d') or [''])[0]))
+            i = 0
+            while ('f%d' % i) in q:
+                pairs.append((q['f%d' % i][0], q.get('d%d' % i, [''])[0])); i += 1
+            lines = []
+            for fname, data in pairs:
+                try:
+                    if not SAFE.match(fname): raise ValueError('bad name ' + fname)
+                    raw = base64.b64decode(data + '=' * (-len(data) % 4))
+                    if raw[:8] != b'\x89PNG\r\n\x1a\n': raise ValueError('not a PNG')
+                    os.makedirs(ART, exist_ok=True)
+                    open(os.path.join(ART, fname), 'wb').write(raw)
+                    print(f'  <= {fname}  {len(raw)} bytes', flush=True); lines.append('OK ' + fname)
+                except Exception as e:
+                    print(f'  !! {fname}: {e}', flush=True); lines.append('FAIL %s (%s)' % (fname, e))
+            body = ('<pre id="r">' + '\n'.join(lines) + '</pre>').encode()
+            self.send_response(200); self.cors()
+            self.send_header('Content-Type', 'text/html; charset=utf-8'); self.send_header('Content-Length', str(len(body)))
+            self.end_headers(); self.wfile.write(body); return
         try:
             n = int(self.headers.get('Content-Length') or 0)
             if n > 8 * 1024 * 1024: return self.reply(413, {'error': 'too large'})

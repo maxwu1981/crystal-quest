@@ -12,6 +12,7 @@ import { grantExp } from '../game/party.js';
 import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { drawArt, artW, artH } from '../core/draw.js';
+import { layersFor } from '../assets/equip.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
@@ -255,7 +256,9 @@ export class BattleScene {
       const [x, y] = this.actorRect(p);
       const bob = (this.current === p || (this.won && p.alive)) && Math.floor(this.time * 4) % 2 ? 1 : 0;
       const key = p.alive ? `${p.jobId}_left_${bob}` : `${p.jobId}_downed`;
-      drawArt(ctx, this.game.sprites[key], x - this.lungeOffset(p), y - (this.won && p.alive ? bob * 2 : 0));
+      const dx = x - this.lungeOffset(p), dy = y - (this.won && p.alive ? bob * 2 : 0);
+      drawArt(ctx, this.game.sprites[key], dx, dy);
+      if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, g, dx, dy); // 装备叠加
     }
     this.fx.render(ctx);
     if (this.phase === 'input' && this.sub === 'target') {

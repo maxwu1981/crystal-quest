@@ -9,6 +9,7 @@ import { loadData } from '../data/loader.js';
 import { buildSprites } from '../assets/sprites.js';
 import { buildTiles } from '../assets/tiles.js';
 import { loadArt } from '../assets/art.js';
+import { buildEquipLayers } from '../assets/equip.js';
 import { ART, LOGICAL_W, LOGICAL_H } from './draw.js';
 import { newGameState } from '../game/state.js';
 import { FieldScene } from '../field/FieldScene.js';
@@ -46,6 +47,7 @@ export class Game {
     this.sprites = buildSprites();
     this.tiles = buildTiles(new RNG(12345));
     this.artCount = await loadArt(this.sprites, this.tiles); // 有 assets/art/ 正式美术就覆盖占位图
+    this.equipCount = buildEquipLayers(this.data.items); // 装备叠加层（穿上就看得见）
     this.state = newGameState(this.data);
     this.scenes.push(new TitleScene(this));
     this.loopStats = startLoop({

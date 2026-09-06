@@ -1,6 +1,7 @@
 // 地图行走：网格移动、镜头跟随、步数制遇敌、门传送、NPC 对话。
 import { TILE } from '../assets/tiles.js';
 import { drawArt, artH } from '../core/draw.js';
+import { layersFor } from '../assets/equip.js';
 import { drawText } from '../core/text.js';
 import { drawWindow } from '../ui/Window.js';
 import { healFull } from '../game/party.js';
@@ -205,7 +206,12 @@ export class FieldScene {
     const frame = p.moving ? Math.floor(this.animT * 8) % 2 : 0;
     const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
     const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
-    drawables.push({ y: py, draw: () => drawArt(ctx, spr, Math.round(px - camX), Math.round(py - camY) - (artH(spr) - TILE)) }); // 高精灵脚贴格子底
+    const gear = layersFor(leader, p.dir); // 穿在身上的装备
+    drawables.push({ y: py, draw: () => {
+      const dx = Math.round(px - camX), dy = Math.round(py - camY) - (artH(spr) - TILE); // 高精灵脚贴格子底
+      drawArt(ctx, spr, dx, dy);
+      for (const g of gear) drawArt(ctx, g, dx, dy);
+    } });
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
     if (this.poisonT > 0) { ctx.fillStyle = 'rgba(120,40,160,0.35)'; ctx.fillRect(0, 0, W, H); }
     if (this.nameT > 0 && map.name) {
