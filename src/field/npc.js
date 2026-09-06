@@ -24,6 +24,18 @@ export function applyVariant(v, state) {
   return v.lines;
 }
 
+// 脚下的一小块椭圆影。方向影会在格线上切出方坑（地图是逐格画的），所以用居中的椭圆。
+// 导出给 FieldScene 画主角用——只给 NPC 加会不一致。
+export function drawShadow(ctx, dx, dy) {
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(dx + TILE / 2, dy + TILE - 2, TILE * 0.30, TILE * 0.14, 0, 0, 6.29);
+  ctx.fill();
+  ctx.restore();
+}
+
 export class NPC {
   constructor(def, field) {
     this.def = def; this.field = field;
@@ -33,7 +45,13 @@ export class NPC {
   }
   get sprite() { return this.def.sprite || 'man'; }
   occupies(x, y) { return (this.x === x && this.y === y) || (this.moving && this.fromX === x && this.fromY === y); }
-  faceToward(x, y) { this.dir = x < this.x ? 'left' : x > this.x ? 'right' : y < this.y ? 'up' : 'down'; }
+  // 转向玩家时把原来的朝向记下来，聊完转回去——
+  // 不转回来的话，玩家在庄里走一圈，一庄的人就全都朝着他站着，很怪
+  faceToward(x, y) {
+    if (this.homeDir === undefined) this.homeDir = this.dir;
+    this.dir = x < this.x ? 'left' : x > this.x ? 'right' : y < this.y ? 'up' : 'down';
+  }
+  faceHome() { if (this.homeDir !== undefined) { this.dir = this.homeDir; this.homeDir = undefined; } }
   stop() { this.moving = false; this.t = 0; this.fromX = this.x; this.fromY = this.y; }
 
   update(dt) {
@@ -60,6 +78,8 @@ export class NPC {
     const [px, py] = this.renderPos();
     const frame = this.moving ? (Math.floor(this.phase || 0) ? 2 : 1) : 0;
     const spr = sprites[`${this.sprite}_${this.dir}_${frame}`] || sprites[`man_${this.dir}_0`];
-    drawArt(ctx, spr, Math.round(px - camX), Math.round(py - camY) - (artH(spr) - TILE));
+    const dx = Math.round(px - camX), dy = Math.round(py - camY);
+    drawShadow(ctx, dx, dy);   // 树和宝箱都有落影，人没有的话看着像浮在地上
+    drawArt(ctx, spr, dx, dy - (artH(spr) - TILE));
   }
 }

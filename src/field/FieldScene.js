@@ -11,7 +11,7 @@ import { campParty } from '../game/items.js';
 import { MenuScene } from '../menu/MenuScene.js';
 import { DialogueScene } from '../ui/DialogueScene.js';
 import { ShopScene } from './ShopScene.js';
-import { NPC, pickVariant, applyVariant } from './npc.js';
+import { NPC, pickVariant, applyVariant, drawShadow } from './npc.js';
 import { DIRS, lerp, clamp } from './grid.js';
 import { audio } from '../core/audio.js';
 import { renderMinimap, renderFullMap } from './minimap.js';
@@ -132,6 +132,7 @@ export class FieldScene {
   }
   resume() {
     this.refreshNpcs();
+    for (const n of this.npcs) n.faceHome();   // 聊完转回去，否则走一圈全庄的人都朝着你
     const ab = this.afterBattle; this.afterBattle = null;
     if (ab && this.game.state.flags[ab.flag]) this.game.scenes.push(new DialogueScene(this.game, { name: ab.name, face: ab.face, pages: ab.pages }));
   }
@@ -373,6 +374,7 @@ export class FieldScene {
     const gear = layersFor(leader, p.dir); // 穿在身上的装备
     drawables.push({ y: py, draw: () => {
       const dx = Math.round(px - camX), dy = Math.round(py - camY) - (artH(spr) - TILE); // 高精灵脚贴格子底
+      drawShadow(ctx, Math.round(px - camX), Math.round(py - camY));
       drawArt(ctx, spr, dx, dy);
       for (const g of gear) drawArt(ctx, g, dx, dy);
     } });

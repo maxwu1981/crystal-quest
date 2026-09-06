@@ -1,6 +1,8 @@
 // 商店：购买 / 出售 / 离开
 import { Menu } from '../ui/Menu.js';
 import { drawWindow, UI } from '../ui/Window.js';
+import { drawMenuIcons, iconGap } from '../menu/icons.js';
+import { itemIcon } from '../assets/equip.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem } from '../game/items.js';
 import { buyItem, sellItem, sellPrice, describeItem } from '../game/shop.js';
@@ -26,8 +28,10 @@ export class ShopScene {
     // 金额单独上暗金（Menu 的 rightColor）：一排商品里只有价钱是要玩家做决定的数字，
     // 和菜单信息栏的「金币」、右上角的持有金币同色，一眼就能把三处的钱串起来看。
     const items = this.mode === 'buy'
-      ? this.ids.map(id => ({ label: data.items[id].name, value: id, right: `${data.items[id].price}G`, rightColor: UI.accent }))
-      : inv.map(s => ({ label: data.items[s.id].name, value: s.id, right: `${sellPrice(data.items[s.id])}G`, rightColor: UI.accent }));
+      // 标签前留出图标位，跟道具列表、装备页同一套排版——
+      // 一排商品全是文字的话，玩家得逐行读名字才知道哪个是药哪个是剑
+      ? this.ids.map(id => ({ label: iconGap() + data.items[id].name, value: id, right: `${data.items[id].price}G`, rightColor: UI.accent }))
+      : inv.map(s => ({ label: iconGap() + data.items[s.id].name, value: s.id, right: `${sellPrice(data.items[s.id])}G`, rightColor: UI.accent }));
     if (!items.length) items.push({ label: this.mode === 'buy' ? '（没有商品）' : '（没有可卖的东西）', disabled: true });
     this.list = new Menu({ items, x: 0, y: 32, w: 176, h: 192, onSelect: it => this.trade(it.value), onCancel: () => { this.mode = 'root'; this.msg = GREETING; } });
     this.list.cursor = Math.min(keep, items.length - 1); this.lastCursor = this.list.cursor;
@@ -51,7 +55,7 @@ export class ShopScene {
     // 不换颜色的话玩家分不出这句是商品说明还是刚才那笔交易的回应
     drawText(ctx, this.msg || (hovered ? describeItem(hovered, data) : GREETING), 8, 10, { color: this.msg && this.msg !== GREETING ? UI.accent : UI.text });
     if (this.mode === 'root') { drawWindow(ctx, 0, 32, 176, 192); drawText(ctx, this.name, 8, 40, { color: UI.dim }); }
-    else this.list.render(ctx);
+    else { this.list.render(ctx); drawMenuIcons(ctx, this.list, it => it.value ? itemIcon(it.value, data.items[it.value]) : null); }
     this.root.render(ctx);
     drawWindow(ctx, 176, 88, 80, 28);
     drawText(ctx, `${st.gold} G`, 248, 96, { align: 'right', color: UI.accent }); // 钱包也是暗金，和商品价钱对得上
