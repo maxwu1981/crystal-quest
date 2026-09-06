@@ -82,10 +82,13 @@ export function skipDialogue(g, drv, max = 40) {
 // 村庄流程：走进昌黎祠 → 对话 → 拿到任务和 100 金币 → 走出来
 // 坐标随 36×34 的新村庄地图：出生点 (15,17) → 庙门 (6,16) → 庙内庙祝 (6,2)
 export function playVillage(g) {
-  const drv = makeDriver(g); toField(g);
-  g.scenes.top.loadMap('village', 15, 17, 'down'); drv.tick(3);  // 不依赖前面的测试把人留在哪
+  const drv = makeDriver(g); const f = (toField(g), g.scenes.top);
+  f.loadMap('village', 15, 17, 'down'); drv.tick(3);              // 不依赖前面的测试把人留在哪
+  // refreshNpcs 会复用旧的 NPC 实例，闲逛过的阿妹可能正好站在路线上 → 归位再冻住，路线才可复现
+  for (const n of f.npcs) { n.x = n.fromX = n.ox = n.def.x; n.y = n.fromY = n.oy = n.def.y; n.stop(); n.timer = 1e9; }
   const goldBefore = g.state.gold;
-  walk(g, drv, 'left', 9); walk(g, drv, 'up', 1); drv.tick(40);  // 沿庙前街往西 → 踏上庙门
+  walk(g, drv, 'down', 1);                                        // 下到庙前大街（17 排 (9,17) 站着阿妹）
+  walk(g, drv, 'left', 9); walk(g, drv, 'up', 2); drv.tick(40);   // 往西走到庙埕 → 踏上庙门 (6,16)
   const inside = g.state.map.id;
   walk(g, drv, 'up', 6);                                          // 庙内 (6,9) → 走到庙祝面前 (6,3)
   drv.key('confirm');
@@ -93,7 +96,7 @@ export function playVillage(g) {
   skipDialogue(g, drv);
   const after = { questStarted: !!g.state.flags.questStarted, gold: g.state.gold, top: g.scenes.top.constructor.name };
   walk(g, drv, 'down', 7); drv.tick(40);                          // 回头出庙门 (6,10)
-  return { goldBefore, inside, talked, ...after, backTo: g.state.map };
+  return { goldBefore, inside, talked, ...after, backTo: { ...g.state.map } };
 }
 
 // 旅馆：直接调用 runInn（不用走路）

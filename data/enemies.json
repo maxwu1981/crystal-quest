@@ -147,27 +147,29 @@
  "knight": {
   "name": "乌火",
   "sprite": "knight",
-  "hp": 400,
-  "mp": 60,
-  "atk": 24,
-  "def": 12,
-  "acc": 50,
-  "eva": 8,
-  "spd": 9,
-  "mdef": 10,
-  "int": 10,
-  "crit": 8,
-  "exp": 300,
-  "gold": 400,
+  "hp": 1250,
+  "mp": 200,
+  "atk": 30,
+  "def": 16,
+  "acc": 60,
+  "eva": 10,
+  "spd": 12,
+  "mdef": 14,
+  "int": 14,
+  "crit": 10,
+  "exp": 900,
+  "gold": 1200,
   "weak": [],
   "resist": [
    "dark"
   ],
   "immune": [
    "sleep",
-   "poison"
+   "poison",
+   "blind"
   ],
   "spells": [
+   "emberfall",
    "dark",
    "sleep"
   ],

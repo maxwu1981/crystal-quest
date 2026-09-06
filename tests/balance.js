@@ -21,16 +21,28 @@ const TIERS = [
                       herbwife: ['iron_staff', 'silk_robe'], talisman: ['iron_staff', 'silk_robe'],
                       general: ['iron_knuckle', 'silk_robe'], peddler: ['steel_sword', 'silk_robe'] } },
 ];
-const GEAR = level => TIERS.find(t => level <= t.upto).gear;
+// 决战装备：玩家把迷宫宝箱都开了才有的配置。只看商店档会严重低估玩家强度，
+// Boss 平衡必须按这一档来算。
+const ENDGAME = {
+  boxer:    ['steel_sword', 'iron_armor'],
+  hunter:   ['harpe', 'bronze_armor'],
+  general:  ['vajra', 'silk_robe'],
+  herbwife: ['caduceus', 'hagoromo'],
+  talisman: ['laevateinn', 'silk_robe'],
+  peddler:  ['ganjiang', 'silk_robe'],
+};
+const GEAR = (level, endgame) => endgame ? ENDGAME : TIERS.find(t => level <= t.upto).gear;
 // 职业改名后最容易忘了同步这张表，缺一个就当场报错，别默默算错
 export function checkGear(data) {
   for (const t of TIERS) for (const id of Object.keys(data.jobs))
     if (!t.gear[id]) throw new Error(`balance.js 的装备表缺少职业 ${id}（等级 ≤ ${t.upto}）`);
+  for (const id of Object.keys(data.jobs))
+    if (!ENDGAME[id]) throw new Error(`balance.js 的决战装备表缺少职业 ${id}`);
 }
 
-function scene(data, level, enemyIds, seed) {
+function scene(data, level, enemyIds, seed, endgame) {
   const st = newGameState(data);
-  for (const m of st.party) { m.level = level; const [w, a] = GEAR(level)[m.jobId]; m.equipment = { weapon: w, armor: a }; healFull(m, data); }
+  for (const m of st.party) { m.level = level; const [w, a] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: null }; healFull(m, data); }
   const s = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: false,
     fx: { add() {} }, popup() {}, center() { return [0, 0]; },
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
@@ -52,8 +64,8 @@ function decide(s, p) {
   if (attacks.length && (p.jobId === 'talisman' || p.jobId === 'peddler')) { const id = attacks[0]; return { type: 'magic', spellId: id, target: sp[id].scope === 'all' ? 'all' : weakest }; }
   return { type: 'attack', target: weakest };
 }
-function fight(data, level, enemyIds, seed) {
-  const s = scene(data, level, enemyIds, seed);
+function fight(data, level, enemyIds, seed, endgame) {
+  const s = scene(data, level, enemyIds, seed, endgame);
   let rounds = 0;
   while (s.alive(s.party).length && s.alive(s.enemies).length && rounds++ < 40) {
     const acts = [];
@@ -72,15 +84,18 @@ export async function run(data = null, n = 30) {
   data ||= await loadData(location.pathname.includes('/tests/') ? '../data/' : './data/');
   checkGear(data);
   const rows = [];
-  const zones = { ...data.encounters, boss: { groups: [{ enemies: ['knight'], weight: 1 }] } };
-  const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8], boss: [6, 7, 8, 9, 10, 12] };
+  const zones = { ...data.encounters,
+    boss: { groups: [{ enemies: ['knight'], weight: 1 }] },
+    'boss(决战装备)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: true } };
+  const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
+                   boss: [6, 7, 8, 9], 'boss(决战装备)': [6, 7, 8, 9, 10] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
       const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0 };
       const rng = new RNG(1000 + level);
       for (let i = 0; i < n; i++) {
         const g = rng.weighted(z.groups, x => x.weight);
-        const f = fight(data, level, g.enemies, 7 + i * 13 + level);
+        const f = fight(data, level, g.enemies, 7 + i * 13 + level, z.endgame);
         r.fights++; r.wins += f.won; r.hpLoss += f.hpLoss; r.mpLoss += f.mpLoss; r.rounds += f.rounds; r.deaths += f.dead;
       }
       rows.push({ zone, level, winRate: Math.round(100 * r.wins / r.fights), hpLoss: Math.round(100 * r.hpLoss / r.fights), mpLoss: Math.round(100 * r.mpLoss / r.fights), rounds: +(r.rounds / r.fights).toFixed(1), deaths: +(r.deaths / r.fights).toFixed(2) });

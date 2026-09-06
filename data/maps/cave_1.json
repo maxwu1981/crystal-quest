@@ -60,9 +60,9 @@
       "y": 18,
       "type": "warp",
       "to": {
-        "map": "village",
-        "x": 15,
-        "y": 1,
+        "map": "overworld",
+        "x": 20,
+        "y": 4,
         "facing": "down"
       }
     },
