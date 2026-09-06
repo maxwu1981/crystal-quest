@@ -6,7 +6,7 @@
    "hp": 30
   },
   "price": 30,
-  "desc": "补回 30 点生机",
+  "desc": "恢复 30 HP",
   "battle": true,
   "field": true
  },
@@ -17,7 +17,7 @@
    "hp": 100
   },
   "price": 150,
-  "desc": "补回 100 点生机",
+  "desc": "恢复 100 HP",
   "battle": true,
   "field": true
  },
@@ -28,7 +28,7 @@
    "hp": 300
   },
   "price": 600,
-  "desc": "补回 300 点生机",
+  "desc": "恢复 300 HP",
   "battle": true,
   "field": true
  },
@@ -39,7 +39,7 @@
    "mp": 15
   },
   "price": 120,
-  "desc": "补回 15 点余响",
+  "desc": "恢复 15 MP",
   "battle": true,
   "field": true
  },
@@ -50,7 +50,7 @@
    "mp": 50
   },
   "price": 450,
-  "desc": "补回 50 点余响",
+  "desc": "恢复 50 MP",
   "battle": true,
   "field": true
  },
@@ -61,7 +61,7 @@
    "revive": 0.5
   },
   "price": 200,
-  "desc": "把断掉的气接上，回来时剩一半生机",
+  "desc": "复活并恢复一半 HP",
   "battle": true,
   "field": true
  },
@@ -117,7 +117,7 @@
    ]
   },
   "price": 1200,
-  "desc": "生机与余响一并填满，杂响尽去",
+  "desc": "完全恢复 HP MP 并解除异常",
   "battle": true,
   "field": true
  },
@@ -128,7 +128,7 @@
    "camp": true
   },
   "price": 100,
-  "desc": "点起来睡一觉，全员复原（只能在野外用）",
+  "desc": "全员完全恢复（只能在地图上用）",
   "battle": false,
   "field": true
  },

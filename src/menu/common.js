@@ -26,7 +26,7 @@ export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, 
     drawText(ctx, `${m.name}  ${job.name}`, x + 52, ry, { color: col });
     drawText(ctx, `Lv ${m.level}`, x + 52, ry + LINE_H, { color: col });
     statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, x + 92 + k * 28, ry + LINE_H, { color: t.color }));
-    drawText(ctx, dead ? '失去声音' : `HP ${m.hp}/${s.maxHp}  响 ${m.mp}/${s.maxMp}`, x + 52, ry + LINE_H * 2,
+    drawText(ctx, dead ? '失去声音' : `HP ${m.hp}/${s.maxHp}  MP ${m.mp}/${s.maxMp}`, x + 52, ry + LINE_H * 2,
       { color: !dead && m.hp <= s.maxHp / 4 ? '#c8705a' : col });
   });
 }
@@ -35,7 +35,7 @@ export function drawInfoPanel(ctx, game, x, y, w, h) {
   drawWindow(ctx, x, y, w, h);
   const st = game.state, t = Math.floor(st.playTime || 0);
   const time = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
-  [['拾得', `${st.gold} 枚`], ['走过', String(st.steps)], ['时间', time]].forEach(([k, v], i) => {
+  [['金币', `${st.gold} G`], ['步数', String(st.steps)], ['时间', time]].forEach(([k, v], i) => {
     drawText(ctx, k, x + 8, y + 8 + i * LINE_H, { color: '#8a8468' });
     drawText(ctx, v, x + w - 8, y + 8 + i * LINE_H, { align: 'right' });
   });

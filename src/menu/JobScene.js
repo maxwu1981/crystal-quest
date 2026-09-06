@@ -55,7 +55,7 @@ export class JobScene {
     drawText(ctx, `${m.name}  Lv ${m.level}`, LEFT_W + 60, 12);
     drawText(ctx, `${this.jobs[m.jobId].name} → ${job.name}`, LEFT_W + 60, 12 + LINE_H, { color: '#e6c46a' });
     wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, 3).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: '#8a8468' }));
-    const rows = [['生机', cur.maxHp, next.maxHp], ['余响', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['言灵', spellsFor(this.jobs[m.jobId], m.level).length, spellsFor(job, m.level).length]];
+    const rows = [['HP', cur.maxHp, next.maxHp], ['MP', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['魔法', spellsFor(this.jobs[m.jobId], m.level).length, spellsFor(job, m.level).length]];
     rows.forEach(([k, a, b], i) => {
       const y = 108 + i * LINE_H;
       drawText(ctx, k, LEFT_W + 8, y, { color: '#8a8468' }); drawText(ctx, String(a), LEFT_W + 72, y, { align: 'right' });

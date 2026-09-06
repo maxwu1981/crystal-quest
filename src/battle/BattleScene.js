@@ -13,7 +13,7 @@ import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { drawArt, artW, artH } from '../core/draw.js';
 
-const CMD = { attack: '出手', magic: '言灵', defend: '守势', item: '物品', flee: '退开' };
+const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
 
 export class BattleScene {
@@ -200,7 +200,7 @@ export class BattleScene {
     const alive = this.alive(this.party), spells = this.game.data.spells;
     const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;
     this.game.state.gold += gold;
-    this.msg = `听到 ${share} 点回声\n拾到 ${gold} 枚`; yield 'confirm';
+    this.msg = `获得 ${share} 经验值\n获得 ${gold} 金币`; yield 'confirm';
     for (const r of this.opts.reward || []) { // Boss 掉落
       addItem(this.game.state.inventory, r.id, r.qty || 1);
       const it = this.game.data.items[r.id]; audio.sfx('levelup');
@@ -210,8 +210,8 @@ export class BattleScene {
       this.syncMember(a);
       for (const g of grantExp(a.member, share, this.game.data)) {
         a.level = g.level; a.hp = a.member.hp; a.mp = a.member.mp; audio.sfx('levelup');
-        this.msg = `${a.name} 的回声更响了（${g.level} 级）\n生机 +${g.hpUp}  余响 +${g.mpUp}`;
-        if (g.learned.length) this.msg += `\n想起了一个词：${g.learned.map(id => spells[id]?.name || id).join('、')}`;
+        this.msg = `${a.name} 升到了 ${g.level} 级！\nHP 最大值 +${g.hpUp}  MP 最大值 +${g.mpUp}`;
+        if (g.learned.length) this.msg += `\n学会了 ${g.learned.map(id => spells[id]?.name || id).join('、')}！`;
         yield 'confirm';
       }
     }

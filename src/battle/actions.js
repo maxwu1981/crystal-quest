@@ -87,14 +87,14 @@ function* attack(scene, actor, a) {
 
 function* castSpell(scene, actor, a) {
   const sp = scene.game.data.spells[a.spellId];
-  if (actor.mp < sp.mp) { scene.msg = `${actor.name} 的余响不够`; audio.sfx('buzz'); yield 0.6; return; }
+  if (actor.mp < sp.mp) { scene.msg = `${actor.name} 的 MP 不足！`; audio.sfx('buzz'); yield 0.6; return; }
   const ally = sp.target === 'ally';
   const targets = a.target === 'all'
     ? (sp.revive ? scene.party.filter(p => !p.alive) : scene.alive(ally ? scene.party : scene.enemies))
     : [sp.revive ? a.target : scene.retarget(a.target)].filter(Boolean);
   if (!targets.length) { scene.msg = `${actor.name} 施放了 ${sp.name}！\n没有对象`; yield 0.6; return; }
   actor.mp -= sp.mp;
-  scene.msg = `${actor.name} 念出「${sp.name}」`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
+  scene.msg = `${actor.name} 施放了 ${sp.name}！`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
   for (const t of targets) yield* spellOn(scene, actor, sp, t);
 }
 

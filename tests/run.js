@@ -315,7 +315,7 @@ test('行动协程：全体魔法打到每个敌人；MP 不足不施放；毒�
   assert(s.enemies.every((e, i) => e.hp < hp0[i]), '烈焰应打到全体');
   let n = 0; while (!s.enemies[0].status.poison && n++ < 10 && bm.mp >= 8) s.run({ actor: bm, type: 'magic', spellId: 'poison', target: 'all' });
   assert(s.enemies[0].status.poison || !s.enemies[0].alive, '毒雾应能下毒'); assert(!s.enemies[2].status.poison, '骷髅免疫毒');
-  bm.mp = 0; s.run({ actor: bm, type: 'magic', spellId: 'fire', target: s.enemies[0] }); assert(s.msg.includes('余响不够'), s.msg);
+  bm.mp = 0; s.run({ actor: bm, type: 'magic', spellId: 'fire', target: s.enemies[0] }); assert(s.msg.includes('MP 不足'), s.msg);
   const t = { immune: ['sleep'], status: {} }; assert(inflict(s, t, 'sleep') === false);
 });
 test('敌人附带状态攻击（黑史莱姆下毒）与战斗结束只保留持续状态', () => {

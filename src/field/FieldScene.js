@@ -160,7 +160,7 @@ export class FieldScene {
     if (this.chestOpened(ev)) { g.scenes.push(new DialogueScene(g, { pages: ['里面已经空了。'] })); return; }
     st.flags[`chest:${ev.id}`] = true; audio.sfx('coin');
     let text;
-    if (ev.gold) { st.gold += ev.gold; text = `拾到了 ${ev.gold} 枚。`; }
+    if (ev.gold) { st.gold += ev.gold; text = `获得了 ${ev.gold} 金币！`; }
     else { addItem(st.inventory, ev.item, ev.qty || 1); const it = g.data.items[ev.item]; text = `拾到了 ${it.name}${ev.qty > 1 ? ' ×' + ev.qty : ''}。`; }
     g.scenes.push(new DialogueScene(g, { pages: [text] }));
   }
@@ -177,7 +177,7 @@ export class FieldScene {
       name: def.name, pages, choices: ['住宿', '不了'],
       onDone: r => {
         if (r !== 0) return;
-        if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.poor || ['钱不太够呢……'] })); return; }
+        if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.poor || ['金币不太够呢……'] })); return; }
         g.state.gold -= price;
         g.fadeTo(() => { campParty(g.state.party, g.data); audio.sfx('heal'); g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
       },

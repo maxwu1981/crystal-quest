@@ -44,7 +44,7 @@ export function drawPartyStatus(ctx, scene) {
     tags.slice(0, 2).forEach((t, k) => drawText(ctx, t.short, x0 + 42 + k * 8, y, { color: t.color })); // 状态标签：毒 眠 盲 护
     drawText(ctx, 'HP', x0 + 60, y, { color: '#8a8468' });
     drawText(ctx, String(p.hp), x0 + 98, y, { align: 'right', color: p.alive && p.hp <= p.maxHp / 4 ? '#c8705a' : col });
-    drawText(ctx, '响', x0 + 106, y, { color: '#8a8468' });
+    drawText(ctx, 'MP', x0 + 104, y, { color: '#8a8468' });
     drawText(ctx, String(p.mp), x0 + 136, y, { align: 'right', color: col });
     if (scene.mode === 'atb') {
       ctx.fillStyle = '#2a2a4a'; ctx.fillRect(x0 + 8, y + 11, 40, 1);
