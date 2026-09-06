@@ -33,7 +33,7 @@
   "field": true
  },
  "ether": {
-  "name": "余响之滴",
+  "name": "符水",
   "type": "consumable",
   "effect": {
    "mp": 15
@@ -44,7 +44,7 @@
   "field": true
  },
  "hiether": {
-  "name": "余响之泉",
+  "name": "浓符水",
   "type": "consumable",
   "effect": {
    "mp": 50
@@ -55,7 +55,7 @@
   "field": true
  },
  "phoenix": {
-  "name": "未尽之息",
+  "name": "叫魂符",
   "type": "consumable",
   "effect": {
    "revive": 0.5
@@ -74,7 +74,7 @@
    ]
   },
   "price": 20,
-  "desc": "止住褪色",
+  "desc": "逼出身上的毒",
   "battle": true,
   "field": true
  },
@@ -105,7 +105,7 @@
   "field": true
  },
  "elixir": {
-  "name": "圆响",
+  "name": "补运汤",
   "type": "consumable",
   "effect": {
    "hp": 999,

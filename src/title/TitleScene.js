@@ -22,13 +22,13 @@ export class TitleScene {
     const { W, H } = this.game;
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0b100f'); g.addColorStop(0.7, '#1b2320'); g.addColorStop(1, '#2e3428');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // 缓缓上浮的灰烬，而不是星星
+    // 缓缓上浮的灰烬（出火熄掉那晚飘起来的），而不是星星
     for (const [x, y, ph] of this.stars) {
       const yy = (y - this.t * 6 + ph * 20) % H;
       ctx.fillStyle = `rgba(216,207,168,${0.10 + 0.30 * Math.abs(Math.sin(this.t + ph))})`;
       ctx.fillRect(x, yy < 0 ? yy + H : yy, 1, 1);
     }
-    // 一圈扩散的回声波纹
+    // 一圈扩散的余温波纹
     for (let i = 0; i < 3; i++) {
       const p = ((this.t * 0.22 + i / 3) % 1);
       ctx.strokeStyle = `rgba(200,190,150,${0.16 * (1 - p)})`; ctx.lineWidth = 1;

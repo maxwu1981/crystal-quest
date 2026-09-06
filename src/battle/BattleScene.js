@@ -196,7 +196,7 @@ export class BattleScene {
 
   *victoryCo() {
     this.bgm = null; this.won = true; audio.sfx('victory');
-    this.msg = '回声平息了'; yield 1.0;
+    this.msg = '打赢了！'; yield 1.0;
     const exp = this.enemies.reduce((s, e) => s + e.exp, 0), gold = this.enemies.reduce((s, e) => s + e.gold, 0);
     const alive = this.alive(this.party), spells = this.game.data.spells;
     const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;

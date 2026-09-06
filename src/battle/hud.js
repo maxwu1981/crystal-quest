@@ -8,7 +8,7 @@ export const ENEMY_CENTERS = [[48, 62], [100, 82], [48, 114], [100, 132]];
 export const PARTY_X = 204, PARTY_Y0 = 44, PARTY_DY = 26;
 
 export function drawBackground(ctx, W) {
-  // 褪色的天与地：越靠近地面颜色越被抽干
+  // 山里的天与地：越靠近地面颜色越沉
   const g = ctx.createLinearGradient(0, 0, 0, PANEL_Y);
   g.addColorStop(0, '#232a33'); g.addColorStop(0.6, '#3b4038'); g.addColorStop(1, '#565a48');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, PANEL_Y);
