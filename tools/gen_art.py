@@ -36,20 +36,35 @@ WALK = ('mid-stride walking pose: one leg clearly lifted and stepping forward, t
 
 # ---------- 资产清单：id → 描述。要加新角色/怪物/瓦片只改这里 ----------
 CHARACTERS = {  # 玩家职业（对应 data/jobs.json）与 NPC（对应地图 npcs[].sprite）
-    'warrior':   'A young human warrior with short blonde hair, red armor with dark red trim, brown boots, small sword at the hip.',
-    'thief':     'A nimble young thief with orange hair and a teal hooded tunic, dark green sash, brown boots, dagger.',
-    'whitemage': 'A white mage: white robe with red triangular trim pattern, hood covering the hair, wooden staff.',
-    'blackmage': 'A black mage: big blue pointed wizard hat, dark blue robe, face hidden in shadow with two glowing yellow eyes.',
-    'monk':      'A monk martial artist with brown hair tied back, orange sleeveless gi, wrapped fists, barefoot.',
-    'redmage':   'A red mage: red wide-brimmed feathered hat, red coat with white trim, rapier, blonde hair.',
-    'elder':     'An old village elder with white hair and a long white beard, brown robe, wooden walking cane.',
-    'woman':     'A young village woman with brown hair in a bun, pink dress with white apron.',
-    'man':       'A village man with black hair, blue shirt, brown trousers.',
-    'kid':       'A small village child with messy yellow hair, green shirt, shorts.',
-    'merchant':  'A merchant with a small cap, teal apron over a brown shirt, mustache.',
-    'innkeeper': 'A friendly innkeeper with brown hair, white apron over a red shirt.',
-    'guard':     'A town guard in simple gray chainmail and a steel helmet, holding a spear.',
-    'knight':    'A menacing knight in full black plate armor with a horned helmet, glowing red eyes visible through the visor, dark cape.',
+    # 六职业刻意避开常见 JRPG 套路：每个都靠一个「随身物件」认人，而不是靠帽子/袍子的颜色
+    'oath':      'A young oath-keeper warrior: dark moss-green half-cape, plain unpolished iron chestplate, '
+                 'the entire LEFT ARM wrapped in layers of pale cloth strips tied into many small knots, '
+                 'short dark hair, a heavy thick-backed cleaver strapped to the back.',
+    'gleaner':   'A young gleaner scavenger: worn brown hooded cloak with the hood down, many small pouches, '
+                 'tin cups and salvaged trinkets hanging off the belt and chest straps, one fingerless leather glove, '
+                 'messy ash-blonde hair, a short curved knife at the hip.',
+    'resonant':  'A resonant monk: shaved head, bare muscular torso, wide loose charcoal trousers, '
+                 'thick dull-bronze metal rings clamped around both wrists and both ankles, barefoot, no shirt.',
+    'mender':    'A memory-mender healer: deep indigo-blue long coat buttoned to the neck, '
+                 'a row of sewing needles and thread spools pinned across the chest like medals, '
+                 'lower half of the face covered by a pale gauze veil, dark braided hair, no hat.',
+    'ashtongue': 'An ash-tongue caster: scorched charcoal-black long coat with burnt frayed hem, '
+                 'mouth and jaw wrapped in soot-stained bandages, bare short dark hair (NO hat), '
+                 'both hands blackened with burn marks, faint embers drifting from the sleeves.',
+    'wayfarer':  'A wandering scholar: olive travelling cloak, round wire-rim spectacles, '
+                 'a closed brown umbrella strapped to the back together with a bundle of rolled scrolls, '
+                 'sturdy boots, a satchel of books at the hip.',
+    # 村民
+    'elder':     'An old village record-keeper with white hair and a long white beard, brown robe, '
+                 'holding a thick leather-bound ledger under one arm, small reading glasses.',
+    'woman':     'A young village woman with brown hair in a bun, dark red dress with a grey apron.',
+    'man':       'A village man with black hair, faded blue shirt, brown trousers, carrying a lantern.',
+    'kid':       'A small village child with messy yellow hair, oversized green shirt, bare feet.',
+    'merchant':  'A salvage trader with a flat cap, canvas apron covered in pockets, a small scale in one hand.',
+    'innkeeper': 'A lamp-keeper woman with brown hair, thick shawl, holding a small oil lamp that is still lit.',
+    'guard':     'A village night-watchman in a patched grey coat and a wide hat, holding a long staff and a lantern.',
+    'knight':    'A silent figure in full matte-black plate armor with a smooth FEATURELESS helmet that has NO face, '
+                 'no eye slits at all, a long tattered black cloak, holding a huge dark sword.',
 }
 ENEMIES = {  # 对应 data/enemies.json 的 sprite（size = 战斗画面里的像素尺寸）
     'goblin':    ('A small green goblin with red eyes and pointed ears, wearing a loincloth, holding a wooden club.', 40),
