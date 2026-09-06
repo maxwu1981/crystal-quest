@@ -1,0 +1,386 @@
+// 地形过渡的**像素烘焙**：把边缘咬合、崖影、浪花、湿地、抠底、地面装饰
+// 各自画成一张 32×32 的缓存图。这里只管"一张图长什么样"，
+// "哪一格该贴哪张图"在 terrain.js 里。拆开是因为合起来有 538 行，
+// 破了项目单文件 400 行的规矩，而这条缝正好把"画"和"排"分得干净。
+import { TILE, TILE_FX, tileFrames } from './tiles.js';
+import { ART } from '../core/draw.js';
+import { PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
+import { RNG } from '../core/RNG.js';
+
+// ---------------------------------- 烘焙工具 ----------------------------------
+export function canvasPX(fn) {
+  const c = document.createElement('canvas');
+  c.width = c.height = PX;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  fn(g);
+  return c;
+}
+export const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) || 1; };
+// 全局缓存：键相同就复用。种子由键算出来，所以同一个键每次烘出来的图一模一样。
+const CACHE = new Map();
+export function baked(key, make) {
+  let v = CACHE.get(key);
+  if (v === undefined) CACHE.set(key, v = make(new RNG(hash(key))));
+  return v;
+}
+export const bakedCount = () => CACHE.size;
+
+// 沿 side 这条边，第 i 列（行）从深度 a 填到深度 b。四条边共用一套坐标换算。
+function fillSide(g, side, i, a, b) {
+  const n = b - a;
+  if (n <= 0) return;
+  if (side === N) g.fillRect(i, a, 1, n);
+  else if (side === S) g.fillRect(i, PX - b, 1, n);
+  else if (side === W) g.fillRect(a, i, n, 1);
+  else g.fillRect(PX - b, i, n, 1);
+}
+
+// 一条锯齿边的深度表：把这一边切成 3~5px 宽的「舌头」，每条深浅不同，两端各收 1px 让它圆一点。
+// 不用逐像素随机 —— 那是白噪声，看着像毛边；成块的舌头才像草真的长过去了。
+function tongues(rng, base, jag) {
+  const d = new Array(PX).fill(0);
+  for (let i = 0; i < PX;) {
+    const w = Math.min(PX - i, 4 + rng.int(0, 3));
+    const v = Math.max(1, base + rng.int(-jag, jag));
+    for (let k = 0; k < w; k++) d[i + k] = Math.max(1, v - (k === 0 || k === w - 1 ? 1 : 0));
+    i += w;
+  }
+  return d;
+}
+
+// 画出「咬进来」的形状（纯白），返回各边的深度表供描接触影用。
+// 舌头外面再撒几颗孤立的碎点，边就化开了，不会是一条齐刷刷的界线。
+function fringeShape(g, rng, mask, base, jag) {
+  const depth = {};
+  g.fillStyle = '#fff';
+  for (const [bit] of SIDES) {
+    if (!(mask & bit)) continue;
+    const d = depth[bit] = tongues(rng, base, jag);
+    for (let i = 0; i < PX; i++) fillSide(g, bit, i, 0, d[i]);
+    for (let k = 0; k < 6; k++) {
+      const i = rng.int(1, PX - 3), off = d[i] + 1 + rng.int(0, 3);
+      if (off < PX - 3) fillSide(g, bit, i, off, off + rng.int(1, 2));
+    }
+  }
+  for (const [bit, dx, dy, need] of CORNERS) {
+    if (!(mask & bit) || (mask & need)) continue;
+    const r = Math.max(2, base);                        // 只在对角单独挨着时补一小块三角
+    for (let k = 0; k < r; k++) {
+      const w = r - k;
+      g.fillRect(dx > 0 ? PX - w : 0, dy > 0 ? PX - 1 - k : k, w, 1);
+    }
+  }
+  return depth;
+}
+
+// 邻居地形咬进本格：形状里填**邻居瓦片自己的纹理**（source-in），
+// 所以草边就是草、沙边就是沙 —— 换成 Gemini 的正式 PNG 也自动跟着变，不用改一行颜色。
+export function fringeTile(src, mask, base, jag, contact, rng) {
+  return canvasPX(g => {
+    const depth = fringeShape(g, rng, mask, base, jag);
+    g.globalCompositeOperation = 'source-in';
+    g.drawImage(src, 0, 0, PX, PX);
+    g.globalCompositeOperation = 'source-over';
+    if (!contact) return;
+    // 舌头脚下一条极淡的接触影：让它「压」在下面那块地上，而不是浮着
+    g.fillStyle = 'rgba(0,0,0,0.16)';
+    for (const [bit] of SIDES) {
+      const d = depth[bit];
+      if (d) for (let i = 0; i < PX; i++) fillSide(g, bit, i, d[i], d[i] + 1);
+    }
+  });
+}
+
+// 崖影。光统一从正上偏左来（和 tiles.js 里房子那一套同一个光向），
+// 所以只有北 / 西 / 西北的高物会把影子投到这一格，其它方向一概不画 —— 满图打圈的影子没有方向感。
+//
+// 关键在**收头**：如果北边那堵墙到这一格就断了（西北/东北没有高物），影子的那一端必须斜着收掉。
+// 一格影子从左到右一条齐边，看起来就是地上摆了个灰方块，不是影子。最后一行再隔点抖开，
+// 因为一条硬的下边界会被读成「地上挖了个洞」。
+const SH_N = [0.34, 0.34, 0.27, 0.18, 0.10];
+const SH_W = [0.24, 0.22, 0.14, 0.08];
+export function shadowTile(mask, k) {
+  return canvasPX(g => {
+    const col = a => `rgba(20,26,36,${(a * k).toFixed(3)})`;
+    if (mask & N) {
+      const cutL = !(mask & NW), cutR = !(mask & NE);
+      SH_N.forEach((a, y) => {
+        g.fillStyle = col(a);
+        const x0 = cutL ? Math.min(y, 3) : 0, x1 = PX - (cutR ? Math.min(y, 3) : 0);
+        if (y < SH_N.length - 1) g.fillRect(x0, y, x1 - x0, 1);
+        else for (let x = x0; x < x1; x += 2) g.fillRect(x, y, 1, 1);
+      });
+    }
+    if (mask & W) {
+      const cutT = !(mask & NW), cutB = !(mask & SW);
+      SH_W.forEach((a, x) => {
+        g.fillStyle = col(a);
+        const y0 = cutT ? Math.min(x, 3) : 0, y1 = PX - (cutB ? Math.min(x, 3) : 0);
+        if (x < SH_W.length - 1) g.fillRect(x, y0, 1, y1 - y0);
+        else for (let y = y0; y < y1; y += 2) g.fillRect(x, y, 1, 1);
+      });
+    }
+    if ((mask & NW) && !(mask & (N | W))) {   // 只在对角挨着时补个小角，交代得清楚就够
+      g.fillStyle = col(0.26); g.fillRect(0, 0, 4, 4);
+      g.fillStyle = col(0.13); g.fillRect(0, 4, 3, 1); g.fillRect(4, 0, 1, 3);
+    }
+  });
+}
+
+// 水岸的浪花，画在**水格**朝陆地那一侧。
+// 节拍跟水面动画完全同一套（12 帧 × 0.45 秒 = 5.4 秒一圈，而且全图同相位），
+// 所以整条岸线是一起涌的，不会各涌各的碎成马赛克。
+// 每帧只在离岸方向挪 1 个物理像素、透明度只在 0.26~0.36 之间晃，看到的是水在拍岸，不是闪。
+//
+// 形状是重复的**扇贝**而不是等距虚线：虚线一眼就看出是电脑画的选取框（第一版就踩了这个坑）。
+// 扇贝周期 16px = 半格，所以跨格也是连的，铺开就是一排浪头。
+const FOAM_OFF = [0, 0, 1, 1, 2, 2, 1, 1, 0, 0, -1, -1];
+const SCALLOP = [0, 0, 1, 1, 2, 2, 2, 1, 1, 0, 0, 0, 1, 1, 1, 0];
+const SHALLOW = [5, 6, 6, 5, 4, 4, 5, 6, 7, 7, 6, 5, 4, 4, 5, 6];   // 浅滩深浅，同样 16px 一循环
+export function foamFrames(mask, n) {
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(canvasPX(g => {
+    const o = 2 + FOAM_OFF[i % FOAM_OFF.length];
+    const a = 0.40 + 0.10 * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
+    for (const [bit] of SIDES) {
+      if (!(mask & bit)) continue;
+      // 先铺一层浅滩：靠岸的水浅、颜色淡。这一层不动，作用是把「水和陆地之间那条笔直的格线」
+      // 换成一条深浅渐变的带子 —— 光靠一条浪花线压不住那条直边。
+      for (let x = 0; x < PX; x++) {
+        const d = SHALLOW[x & 15];
+        g.fillStyle = 'rgba(150,214,222,0.20)'; fillSide(g, bit, x, 0, d - 2);
+        g.fillStyle = 'rgba(140,200,212,0.11)'; fillSide(g, bit, x, d - 2, d);
+      }
+      for (let x = 0; x < PX; x++) {
+        const s = SCALLOP[x & 15], y0 = Math.max(0, o + s - 1);
+        g.fillStyle = `rgba(232,250,255,${(a + s * 0.06).toFixed(3)})`;
+        fillSide(g, bit, x, y0, y0 + 1 + (s >> 1));          // 浪头厚一点，浪谷薄一点
+        if (s) {                                             // 浪头后面拖一点更淡的沫
+          g.fillStyle = `rgba(198,230,244,${(a * 0.42).toFixed(3)})`;
+          fillSide(g, bit, x, y0 + 2 + (s >> 1), y0 + 3 + (s >> 1));
+        }
+      }
+    }
+  }));
+  return out;
+}
+
+// 陆地被水打湿的一条边。用 multiply 压暗而不是蒙半透明灰：
+// 沙子只会变成「湿沙」（暗一档、固有色还在），蒙灰会直接变脏。
+// 分量要非常小 —— 这是背景里的背景，第一版压到了 0.55，出来像一道水泥路缘。
+export function wetTile(mask, rng) {
+  return canvasPX(g => {
+    for (const [bit] of SIDES) {
+      if (!(mask & bit)) continue;
+      const d = tongues(rng, 4, 1);
+      for (let i = 0; i < PX; i++) {
+        const core = Math.max(0, d[i] - 2);
+        g.fillStyle = 'rgba(150,152,150,0.34)'; fillSide(g, bit, i, 0, core);
+        g.fillStyle = 'rgba(170,172,170,0.28)'; fillSide(g, bit, i, core, d[i]);
+        if (!(i & 1)) fillSide(g, bit, i, d[i], d[i] + 1);   // 最外一圈隔点抖开，别留一条硬边
+      }
+    }
+  });
+}
+
+// ------------------------- 把「自带底色」的瓦片抠出来（见 SEAM）-------------------------
+// 从四边往里做一次漫水：凡是「和边框同色、而且连得到边框」的像素一律抠成透明，剩下的就是树本身。
+// 用漫水而不是单纯的颜色阈值，是因为树冠里也有绿 —— 阈值会把树冠打出洞，
+// 漫水只吃得到从外面连进来的那一片。
+// 抠出来的比例不在 10%~90% 之间就当抠坏了，直接放弃、原样画 —— 换一套美术也不会翻车。
+const NB4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+export function keyOutGround(img, tol = 18) {
+  const c = document.createElement('canvas');
+  c.width = c.height = PX;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.imageSmoothingEnabled = false;
+  g.drawImage(img, 0, 0, PX, PX);
+  let d;
+  try { d = g.getImageData(0, 0, PX, PX); } catch { return null; }   // file:// 打开时画布被污染，读不了
+  const p = d.data;
+  // 本来就是透明底的（正式美术的宝箱就是）不用抠，而且**必须不能抠**：
+  // 透明像素的 RGB 是 0，边框均色会算成黑，漫水就会顺着黑色把箱子自己的描边一路吃掉。
+  for (let j = 3; j < p.length; j += 4) if (!p[j]) return null;
+  const edge = (x, y) => x === 0 || y === 0 || x === PX - 1 || y === PX - 1;
+  let r = 0, gg = 0, b = 0, k = 0;
+  for (let y = 0; y < PX; y++) for (let x = 0; x < PX; x++) {
+    if (!edge(x, y)) continue;
+    const o = (y * PX + x) * 4; r += p[o]; gg += p[o + 1]; b += p[o + 2]; k++;
+  }
+  r /= k; gg /= k; b /= k;
+  const near = j => { const o = j * 4; return Math.abs(p[o] - r) <= tol && Math.abs(p[o + 1] - gg) <= tol && Math.abs(p[o + 2] - b) <= tol; };
+  const seen = new Uint8Array(PX * PX), stack = [];
+  for (let y = 0; y < PX; y++) for (let x = 0; x < PX; x++) {
+    const j = y * PX + x;
+    if (edge(x, y) && !seen[j] && near(j)) { seen[j] = 1; stack.push(j); }
+  }
+  let n = stack.length;
+  while (stack.length) {
+    const j = stack.pop(), x = j % PX, y = (j / PX) | 0;
+    for (const [dx, dy] of NB4) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= PX || ny >= PX) continue;
+      const nj = ny * PX + nx;
+      if (!seen[nj] && near(nj)) { seen[nj] = 1; stack.push(nj); n++; }
+    }
+  }
+  const frac = n / (PX * PX);
+  if (frac < 0.10 || frac > 0.90) return null;   // 抠得太多（整格都是底色）或太少＝这张图不适合，放弃
+  for (let j = 0; j < seen.length; j++) if (seen[j]) p[j * 4 + 3] = 0;
+  g.putImageData(d, 0, 0);
+  return c;
+}
+// 底＋落影＋抠好的物件合成一张，直接**替掉**那一格原来的瓦片 ——
+// 是替换不是叠加，每帧绘制次数一点没多。
+// 树底下的草和邻居用的是同一张图、同一个对齐，格线就彻底没了。
+// 底草不做风吹动画：那 1px 的摆动全被树冠挡着，看不见，不值得为它多烘四帧。
+//
+// 落影是个椭圆，不是方向影：树的轮廓是圆的，按格子铺的方向影会在格线上切出一个方框，
+// 看着像树站在一个方坑里（第一版就是这样）。椭圆往右下偏一点，对上「光从正上偏左」这个光向。
+function shadowOval(g, a, rxK = 0.30) {
+  const cx = Math.round(PX * 0.53), cy = Math.round(PX * 0.87);
+  const rx = Math.round(PX * rxK), ry = Math.max(2, Math.round(rx * 0.3));
+  for (let dy = -ry; dy <= ry; dy++) {
+    const w = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry + 0.4))));
+    if (w <= 0 || cy + dy >= PX) continue;
+    g.fillStyle = a(Math.abs(dy) === ry);
+    g.fillRect(cx - w, cy + dy, 2 * w + 1, 1);
+  }
+}
+function seamTile(ground, obj) {
+  const cut = keyOutGround(obj);
+  if (!cut) return null;
+  return canvasPX(g => {
+    g.drawImage(ground, 0, 0, PX, PX);
+    g.globalCompositeOperation = 'multiply';   // 压暗而不是蒙灰，草地的绿才保得住
+    shadowOval(g, out => out ? 'rgba(126,132,140,0.55)' : 'rgba(112,118,128,0.55)');
+    g.globalCompositeOperation = 'source-over';
+    g.drawImage(cut, 0, 0, PX, PX);
+  });
+}
+// 抠底换地面之后，这一格就不再走原来那张瓦片的动画帧了 —— 直接用合成图的话，
+// 树不会被风吹、水晶不会明灭，等于把前面做好的东西弄丢了。
+// 所以把合成图送回 tiles.js 的 tileFrames 再烘一遍同样的帧；返回的记录形状和 FieldScene 的
+// anim 条目完全一致（f/k/dur/ts），由 FieldScene 放进 fx.list 一起推进时间。
+// 不会动的瓦片（村落）退化成「只有一帧」，渲染那边不用分两条路。
+export function seamRecord(ground, obj, tileId) {
+  const img = seamTile(ground, obj);
+  if (!img) return null;
+  const spec = TILE_FX[tileId], f = spec && tileFrames(img, spec);
+  return f ? { f, k: spec.phase, dur: spec.dur, ts: 0 } : { f: [img], k: 0, dur: 1, ts: 0 };
+}
+
+// 同样是抠好底的物件，但**透明底**：给画在事件层的宝箱用。
+// 底下那一格的地形（连同过渡边、装饰）照旧由地形层画，物件只是盖在上面，
+// 所以不能像 seamTile 那样连地面一起烘 —— 那会把这一格的过渡边糊掉。
+// 代价是落影只能用半透明黑（透明底上没法 multiply），面积小，看不出来。
+export function objectTile(img) {
+  const cut = keyOutGround(img) || img;   // 本来就是透明底的直接用原图，只补一片落影
+  return canvasPX(g => {
+    shadowOval(g, out => out ? 'rgba(22,26,32,0.13)' : 'rgba(22,26,32,0.24)', 0.26);
+    g.drawImage(cut, 0, 0, PX, PX);
+  });
+}
+
+// ---------------------------------- 地面装饰 ----------------------------------
+// 颜色从瓦片自己身上取：程序化占位图的草是 #5cb85c，Gemini 正式美术的草是 #0e8e24，
+// 装饰要是硬编码颜色，换一套美术就会和地面对不上。
+const PAL = new WeakMap();
+const clamp8 = v => Math.max(0, Math.min(255, Math.round(v)));
+export function palette(img) {
+  let p = PAL.get(img);
+  if (p) return p;
+  let r = 128, gg = 128, b = 128;
+  try {
+    const c = document.createElement('canvas');
+    c.width = c.height = 8;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(img, 0, 0, 8, 8);           // 缩到 8×8 = 取局部平均，比逐像素扫一遍快得多
+    const d = x.getImageData(0, 0, 8, 8).data;
+    let n = 0; r = gg = b = 0;
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue; r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; }
+    if (n) { r /= n; gg /= n; b /= n; } else { r = gg = b = 128; }
+  } catch { r = gg = b = 128; }             // file:// 打开时画布会被污染读不出来，退回中性灰
+  const mix = k => `rgb(${clamp8(r * k)},${clamp8(gg * k)},${clamp8(b * k)})`;
+  // lit/dark 给花草石头用（要读得出来）；sl/sd 给大块明暗斑用（只准比地面深浅一点点）
+  PAL.set(img, p = { lit: mix(1.36), dark: mix(0.64), sl: mix(1.22), sd: mix(0.80) });
+  return p;
+}
+
+// 一块柔和的明暗斑。逐行按椭圆算宽度、宽度再抖一格，最外两圈隔点画 —— 边就化开了。
+// 第一版是几个矩形叠出来的，铺在草地上看着是一块块补丁，比不加还糟。
+// 整块画完再统一压到目标透明度（destination-in），否则重叠处会出现深浅不一的硬边。
+function blotch(g, rng, color, a) {
+  const rx = rng.int(5, 9), ry = rng.int(4, 7);
+  const cx = rng.int(rx + 1, PX - rx - 2), cy = rng.int(ry + 1, PX - ry - 2);
+  g.fillStyle = color;
+  for (let dy = -ry; dy <= ry; dy++) {
+    const w = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry + 0.5)))) + rng.int(-1, 1);
+    if (w <= 0) continue;
+    const y = cy + dy;
+    if (Math.abs(dy) >= ry - 1) { for (let x = cx - w; x <= cx + w; x += 2) g.fillRect(x, y, 1, 1); }
+    else {
+      g.fillRect(cx - w + 1, y, 2 * w - 1, 1);
+      for (const x of [cx - w, cx + w]) if ((x + y) & 1) g.fillRect(x, y, 1, 1);
+    }
+  }
+  g.globalCompositeOperation = 'destination-in';
+  g.fillStyle = `rgba(0,0,0,${a})`;
+  g.fillRect(0, 0, PX, PX);
+  g.globalCompositeOperation = 'source-over';
+}
+function flower(g, rng, p, petal, core) {
+  const x = rng.int(6, PX - 11), y = rng.int(6, PX - 12);
+  g.fillStyle = p.dark; g.fillRect(x + 2, y + 5, 2, 4);                       // 茎
+  g.fillStyle = petal;
+  g.fillRect(x + 2, y, 2, 2); g.fillRect(x, y + 2, 2, 2);                      // 四片花瓣
+  g.fillRect(x + 4, y + 2, 2, 2); g.fillRect(x + 2, y + 4, 2, 2);
+  g.fillStyle = core; g.fillRect(x + 2, y + 2, 2, 2);
+}
+export const DECO_PAINT = {
+  patchL: (g, rng, p) => blotch(g, rng, p.sl, 0.55),
+  patchD: (g, rng, p) => blotch(g, rng, p.sd, 0.55),
+  tuft: (g, rng, p) => {                                                       // 一撮高草
+    const cx = rng.int(7, PX - 9), cy = rng.int(10, PX - 5);
+    for (let k = 0; k < 5; k++) {
+      const x = cx + k - 2, h = 4 + rng.int(0, 4), lean = rng.int(-1, 1);
+      g.fillStyle = k % 2 ? p.dark : p.lit;
+      for (let j = 0; j < h; j++) g.fillRect(x + (j > h - 3 ? lean : 0), cy - j, 1, 1);
+    }
+  },
+  flowerW: (g, rng, p) => flower(g, rng, p, '#f1eee0', '#e0bc4b'),
+  flowerY: (g, rng, p) => flower(g, rng, p, '#f0cf4d', '#a86f1c'),
+  flowerP: (g, rng, p) => flower(g, rng, p, '#df97bd', '#f2e69a'),
+  rock: (g, rng) => {
+    const x = rng.int(6, PX - 11), y = rng.int(7, PX - 10);
+    g.fillStyle = 'rgba(0,0,0,0.26)'; g.fillRect(x + 1, y + 5, 6, 1);          // 落在地上的影
+    g.fillStyle = '#6f6a63'; g.fillRect(x, y + 1, 6, 4);
+    g.fillStyle = '#8d8880'; g.fillRect(x + 1, y, 4, 1); g.fillRect(x, y + 1, 2, 1);
+    g.fillStyle = '#4a463f'; g.fillRect(x + 1, y + 4, 5, 1);
+  },
+  pebble: (g, rng) => {
+    const x = rng.int(6, PX - 9), y = rng.int(6, PX - 9);
+    g.fillStyle = 'rgba(0,0,0,0.22)'; g.fillRect(x, y + 2, 4, 1);
+    g.fillStyle = '#9c9384'; g.fillRect(x, y, 4, 2);
+    g.fillStyle = '#bdb4a2'; g.fillRect(x + 1, y, 2, 1);
+  },
+  leaf: (g, rng) => {
+    const x = rng.int(6, PX - 10), y = rng.int(6, PX - 8);
+    g.fillStyle = '#8a6a33'; g.fillRect(x, y + 1, 5, 2); g.fillRect(x + 1, y, 3, 1);
+    g.fillStyle = '#5d4620'; g.fillRect(x + 2, y + 1, 1, 2);
+  },
+  crack: (g, rng) => {                                                         // 一道细裂缝
+    g.fillStyle = 'rgba(0,0,0,0.30)';
+    let x = rng.int(5, PX - 12), y = rng.int(6, PX - 7);
+    for (let k = 0; k < 8; k++) { g.fillRect(x, y, 1, 1); x += 1; y += rng.int(-1, 1); }
+  },
+  moss: (g, rng) => blotch(g, rng, '#4c7a3c', 0.34),
+  shell: (g, rng) => {
+    const x = rng.int(7, PX - 10), y = rng.int(7, PX - 9);
+    g.fillStyle = '#f0e2c6'; g.fillRect(x, y + 1, 4, 2); g.fillRect(x + 1, y, 2, 1);
+    g.fillStyle = '#c9b48c'; g.fillRect(x + 1, y + 2, 1, 1); g.fillRect(x + 3, y + 1, 1, 1);
+  },
+};
+export const DECO_VARIANTS = 6;   // 每种装饰烘 6 个位置不同的版本，摆满一屏也不会看出是同一张图
+

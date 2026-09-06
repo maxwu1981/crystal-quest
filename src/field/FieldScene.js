@@ -14,6 +14,7 @@ import { ShopScene } from './ShopScene.js';
 import { NPC, pickVariant, applyVariant } from './npc.js';
 import { DIRS, lerp, clamp } from './grid.js';
 import { audio } from '../core/audio.js';
+import { renderMinimap, renderFullMap } from './minimap.js';
 import { addItem } from '../game/items.js';
 import { EndingScene } from '../title/EndingScene.js';
 import { saveGame } from '../game/state.js';
@@ -118,6 +119,7 @@ export class FieldScene {
     // 地形过渡（草咬进路、崖影、水岸浪花、地面装饰）也在这里一次算完，
     // 结果是两张与 cells 等长的「这一格再叠哪几张图」的表，渲染时零计算。
     const ter = buildTerrainFx(this.map, this.game.tiles, id);
+    for (const r of ter.seamList) list.push(r);   // 抠底合成图（树/水晶）也要跟着动，时间和别的动画瓦片一起推
     this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, obj: ter.obj, foamN: ter.foamN,
       motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
   }
@@ -282,72 +284,6 @@ export class FieldScene {
 
   // ---------- 渲染 ----------
 
-  // ---------- 地图 ----------
-  // 右上角常驻小地图 + 按 Tab/Q 摊开全图。
-  // 洞窟绕来绕去（罗经圈本来就是「像罗盘一样绕」的设计），没有地图很容易迷路。
-  // 小地图只画地形色块不画瓦片图：16×16 的瓦片缩到 2px 什么也看不出，反而糊成一片。
-  mapColor(cell) {
-    const t = cell.tile;
-    if (cell.solid) return t === 'water' ? '#1d3c52' : '#2b2a30';   // 墙与水都是过不去的，但水另给一色
-    if (t === 'path' || t === 'flagstone' || t === 'floor') return '#8a7a5e';
-    if (t === 'sand') return '#9c8f6a';
-    if (t === 'grass' || t === 'town') return '#4a6b3a';
-    if (t === 'forest' || t === 'tree') return '#2f4a2a';
-    if (t === 'bridge') return '#7a5a3a';
-    return '#4a4750';                                                // 洞窟地面等
-  }
-  // 画一张地图：scale = 每格几个逻辑像素
-  drawMapAt(ctx, ox, oy, scale, { dots = true } = {}) {
-    const map = this.map, st = this.game.state;
-    for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
-      ctx.fillStyle = this.mapColor(map.cells[y * map.w + x]);
-      ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
-    }
-    if (!dots) return;
-    // 楼梯与门：亮青色；没开过的宝箱：金色；开过的不画（已经拿完了就别再吸引注意）
-    for (const ev of Object.values(map.events)) {
-      const s = Math.max(1, scale);
-      if (ev.type === 'warp') ctx.fillStyle = '#6fe0d0';
-      else if (ev.type === 'chest') { if (this.chestOpened(ev)) continue; ctx.fillStyle = '#ffd257'; }
-      else if (ev.type === 'crystal') ctx.fillStyle = '#ff9c4a';
-      else continue;
-      ctx.fillRect(ox + ev.x * scale, oy + ev.y * scale, s, s);
-    }
-    // 主角：白点 + 2.2 秒一次的柔和呼吸（周期够慢，不会看成闪）
-    const k = 0.72 + 0.28 * Math.sin(this.animT * (2 * Math.PI / 2.2));
-    ctx.globalAlpha = k;
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(ox + this.p.x * scale - (scale < 2 ? 0 : 1), oy + this.p.y * scale - (scale < 2 ? 0 : 1),
-                 Math.max(2, scale + 2), Math.max(2, scale + 2));
-    ctx.globalAlpha = 1;
-  }
-  renderMinimap(ctx) {
-    const { W } = this.game, map = this.map;
-    const MAX = 54;                                   // 右上角这块最多占 54×54 逻辑像素
-    const scale = Math.max(1, Math.floor(Math.min(MAX / map.w, MAX / map.h)));
-    const mw = map.w * scale, mh = map.h * scale;
-    const ox = W - mw - 7, oy = 7;
-    ctx.save();
-    ctx.globalAlpha = 0.82;                           // 半透明，别把地图角落挡死
-    ctx.fillStyle = '#0d100e'; ctx.fillRect(ox - 2, oy - 2, mw + 4, mh + 4);
-    this.drawMapAt(ctx, ox, oy, scale);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#6b5a3a'; ctx.lineWidth = 1;
-    ctx.strokeRect(ox - 2.5, oy - 2.5, mw + 5, mh + 5);
-    ctx.restore();
-  }
-  renderFullMap(ctx) {
-    const { W, H } = this.game, map = this.map;
-    ctx.fillStyle = 'rgba(8,10,9,0.88)'; ctx.fillRect(0, 0, W, H);
-    const scale = Math.max(1, Math.floor(Math.min((W - 40) / map.w, (H - 56) / map.h)));
-    const mw = map.w * scale, mh = map.h * scale;
-    const ox = Math.round((W - mw) / 2), oy = Math.round((H - mh) / 2) + 4;
-    drawWindow(ctx, ox - 6, oy - 6, mw + 12, mh + 12);
-    this.drawMapAt(ctx, ox, oy, scale);
-    drawText(ctx, map.name || '', W / 2, 8, { align: 'center', color: '#e6c46a' });
-    drawText(ctx, '楼梯/门 · 未开的箱 · 你', W / 2, H - 14, { align: 'center', color: '#8a8468' });
-  }
-
   render(ctx) {
     const { W, H } = this.game, p = this.p, map = this.map;
     const px = lerp(p.fromX, p.x, p.t) * TILE, py = lerp(p.fromY, p.y, p.t) * TILE;
@@ -368,14 +304,11 @@ export class FieldScene {
       const i = y * map.w + x;
       const sx = x * TILE - camX, sy = y * TILE - camY;
       // base[i]：树那种「自带底色」的瓦片换成「真草地 + 抠好的树」的合成图（assets/terrain.js），
-      // 是替换不是叠加。其余格子照旧走动画帧。
-      let img = base[i];
-      if (!img) {
-        const id = map.cells[i].tile, a = anim[id];
-        // (5x+9y)&15：5 和 9 都与 16 互质，同一时刻翻帧的格子在屏幕上是零散的十来个点，
-        // 连不成线也凑不成块，看着就是「草在窸窣」而不是「有一道边扫过去」
-        img = a ? a.f[Math.floor((a.ts + (a.k ? (x * 5 + y * 9) & 15 : 0)) / 16) % a.f.length] : tiles[id];
-      }
+      // 是替换不是叠加。它和 anim 条目长得一模一样（f/k/dur/ts），所以挑帧的算法可以共用。
+      // (5x+9y)&15：5 和 9 都与 16 互质，同一时刻翻帧的格子在屏幕上是零散的十来个点，
+      // 连不成线也凑不成块，看着就是「草在窸窣」而不是「有一道边扫过去」
+      const a = base[i] || anim[map.cells[i].tile];
+      const img = a ? a.f[Math.floor((a.ts + (a.k ? (x * 5 + y * 9) & 15 : 0)) / 16) % a.f.length] : tiles[map.cells[i].tile];
       drawArt(ctx, img, sx, sy);
       // 过渡边 / 浪花 / 地面装饰：换地图时就按邻居烘好了（assets/terrain.js），
       // 这里只是「这一格再贴一两张图」，逐帧没有任何计算。数组＝一组帧（浪花），画布＝静态。
@@ -446,11 +379,11 @@ export class FieldScene {
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
     this.renderAmbience(ctx, camX, camY, px, py, mw, mh);
     if (this.poisonT > 0) { ctx.fillStyle = 'rgba(120,40,160,0.35)'; ctx.fillRect(0, 0, W, H); }
-    if (this.showMap) this.renderFullMap(ctx);           // 摊开全图时地名条与小地图都让位
+    if (this.showMap) renderFullMap(this, ctx);           // 摊开全图时地名条与小地图都让位
     else if (this.nameT > 0 && map.name) {
       const w = 112; drawWindow(ctx, (W - w) / 2, 8, w, 26);
       drawText(ctx, map.name, W / 2, 15, { align: 'center' });
-    } else this.renderMinimap(ctx);
+    } else renderMinimap(this, ctx);
   }
   // 气氛层：粒子 → 光照 → 色调。画在人物之后、UI 之前，
   // 所以尘埃会被暗角压暗（远处的尘看着更远），而地图名和中毒闪不会被调色影响。
