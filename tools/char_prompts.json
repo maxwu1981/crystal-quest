@@ -12,8 +12,8 @@
  },
  "general": {
   "name": "家将 (转职用)",
-  "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on the forearms, brown hair tied in a small topknot",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). lean and athletic, narrow waist, visible bare arms"
+  "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on both forearms, brown hair pulled back into a small topknot at the BACK of the head",
+  "build": "CHIBI two-and-a-half-heads-tall: the head is ONE THIRD of the figure. But a big head does NOT mean a fat body — the body stays LEAN, narrow-waisted and athletic, with slim bare arms. Not chubby, not bulky"
  },
  "herbwife": {
   "name": "青草婆 秀琴",
@@ -66,5 +66,6 @@
   "name": "巡更的",
   "look": "a village watchman in grey-blue studded leather armour over a slate tunic, a simple helmet, holding a plain wooden spear upright",
   "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). solid, broad-shouldered adult build"
- }
+ },
+ "_side_view": "侧面帧反复踩到的三个坑，写提示词时必须带上：① 头发/发髻要明确说在脑后——不说的话 Gemini 会把整团头发画到脸的前面（家将的发髻踩过两次）。朝左的侧面就写：脸、鼻、额在左边缘，所有头发和发髻在右边、在他身后，脸前面不许有头发。② 「大头」那句会被理解成整个人一起放大，身体跟着变胖。③ 但只补一句「不要胖」又会把头也缩掉。有效的写法是把头和身分开各说一句：「头必须巨大——含头发占身高三分之一，明显比肩膀宽；只有身体是瘦的——细腰、细手臂、细腿。是大头配精瘦小身子，不要缩头，也不要把躯干画胖。」「头比肩宽」是最好用的锚，因为它是可验证的几何关系，不是形容词。"
 }
