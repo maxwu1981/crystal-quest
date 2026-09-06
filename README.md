@@ -72,7 +72,26 @@ python3 tools/reassign.py            # 按配色重新归位（改名后错乱�
 python3 tools/recolor.py <职业 id>    # 换掉某个角色的配色
 python3 tools/chestfit.py            # 体检宝箱位置（宝箱不可通行，放错会堵死通路）
 python3 tools/chestfit.py cave_2 4   # 在某张图上挑 4 个合格的新宝箱位
+python3 tools/proportion_check.py -v # 角色比例体检（同一个人各方向体型要一致）
+python3 tools/proportion_check.py --sheet   # 导出站姿/迈步对照图给人眼审
+python3 tools/match_tone.py A.png B.png     # 把 A 的配色对齐到 B（补生成单帧后用）
+python3 tools/set_art.py             # 看当前精度与母版覆盖
+python3 tools/set_art.py 4           # 从母版派生出 ART=4 的美术并改 draw.js
 ```
+
+### 美术精度与母版
+`src/core/draw.js` 的 `ART` 决定画布倍率（逻辑坐标恒为 256×224）：
+
+| ART | 画布 | 角色 | 瓦片 |
+|---|---|---|---|
+| 2 | 512×448 | 32×48 | 32×32 |
+| 4 | 1024×896 | 64×96 | 64×64 |
+| 6 | 1536×1344 | 96×144 | 96×96 |
+| 8 | 2048×1792 | 128×192 | 128×128 |
+
+`assets/art/master/` 存的是 ART=8 精度的母版，`assets/art/` 是游戏实际加载的那一份，
+由 `tools/set_art.py <ART>` 从母版缩下来。**出图一律先存母版**（回传时带 `m=1`），
+否则以后想调精度只能一张一张重新生成——初版就是这么被卡住的。
 
 处理流程：洋红抠底 → 只保留最大连通块 → 按身高归一化裁剪 → 面积平均缩小 → 色阶量化 → 描边。
 导入后会自动体检身高一致性，偏差超过 12% 会报警。

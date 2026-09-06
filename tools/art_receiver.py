@@ -14,6 +14,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 ART = os.path.join(ROOT, 'assets', 'art')
+MASTER = os.path.join(ART, 'master')
 MANIFEST = os.path.join(ART, 'manifest.json')
 SAFE = re.compile(r'^[A-Za-z0-9_]+\.png$')  # 只允许简单文件名，杜绝路径穿越
 
@@ -59,9 +60,14 @@ class Handler(BaseHTTPRequestHandler):
                 if not SAFE.match(fname): raise ValueError('bad name ' + fname)
                 raw = base64.b64decode(data + '=' * (-len(data) % 4))
                 if raw[:8] != b'\x89PNG\r\n\x1a\n': raise ValueError('not png')
-                os.makedirs(ART, exist_ok=True)
-                open(os.path.join(ART, fname), 'wb').write(raw)
-                print(f'  <- {fname}  {len(raw)} bytes')
+                # m=1 表示这是高精度母版：存进 assets/art/master/，游戏用的那份由
+                # tools/set_art.py 从母版缩下来。这样以后改 ART 不用重新出图。
+                # （当初管线直接把 1024px 原图处理成 32×48 就落盘，没留中间产物，
+                #   结果 78 张资源里 56 张想提精度只能一张一张重新生成。）
+                sub = MASTER if q.get('m', [''])[0] == '1' else ART
+                os.makedirs(sub, exist_ok=True)
+                open(os.path.join(sub, fname), 'wb').write(raw)
+                print(f'  <- {"master/" if sub is MASTER else ""}{fname}  {len(raw)} bytes')
             except Exception as e:
                 print(f'  !! {fname}: {e}')
             gif = base64.b64decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')
