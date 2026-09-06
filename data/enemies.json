@@ -348,7 +348,6 @@
  },
  "tigergran": {
   "name": "虎姑婆",
-  "sprite": "mandrake",
   "hp": 150,
   "mp": 24,
   "atk": 21,

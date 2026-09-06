@@ -80,7 +80,8 @@
   "darkslime": "enemy_darkslime.png",
   "ghost": "enemy_ghost.png",
   "knight": "enemy_knight.png",
-  "skeleton": "enemy_skeleton.png"
+  "skeleton": "enemy_skeleton.png",
+  "tigergran": "enemy_tigergran.png"
  },
  "tiles": {
   "cave_floor": "tile_cave_floor.png",
