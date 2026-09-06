@@ -1,263 +1,263 @@
 {
-  "goblin": {
-    "name": "哥布林",
-    "sprite": "goblin",
-    "hp": 29,
-    "mp": 0,
-    "atk": 9,
-    "def": 2,
-    "acc": 20,
-    "eva": 6,
-    "spd": 5,
-    "mdef": 4,
-    "crit": 3,
-    "exp": 12,
-    "gold": 8,
-    "weak": [],
-    "resist": [],
-    "immune": [],
-    "spells": [],
-    "ai": "basic"
-  },
-  "wolf": {
-    "name": "野狼",
-    "sprite": "wolf",
-    "hp": 45,
-    "mp": 0,
-    "atk": 12,
-    "def": 3,
-    "acc": 28,
-    "eva": 14,
-    "spd": 10,
-    "mdef": 4,
-    "crit": 6,
-    "exp": 22,
-    "gold": 12,
-    "weak": [
-      "fire"
-    ],
-    "resist": [],
-    "immune": [],
-    "spells": [],
-    "ai": "basic"
-  },
-  "slime": {
-    "name": "史莱姆",
-    "sprite": "slime",
-    "hp": 34,
-    "mp": 0,
-    "atk": 7,
-    "def": 7,
-    "acc": 14,
-    "eva": 2,
-    "spd": 3,
-    "mdef": 10,
-    "crit": 0,
-    "exp": 10,
-    "gold": 6,
-    "weak": [
-      "thunder"
-    ],
-    "resist": [
-      "fire"
-    ],
-    "immune": [],
-    "spells": [],
-    "ai": "basic"
-  },
-  "bat": {
-    "name": "洞窟蝙蝠",
-    "sprite": "bat",
-    "hp": 39,
-    "mp": 0,
-    "atk": 13,
-    "def": 3,
-    "acc": 30,
-    "eva": 22,
-    "spd": 14,
-    "mdef": 4,
-    "crit": 5,
-    "exp": 25,
-    "gold": 14,
-    "weak": [
-      "thunder"
-    ],
-    "resist": [],
-    "immune": [],
-    "spells": [],
-    "ai": "basic",
-    "onHit": {
-      "status": "blind",
-      "chance": 0.25
-    }
-  },
-  "darkslime": {
-    "name": "黑史莱姆",
-    "sprite": "darkslime",
-    "hp": 60,
-    "mp": 0,
-    "atk": 11,
-    "def": 10,
-    "acc": 16,
-    "eva": 2,
-    "spd": 4,
-    "mdef": 16,
-    "crit": 0,
-    "exp": 35,
-    "gold": 20,
-    "weak": [
-      "thunder"
-    ],
-    "resist": [
-      "fire"
-    ],
-    "immune": [],
-    "spells": [],
-    "ai": "basic",
-    "onHit": {
-      "status": "poison",
-      "chance": 0.3
-    }
-  },
-  "skeleton": {
-    "name": "骷髅兵",
-    "sprite": "skeleton",
-    "hp": 82,
-    "mp": 0,
-    "atk": 16,
-    "def": 8,
-    "acc": 34,
-    "eva": 6,
-    "spd": 6,
-    "mdef": 6,
-    "crit": 6,
-    "exp": 45,
-    "gold": 30,
-    "weak": [
-      "fire"
-    ],
-    "resist": [],
-    "immune": [
-      "poison",
-      "sleep"
-    ],
-    "spells": [],
-    "ai": "basic"
-  },
-  "knight": {
-    "name": "黑甲骑士 维恩",
-    "sprite": "knight",
-    "hp": 400,
-    "mp": 60,
-    "atk": 24,
-    "def": 12,
-    "acc": 50,
-    "eva": 8,
-    "spd": 9,
-    "mdef": 10,
-    "int": 10,
-    "crit": 8,
-    "exp": 300,
-    "gold": 400,
-    "weak": [],
-    "resist": [
-      "dark"
-    ],
-    "immune": [
-      "sleep",
-      "poison"
-    ],
-    "spells": [
-      "dark",
-      "sleep"
-    ],
-    "ai": "basic"
-  },
-  "bee": {
-    "name": "毒蜂",
-    "sprite": "bee",
-    "hp": 31,
-    "mp": 0,
-    "atk": 11,
-    "def": 2,
-    "acc": 30,
-    "eva": 24,
-    "spd": 13,
-    "mdef": 2,
-    "crit": 6,
-    "exp": 18,
-    "gold": 10,
-    "weak": [
-      "fire",
-      "ice"
-    ],
-    "resist": [],
-    "immune": [],
-    "spells": [],
-    "ai": "basic",
-    "onHit": {
-      "status": "poison",
-      "chance": 0.35
-    }
-  },
-  "mandrake": {
-    "name": "曼德拉草",
-    "sprite": "mandrake",
-    "hp": 69,
-    "mp": 12,
-    "atk": 12,
-    "def": 6,
-    "acc": 22,
-    "eva": 4,
-    "spd": 4,
-    "mdef": 8,
-    "int": 6,
-    "crit": 2,
-    "exp": 32,
-    "gold": 18,
-    "weak": [
-      "fire"
-    ],
-    "resist": [
-      "thunder"
-    ],
-    "immune": [
-      "poison"
-    ],
-    "spells": [
-      "sleep"
-    ],
-    "ai": "basic"
-  },
-  "ghost": {
-    "name": "幽灵",
-    "sprite": "ghost",
-    "hp": 51,
-    "mp": 18,
-    "atk": 12,
-    "def": 4,
-    "acc": 28,
-    "eva": 30,
-    "spd": 9,
-    "mdef": 12,
-    "int": 9,
-    "crit": 4,
-    "exp": 40,
-    "gold": 26,
-    "weak": [
-      "fire"
-    ],
-    "resist": [
-      "ice",
-      "dark"
-    ],
-    "immune": [
-      "poison",
-      "sleep"
-    ],
-    "spells": [
-      "dark"
-    ],
-    "ai": "basic"
+ "goblin": {
+  "name": "拾骨者",
+  "sprite": "goblin",
+  "hp": 29,
+  "mp": 0,
+  "atk": 9,
+  "def": 2,
+  "acc": 20,
+  "eva": 6,
+  "spd": 5,
+  "mdef": 4,
+  "crit": 3,
+  "exp": 12,
+  "gold": 8,
+  "weak": [],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic"
+ },
+ "wolf": {
+  "name": "褪色狼",
+  "sprite": "wolf",
+  "hp": 45,
+  "mp": 0,
+  "atk": 12,
+  "def": 3,
+  "acc": 28,
+  "eva": 14,
+  "spd": 10,
+  "mdef": 4,
+  "crit": 6,
+  "exp": 22,
+  "gold": 12,
+  "weak": [
+   "fire"
+  ],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic"
+ },
+ "slime": {
+  "name": "淤响",
+  "sprite": "slime",
+  "hp": 34,
+  "mp": 0,
+  "atk": 7,
+  "def": 7,
+  "acc": 14,
+  "eva": 2,
+  "spd": 3,
+  "mdef": 10,
+  "crit": 0,
+  "exp": 10,
+  "gold": 6,
+  "weak": [
+   "thunder"
+  ],
+  "resist": [
+   "fire"
+  ],
+  "immune": [],
+  "spells": [],
+  "ai": "basic"
+ },
+ "bat": {
+  "name": "窃声蝠",
+  "sprite": "bat",
+  "hp": 39,
+  "mp": 0,
+  "atk": 13,
+  "def": 3,
+  "acc": 30,
+  "eva": 22,
+  "spd": 14,
+  "mdef": 4,
+  "crit": 5,
+  "exp": 25,
+  "gold": 14,
+  "weak": [
+   "thunder"
+  ],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic",
+  "onHit": {
+   "status": "blind",
+   "chance": 0.25
   }
+ },
+ "darkslime": {
+  "name": "浊响",
+  "sprite": "darkslime",
+  "hp": 60,
+  "mp": 0,
+  "atk": 11,
+  "def": 10,
+  "acc": 16,
+  "eva": 2,
+  "spd": 4,
+  "mdef": 16,
+  "crit": 0,
+  "exp": 35,
+  "gold": 20,
+  "weak": [
+   "thunder"
+  ],
+  "resist": [
+   "fire"
+  ],
+  "immune": [],
+  "spells": [],
+  "ai": "basic",
+  "onHit": {
+   "status": "poison",
+   "chance": 0.3
+  }
+ },
+ "skeleton": {
+  "name": "无名骸",
+  "sprite": "skeleton",
+  "hp": 82,
+  "mp": 0,
+  "atk": 16,
+  "def": 8,
+  "acc": 34,
+  "eva": 6,
+  "spd": 6,
+  "mdef": 6,
+  "crit": 6,
+  "exp": 45,
+  "gold": 30,
+  "weak": [
+   "fire"
+  ],
+  "resist": [],
+  "immune": [
+   "poison",
+   "sleep"
+  ],
+  "spells": [],
+  "ai": "basic"
+ },
+ "knight": {
+  "name": "缄",
+  "sprite": "knight",
+  "hp": 400,
+  "mp": 60,
+  "atk": 24,
+  "def": 12,
+  "acc": 50,
+  "eva": 8,
+  "spd": 9,
+  "mdef": 10,
+  "int": 10,
+  "crit": 8,
+  "exp": 300,
+  "gold": 400,
+  "weak": [],
+  "resist": [
+   "dark"
+  ],
+  "immune": [
+   "sleep",
+   "poison"
+  ],
+  "spells": [
+   "dark",
+   "sleep"
+  ],
+  "ai": "basic"
+ },
+ "bee": {
+  "name": "蚀翅",
+  "sprite": "bee",
+  "hp": 31,
+  "mp": 0,
+  "atk": 11,
+  "def": 2,
+  "acc": 30,
+  "eva": 24,
+  "spd": 13,
+  "mdef": 2,
+  "crit": 6,
+  "exp": 18,
+  "gold": 10,
+  "weak": [
+   "fire",
+   "ice"
+  ],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic",
+  "onHit": {
+   "status": "poison",
+   "chance": 0.35
+  }
+ },
+ "mandrake": {
+  "name": "哀嚎根",
+  "sprite": "mandrake",
+  "hp": 69,
+  "mp": 12,
+  "atk": 12,
+  "def": 6,
+  "acc": 22,
+  "eva": 4,
+  "spd": 4,
+  "mdef": 8,
+  "int": 6,
+  "crit": 2,
+  "exp": 32,
+  "gold": 18,
+  "weak": [
+   "fire"
+  ],
+  "resist": [
+   "thunder"
+  ],
+  "immune": [
+   "poison"
+  ],
+  "spells": [
+   "sleep"
+  ],
+  "ai": "basic"
+ },
+ "ghost": {
+  "name": "未散者",
+  "sprite": "ghost",
+  "hp": 51,
+  "mp": 18,
+  "atk": 12,
+  "def": 4,
+  "acc": 28,
+  "eva": 30,
+  "spd": 9,
+  "mdef": 12,
+  "int": 9,
+  "crit": 4,
+  "exp": 40,
+  "gold": 26,
+  "weak": [
+   "fire"
+  ],
+  "resist": [
+   "ice",
+   "dark"
+  ],
+  "immune": [
+   "poison",
+   "sleep"
+  ],
+  "spells": [
+   "dark"
+  ],
+  "ai": "basic"
+ }
 }

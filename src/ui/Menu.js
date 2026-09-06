@@ -49,7 +49,7 @@ export class Menu {
       const row = Math.floor(i / this.cols) - this.scroll;
       if (row < 0 || row >= visible) return;
       const x = this.x + this.pad + (i % this.cols) * colW, y = this.y + this.pad + row * this.rowH;
-      const color = it.disabled ? '#8a8a9a' : '#fff';
+      const color = it.disabled ? '#6b6858' : '#fff';
       if (i === this.cursor) drawCursor(ctx, x, y + 2);
       drawText(ctx, it.label, x + 9, y, { color });
       if (it.right != null) drawText(ctx, String(it.right), x + colW - 2, y, { align: 'right', color });

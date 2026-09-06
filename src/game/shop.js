@@ -7,17 +7,17 @@ export const sellPrice = it => Math.floor((it.price || 0) / 2);
 export function buyItem(state, id, data) {
   const it = data.items[id];
   if (!it) return { ok: false, msg: '没有这个商品。' };
-  if (state.gold < it.price) return { ok: false, msg: '金币不够。' };
-  if (countItem(state.inventory, id) >= MAX_STACK) return { ok: false, msg: '拿不下更多了。' };
+  if (state.gold < it.price) return { ok: false, msg: '钱不够。' };
+  if (countItem(state.inventory, id) >= MAX_STACK) return { ok: false, msg: '带不动更多了。' };
   state.gold -= it.price; addItem(state.inventory, id);
-  return { ok: true, msg: `买下了 ${it.name}。谢谢惠顾！` };
+  return { ok: true, msg: `${it.name} 归你了。` };
 }
 export function sellItem(state, id, data) {
   const it = data.items[id];
   if (!it || !countItem(state.inventory, id)) return { ok: false, msg: '没有这个东西。' };
   if (!it.price) return { ok: false, msg: '这个不能卖。' };
   removeItem(state.inventory, id); state.gold += sellPrice(it);
-  return { ok: true, msg: `卖出了 ${it.name}，得到 ${sellPrice(it)} 金币。` };
+  return { ok: true, msg: `${it.name} 换了 ${sellPrice(it)} 枚。` };
 }
 const ELEM = { fire: '火', thunder: '雷', ice: '冰', dark: '暗', light: '光' };
 // 装备的一行摘要：主属性 + 特效 + 可装备职业

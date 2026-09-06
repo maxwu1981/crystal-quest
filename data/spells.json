@@ -1,16 +1,133 @@
 {
-  "fire":     { "name": "火焰",   "mp": 4,  "power": 8,  "element": "fire",    "target": "enemy", "scope": "single", "desc": "火属性伤害" },
-  "thunder":  { "name": "闪电",   "mp": 5,  "power": 9,  "element": "thunder", "target": "enemy", "scope": "single", "desc": "雷属性伤害" },
-  "ice":      { "name": "冰冻",   "mp": 5,  "power": 9,  "element": "ice",     "target": "enemy", "scope": "single", "desc": "冰属性伤害" },
-  "sleep":    { "name": "催眠",   "mp": 6,  "power": 0,  "status": "sleep",    "target": "enemy", "scope": "single", "desc": "让一个敌人睡着" },
-  "poison":   { "name": "毒雾",   "mp": 8,  "power": 5,  "element": "poison",  "status": "poison", "target": "enemy", "scope": "all", "desc": "全体小伤害并中毒" },
-  "fira":     { "name": "烈焰",   "mp": 12, "power": 16, "element": "fire",    "target": "enemy", "scope": "all", "desc": "全体火属性伤害" },
-  "thundara": { "name": "雷鸣",   "mp": 14, "power": 18, "element": "thunder", "target": "enemy", "scope": "all", "desc": "全体雷属性伤害" },
-  "cure":     { "name": "治愈",   "mp": 4,  "power": 14, "target": "ally", "heal": true, "scope": "single", "desc": "恢复一人 HP" },
-  "protect":  { "name": "防护",   "mp": 5,  "power": 0,  "status": "protect",  "target": "ally", "scope": "single", "desc": "一人防御提高" },
-  "esuna":    { "name": "净化",   "mp": 6,  "power": 0,  "cure": ["poison", "blind", "sleep"], "target": "ally", "scope": "single", "desc": "治疗状态异常" },
-  "cura":     { "name": "大治愈", "mp": 10, "power": 36, "target": "ally", "heal": true, "scope": "single", "desc": "大幅恢复一人 HP" },
-  "cureall":  { "name": "治愈之风", "mp": 14, "power": 18, "target": "ally", "heal": true, "scope": "all", "desc": "恢复全员 HP" },
-  "raise":    { "name": "复活",   "mp": 20, "power": 0,  "revive": 0.4,        "target": "ally", "scope": "single", "desc": "让倒下的同伴复活" },
-  "dark":     { "name": "暗影",   "mp": 6,  "power": 14, "element": "dark",    "target": "enemy", "scope": "single", "desc": "暗属性伤害" }
+ "fire": {
+  "name": "灼",
+  "mp": 4,
+  "power": 8,
+  "element": "fire",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "烧掉一个词，让它在敌人身上重新燃起"
+ },
+ "thunder": {
+  "name": "裂",
+  "mp": 5,
+  "power": 9,
+  "element": "thunder",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "撕开空气，裂口里落下白光"
+ },
+ "ice": {
+  "name": "凝",
+  "mp": 5,
+  "power": 9,
+  "element": "ice",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "让一小片世界停下来"
+ },
+ "sleep": {
+  "name": "阖",
+  "mp": 6,
+  "power": 0,
+  "status": "sleep",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "把一个敌人的意识轻轻合上"
+ },
+ "poison": {
+  "name": "蚀",
+  "mp": 8,
+  "power": 5,
+  "element": "poison",
+  "status": "poison",
+  "target": "enemy",
+  "scope": "all",
+  "desc": "让全体敌人开始缓慢褪色"
+ },
+ "fira": {
+  "name": "燎",
+  "mp": 12,
+  "power": 16,
+  "element": "fire",
+  "target": "enemy",
+  "scope": "all",
+  "desc": "一次烧掉一整排名字"
+ },
+ "thundara": {
+  "name": "霆",
+  "mp": 14,
+  "power": 18,
+  "element": "thunder",
+  "target": "enemy",
+  "scope": "all",
+  "desc": "天上裂开的口子扩到全场"
+ },
+ "cure": {
+  "name": "缝",
+  "mp": 4,
+  "power": 14,
+  "target": "ally",
+  "heal": true,
+  "scope": "single",
+  "desc": "把裂开的伤口缝回去"
+ },
+ "protect": {
+  "name": "壁",
+  "mp": 5,
+  "power": 0,
+  "status": "protect",
+  "target": "ally",
+  "scope": "single",
+  "desc": "在同伴周围立起一层旧墙的回声"
+ },
+ "esuna": {
+  "name": "涤",
+  "mp": 6,
+  "power": 0,
+  "cure": [
+   "poison",
+   "blind",
+   "sleep"
+  ],
+  "target": "ally",
+  "scope": "single",
+  "desc": "洗掉附在身上的杂响"
+ },
+ "cura": {
+  "name": "愈",
+  "mp": 10,
+  "power": 36,
+  "target": "ally",
+  "heal": true,
+  "scope": "single",
+  "desc": "缝得更深，连骨头一起"
+ },
+ "cureall": {
+  "name": "拢",
+  "mp": 14,
+  "power": 18,
+  "target": "ally",
+  "heal": true,
+  "scope": "all",
+  "desc": "把所有人的伤一并拢起"
+ },
+ "raise": {
+  "name": "唤名",
+  "mp": 20,
+  "power": 0,
+  "revive": 0.4,
+  "target": "ally",
+  "scope": "single",
+  "desc": "叫回他的名字——只要还有人记得，他就回得来"
+ },
+ "dark": {
+  "name": "噬",
+  "mp": 6,
+  "power": 14,
+  "element": "dark",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "让回声反过来吞掉主人"
+ }
 }

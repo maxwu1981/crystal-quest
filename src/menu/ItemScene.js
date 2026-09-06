@@ -23,7 +23,7 @@ export class ItemScene {
   }
   pick(id) {
     const it = this.game.data.items[id];
-    if (it.effect?.camp) { audio.sfx('heal'); campParty(this.game.state.party, this.game.data); removeItem(this.inv, id); this.msg = '全员完全恢复了'; this.buildMenu(this.menu.cursor); return; }
+    if (it.effect?.camp) { audio.sfx('heal'); campParty(this.game.state.party, this.game.data); removeItem(this.inv, id); this.msg = '全员复原了'; this.buildMenu(this.menu.cursor); return; }
     this.mode = 'target'; this.itemId = id; this.cursor = 0; this.msg = '';
   }
   update() {
@@ -52,7 +52,7 @@ export class ItemScene {
       drawWindow(ctx, 0, 0, 256, 32);
       const it = this.menu.item?.value ? data.items[this.menu.item.value] : null;
       const desc = it ? (it.type === 'consumable' ? (it.desc || '') : itemStats(it)) : '道具';
-      drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? '#ffe66d' : '#fff' });
+      drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? '#e6c46a' : '#fff' });
       this.menu.render(ctx);
       return;
     }
@@ -60,8 +60,8 @@ export class ItemScene {
     drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
     const it = data.items[this.itemId];
     drawText(ctx, it.name, PARTY_W + 8, 8);
-    drawText(ctx, `剩余 ×${countItem(this.inv, this.itemId)}`, PARTY_W + 8, 8 + LINE_H, { color: '#9aa4d8' });
-    drawText(ctx, '选择对象', PARTY_W + 8, 8 + LINE_H * 2, { color: '#9aa4d8' });
+    drawText(ctx, `剩余 ×${countItem(this.inv, this.itemId)}`, PARTY_W + 8, 8 + LINE_H, { color: '#8a8468' });
+    drawText(ctx, '选择对象', PARTY_W + 8, 8 + LINE_H * 2, { color: '#8a8468' });
     drawTextBlock(ctx, this.msg, PARTY_W + 8, 60, 64);
   }
 }

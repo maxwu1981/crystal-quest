@@ -1,34 +1,35 @@
 {
-  "title": "水晶传说",
-  "tickRate": 60,
-  "startMap": "village",
-  "startGold": 50,
-  "battleMode": "turn",
-  "atbRate": 6,
-  "expSplit": false,
-  "seed": 0,
-  "startInventory": [
-    {
-      "id": "potion",
-      "qty": 3
-    },
-    {
-      "id": "phoenix",
-      "qty": 1
-    },
-    {
-      "id": "tent",
-      "qty": 1
-    }
-  ],
-  "maps": [
-    "village",
-    "overworld",
-    "house_elder",
-    "inn",
-    "shop",
-    "cave_1",
-    "cave_2",
-    "cave_3"
-  ]
+ "title": "余响",
+ "tickRate": 60,
+ "startMap": "village",
+ "startGold": 50,
+ "battleMode": "turn",
+ "atbRate": 6,
+ "expSplit": false,
+ "seed": 0,
+ "startInventory": [
+  {
+   "id": "potion",
+   "qty": 3
+  },
+  {
+   "id": "phoenix",
+   "qty": 1
+  },
+  {
+   "id": "tent",
+   "qty": 1
+  }
+ ],
+ "maps": [
+  "village",
+  "overworld",
+  "house_elder",
+  "inn",
+  "shop",
+  "cave_1",
+  "cave_2",
+  "cave_3"
+ ],
+ "subtitle": "THE LAST ECHO"
 }

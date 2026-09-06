@@ -79,7 +79,7 @@ test('所有职业都能算出属性且 maxHp > 0', () => {
   for (const id of Object.keys(data.jobs)) { const s = computeStats({ jobId: id, level: 1, equipment: {} }, data); assert(s.maxHp > 0 && s.atk > 0, id); }
 });
 test('升级：等级+1，maxHp 增加，HP 同步增加', () => {
-  const m = { jobId: 'warrior', level: 1, exp: 0, hp: 10, mp: 0, equipment: {} };
+  const m = { jobId: 'oath', level: 1, exp: 0, hp: 10, mp: 0, equipment: {} };
   const before = computeStats(m, data);
   const gains = grantExp(m, F.expForLevel(2), data);
   assert(gains.length === 1 && m.level === 2);
@@ -124,7 +124,7 @@ test('药水回血封顶；凤凰尾巴只对死者有效', () => {
   assert(applyItem(p, d) === null); const o = applyItem(ph, d); assert(o.revived && d.alive && d.hp === 20);
 });
 test('装备：职业限制、旧装备回背包、攻击力变化、卸下', () => {
-  const m = { jobId: 'whitemage', level: 1, exp: 0, hp: 1, mp: 1, equipment: { weapon: 'wood_staff', armor: null } };
+  const m = { jobId: 'mender', level: 1, exp: 0, hp: 1, mp: 1, equipment: { weapon: 'wood_staff', armor: null } };
   const inv = [{ id: 'iron_sword', qty: 1 }, { id: 'bronze_dagger', qty: 1 }];
   assert(!equip(m, 'weapon', 'iron_sword', inv, data), '白魔不能拿铁剑');
   const before = computeStats(m, data).atk;
@@ -253,20 +253,20 @@ test('解毒药：只对中毒者有效，治好后返回状态名；帐篷清�
   assert(canUseOn(data.items.antidote, t)); const o = applyItem(data.items.antidote, t);
   assert(o.cured[0] === '中毒' && !t.status.poison); assert(applyItem(data.items.antidote, t) === null);
   assert(persistentOnly({ poison: true, sleep: 2, protect: 3 }).poison && !persistentOnly({ sleep: 2 }).sleep);
-  const party = [{ jobId: 'warrior', level: 1, hp: 1, mp: 0, status: { poison: true }, equipment: {} }];
+  const party = [{ jobId: 'oath', level: 1, hp: 1, mp: 0, status: { poison: true }, equipment: {} }];
   campParty(party, data); assert(Object.keys(party[0].status).length === 0 && party[0].hp > 1);
 });
 test('spellsFor：按等级学魔法；升级时 learned 列出新魔法', () => {
-  assert(spellsFor(data.jobs.whitemage, 1).join() === 'cure'); assert(spellsFor(data.jobs.whitemage, 3).includes('protect') && !spellsFor(data.jobs.whitemage, 3).includes('esuna'));
-  const m = { jobId: 'blackmage', level: 1, exp: 0, hp: 5, mp: 5, equipment: {} };
+  assert(spellsFor(data.jobs.mender, 1).join() === 'cure'); assert(spellsFor(data.jobs.mender, 3).includes('protect') && !spellsFor(data.jobs.mender, 3).includes('esuna'));
+  const m = { jobId: 'ashtongue', level: 1, exp: 0, hp: 5, mp: 5, equipment: {} };
   const g = grantExp(m, F.expForLevel(2), data); assert(g[0].learned.join() === 'ice', `学会 ${g[0].learned}`);
 });
 test('changeJob：换职业卸下不能装的装备并放回背包，HP 截断', () => {
-  const m = { jobId: 'warrior', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'iron_sword', armor: 'iron_armor' }, status: {} }, inv = [];
-  const removed = changeJob(m, 'blackmage', inv, data);
+  const m = { jobId: 'oath', level: 1, exp: 0, hp: 999, mp: 0, equipment: { weapon: 'iron_sword', armor: 'iron_armor' }, status: {} }, inv = [];
+  const removed = changeJob(m, 'ashtongue', inv, data);
   assert(removed.length === 2 && inv.length === 2 && m.equipment.weapon === null, '卸装备'); assert(m.hp === computeStats(m, data).maxHp, 'HP 截断');
   assert(changeJob(m, 'nope', inv, data) === null);
-  const monk = { jobId: 'monk', level: 4, equipment: {} }; assert(computeStats(monk, data).atk > computeStats({ ...monk, equipment: { weapon: 'knuckle' } }, data).atk - 3, '武僧空手攻击');
+  const monk = { jobId: 'resonant', level: 4, equipment: {} }; assert(computeStats(monk, data).atk > computeStats({ ...monk, equipment: { weapon: 'knuckle' } }, data).atk - 3, '武僧空手攻击');
 });
 test('魔法 / 道具 / 敌人数据字段合法', () => {
   for (const [id, sp] of Object.entries(data.spells)) {
@@ -296,7 +296,7 @@ function fakeBattle(partyJobs, enemyIds, seed = 5) {
   return scene;
 }
 test('行动协程：催眠 → 睡着跳过 → 物理攻击打醒；毒每回合掉血；净化解毒；防护减伤', () => {
-  const s = fakeBattle(['blackmage', 'whitemage'], ['goblin']);
+  const s = fakeBattle(['ashtongue', 'mender'], ['goblin']);
   const [bm, wm] = s.party, gob = s.enemies[0];
   let tries = 0; while (!gob.status.sleep && tries++ < 10) s.run({ actor: bm, type: 'magic', spellId: 'sleep', target: gob });
   assert(gob.status.sleep, '催眠应能生效'); assert(s.msg.includes('睡眠'), s.msg);
@@ -309,17 +309,17 @@ test('行动协程：催眠 → 睡着跳过 → 物理攻击打醒；毒每回�
   const dead = { ...wm, alive: false, hp: 0 }; s.party.push(dead); s.run({ actor: wm, type: 'magic', spellId: 'raise', target: dead }); assert(dead.alive && dead.hp > 0, '复活');
 });
 test('行动协程：全体魔法打到每个敌人；MP 不足不施放；毒雾附加中毒；免疫无效', () => {
-  const s = fakeBattle(['blackmage'], ['slime', 'slime', 'skeleton']);
+  const s = fakeBattle(['ashtongue'], ['slime', 'slime', 'skeleton']);
   const bm = s.party[0], hp0 = s.enemies.map(e => e.hp);
   s.run({ actor: bm, type: 'magic', spellId: 'fira', target: 'all' });
   assert(s.enemies.every((e, i) => e.hp < hp0[i]), '烈焰应打到全体');
   let n = 0; while (!s.enemies[0].status.poison && n++ < 10 && bm.mp >= 8) s.run({ actor: bm, type: 'magic', spellId: 'poison', target: 'all' });
   assert(s.enemies[0].status.poison || !s.enemies[0].alive, '毒雾应能下毒'); assert(!s.enemies[2].status.poison, '骷髅免疫毒');
-  bm.mp = 0; s.run({ actor: bm, type: 'magic', spellId: 'fire', target: s.enemies[0] }); assert(s.msg.includes('MP 不足'));
+  bm.mp = 0; s.run({ actor: bm, type: 'magic', spellId: 'fire', target: s.enemies[0] }); assert(s.msg.includes('余响不够'), s.msg);
   const t = { immune: ['sleep'], status: {} }; assert(inflict(s, t, 'sleep') === false);
 });
 test('敌人附带状态攻击（黑史莱姆下毒）与战斗结束只保留持续状态', () => {
-  const s = fakeBattle(['warrior'], ['darkslime']); const w = s.party[0]; w.def = 0; w.eva = -200;
+  const s = fakeBattle(['oath'], ['darkslime']); const w = s.party[0]; w.def = 0; w.eva = -200;
   let n = 0; while (!w.status.poison && n++ < 40) { s.run({ actor: s.enemies[0], type: 'attack', target: w }); if (!w.alive) { w.alive = true; w.hp = w.maxHp; } }
   assert(w.status.poison, '40 次攻击应至少下毒一次');
   w.status.blind = true; const kept = persistentOnly(w.status); assert(kept.poison && !kept.blind);
@@ -361,7 +361,7 @@ test('神话装备：都有造型 id、出处、说明，且强于同类最高�
   assert(lores.size >= 8, `神话来源只有 ${lores.size} 种，应覆盖更多地区`);
 });
 test('三个装备槽：饰品可装、加成进属性、卸下还原', () => {
-  const m = { jobId: 'warrior', level: 5, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: null, armor: null, accessory: null } };
+  const m = { jobId: 'oath', level: 5, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: null, armor: null, accessory: null } };
   const before = computeStats(m, data);
   const inv = [{ id: 'dragon_heart', qty: 1 }, { id: 'power_band', qty: 1 }];
   assert(equip(m, 'accessory', 'dragon_heart', inv, data), '饰品应能装上');
@@ -372,12 +372,12 @@ test('三个装备槽：饰品可装、加成进属性、卸下还原', () => {
   assert(equip(m, 'accessory', null, inv, data) && computeStats(m, data).atk === before.atk, '卸下应还原');
 });
 test('武器特效：属性倍率、连击、附加状态、免疫饰品', () => {
-  const m = { jobId: 'warrior', level: 8, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: 'kusanagi', armor: null, accessory: null } };
+  const m = { jobId: 'oath', level: 8, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: 'kusanagi', armor: null, accessory: null } };
   const s = computeStats(m, data);
   assert(s.element === 'thunder', '草薙剑应带雷属性');
   assert(computeStats({ ...m, equipment: { weapon: 'ganjiang' } }, data).hits === 2, '干将莫邪应是 2 连击');
-  assert(computeStats({ ...m, jobId: 'monk', equipment: { weapon: null } }, data).hits === 2, '武僧空手应是 2 连击');
-  assert(computeStats({ ...m, jobId: 'monk', equipment: { weapon: 'nemean_fist' } }, data).hits === 4, '武僧 + 双击武器 = 4');
+  assert(computeStats({ ...m, jobId: 'resonant', equipment: { weapon: null } }, data).hits === 2, '武僧空手应是 2 连击');
+  assert(computeStats({ ...m, jobId: 'resonant', equipment: { weapon: 'nemean_fist' } }, data).hits === 4, '武僧 + 双击武器 = 4');
   assert(computeStats({ ...m, equipment: { weapon: 'gram' } }, data).onHit.status === 'blind', '格拉墨应附加黑暗');
   const im = computeStats({ ...m, equipment: { accessory: 'ouroboros' } }, data);
   assert(im.immuneAll, '衔尾蛇之环应免疫异常');
@@ -385,9 +385,9 @@ test('武器特效：属性倍率、连击、附加状态、免疫饰品', () =>
   assert(makePartyActors(st, data)[0].immune.includes('poison'), '免疫应带进战斗');
 });
 test('神话武器的属性伤害与连击在战斗里真的生效', () => {
-  const s = fakeBattle(['warrior'], ['slime', 'slime']);  // 史莱姆弱雷
+  const s = fakeBattle(['oath'], ['slime', 'slime']);  // 史莱姆弱雷
   const w = s.party[0];
-  Object.assign(w, computeStats({ jobId: 'warrior', level: 12, equipment: { weapon: 'kusanagi', armor: null, accessory: null } }, data));
+  Object.assign(w, computeStats({ jobId: 'oath', level: 12, equipment: { weapon: 'kusanagi', armor: null, accessory: null } }, data));
   w.acc = 200; w.name = '雷欧';
   const hp0 = s.enemies[0].hp;
   s.run({ actor: w, type: 'attack', target: s.enemies[0] });

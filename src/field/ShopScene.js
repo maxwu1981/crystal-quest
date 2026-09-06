@@ -42,13 +42,13 @@ export class ShopScene {
     const data = this.game.data, st = this.game.state;
     const hovered = this.mode !== 'root' && this.list.item?.value ? data.items[this.list.item.value] : null;
     drawWindow(ctx, 0, 0, 256, 32);
-    drawText(ctx, this.msg || (hovered ? describeItem(hovered, data) : GREETING), 8, 10, { color: this.msg && this.msg !== GREETING ? '#ffe66d' : '#fff' });
-    if (this.mode === 'root') { drawWindow(ctx, 0, 32, 176, 192); drawText(ctx, this.name, 8, 40, { color: '#9aa4d8' }); }
+    drawText(ctx, this.msg || (hovered ? describeItem(hovered, data) : GREETING), 8, 10, { color: this.msg && this.msg !== GREETING ? '#e6c46a' : '#fff' });
+    if (this.mode === 'root') { drawWindow(ctx, 0, 32, 176, 192); drawText(ctx, this.name, 8, 40, { color: '#8a8468' }); }
     else this.list.render(ctx);
     this.root.render(ctx);
     drawWindow(ctx, 176, 88, 80, 28);
     drawText(ctx, `${st.gold} G`, 248, 96, { align: 'right' });
     drawWindow(ctx, 176, 116, 80, 108);
-    if (hovered) { drawText(ctx, '持有', 184, 124, { color: '#9aa4d8' }); drawText(ctx, `×${countItem(st.inventory, this.list.item.value)}`, 248, 124, { align: 'right' }); }
+    if (hovered) { drawText(ctx, '持有', 184, 124, { color: '#8a8468' }); drawText(ctx, `×${countItem(st.inventory, this.list.item.value)}`, 248, 124, { align: 'right' }); }
   }
 }

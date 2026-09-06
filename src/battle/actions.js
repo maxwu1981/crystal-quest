@@ -38,13 +38,13 @@ export function* execute(scene, a) {
   actor.defending = false;
   if (!(yield* statusPhase(scene, actor))) return;
   if (a.type === 'sleep' || actor.status.sleep) { scene.msg = `${actor.name} 正在沉睡…`; yield 0.6; return; }
-  if (a.type === 'defend') { actor.defending = true; scene.msg = `${actor.name} 摆出防御姿态`; audio.sfx('cursor'); yield 0.6; return; }
+  if (a.type === 'defend') { actor.defending = true; scene.msg = `${actor.name} 稳住了身形`; audio.sfx('cursor'); yield 0.6; return; }
   if (a.type === 'flee') {
-    scene.msg = `${actor.name} 试图逃跑…`; yield 0.6;
+    scene.msg = `${actor.name} 想退开…`; yield 0.6;
     const ps = scene.alive(scene.party), es = scene.alive(scene.enemies);
     const avg = ps.reduce((s, p) => s + p.spd, 0) / ps.length, mx = Math.max(...es.map(e => e.spd));
-    if (scene.canFlee && rng.chance(F.fleeChance(avg, mx))) { scene.msg = '成功逃走了！'; scene.escaped = true; audio.sfx('flee'); }
-    else { scene.msg = '没能逃掉！'; audio.sfx('buzz'); }
+    if (scene.canFlee && rng.chance(F.fleeChance(avg, mx))) { scene.msg = '退开了。'; scene.escaped = true; audio.sfx('flee'); }
+    else { scene.msg = '退不掉。'; audio.sfx('buzz'); }
     yield 0.8; return;
   }
   if (a.type === 'item') { yield* useItem(scene, actor, a); return; }
@@ -60,14 +60,14 @@ function* useItem(scene, actor, a) {
   removeItem(inv, a.itemId);
   const out = applyItem(it, t);
   scene.fx.add(out?.revived ? 'heal' : 'spark', ...scene.center(t)); audio.sfx(out?.revived ? 'heal' : 'item');
-  if (out?.hp) scene.popup(t, String(out.hp), '#7cfc7c');
-  if (out?.mp) scene.popup(t, String(out.mp), '#7cc4ff');
+  if (out?.hp) scene.popup(t, String(out.hp), '#9ecf7a');
+  if (out?.mp) scene.popup(t, String(out.mp), '#8fb9a8');
   scene.msg += '\n' + describeUse(it, t.name, out); yield 0.8;
 }
 
 function* attack(scene, actor, a) {
   const t = scene.retarget(a.target); if (!t) return;
-  scene.msg = `${actor.name} 的攻击！`; actor.lunge = 0.3; yield 0.3;
+  scene.msg = `${actor.name} 出手`; actor.lunge = 0.3; yield 0.3;
   const r = F.physicalAttack(F.effectiveStats(actor), F.effectiveStats(t), scene.rng);
   if (r.miss) { scene.popup(t, 'MISS', '#ddd'); audio.sfx('miss'); scene.msg += '\n没有命中'; yield 0.7; return; }
   // 武器属性：对弱点翻倍、被抗性减半
@@ -87,14 +87,14 @@ function* attack(scene, actor, a) {
 
 function* castSpell(scene, actor, a) {
   const sp = scene.game.data.spells[a.spellId];
-  if (actor.mp < sp.mp) { scene.msg = `${actor.name} 的 MP 不足！`; audio.sfx('buzz'); yield 0.6; return; }
+  if (actor.mp < sp.mp) { scene.msg = `${actor.name} 的余响不够`; audio.sfx('buzz'); yield 0.6; return; }
   const ally = sp.target === 'ally';
   const targets = a.target === 'all'
     ? (sp.revive ? scene.party.filter(p => !p.alive) : scene.alive(ally ? scene.party : scene.enemies))
     : [sp.revive ? a.target : scene.retarget(a.target)].filter(Boolean);
   if (!targets.length) { scene.msg = `${actor.name} 施放了 ${sp.name}！\n没有对象`; yield 0.6; return; }
   actor.mp -= sp.mp;
-  scene.msg = `${actor.name} 施放了 ${sp.name}！`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
+  scene.msg = `${actor.name} 念出「${sp.name}」`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
   for (const t of targets) yield* spellOn(scene, actor, sp, t);
 }
 
@@ -109,7 +109,7 @@ function* spellOn(scene, actor, sp, t) {
     scene.fx.add('heal', ...scene.center(t)); audio.sfx('heal');
     const before = t.hp;
     t.hp = Math.min(t.maxHp, t.hp + F.healAmount(sp.power, actor, rng));
-    scene.popup(t, String(t.hp - before), '#7cfc7c');
+    scene.popup(t, String(t.hp - before), '#9ecf7a');
     scene.msg += `\n${t.name} 恢复了 ${t.hp - before} HP`; yield 0.6; return;
   }
   if (sp.cure) {

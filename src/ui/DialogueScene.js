@@ -48,7 +48,7 @@ export class DialogueScene {
     const { x, y, w, h } = BOX;
     drawWindow(ctx, x, y, w, h);
     let ty = y + 8;
-    if (this.name) { drawText(ctx, this.name, x + 8, ty, { color: '#ffe66d' }); ty += LINE_H; }
+    if (this.name) { drawText(ctx, this.name, x + 8, ty, { color: '#e6c46a' }); ty += LINE_H; }
     wrapText(ctx, this.text.slice(0, this.shown), w - 16).slice(0, 4).forEach((l, i) => drawText(ctx, l, x + 8, ty + i * LINE_H));
     if (this.done && !this.menu && !(this.isLast && this.choices) && Math.floor(this.t * 3) % 2 === 0) {
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x + w - 14, y + h - 12); ctx.lineTo(x + w - 8, y + h - 12); ctx.lineTo(x + w - 11, y + h - 8); ctx.closePath(); ctx.fill();

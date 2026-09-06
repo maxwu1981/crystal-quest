@@ -1,43 +1,43 @@
 {
  "characters": {
-  "warrior": {
-   "down": "char_warrior_down.png",
-   "left": "char_warrior_left.png",
-   "up": "char_warrior_up.png",
-   "down_walk": "char_warrior_down_walk.png",
-   "left_walk": "char_warrior_left_walk.png",
-   "up_walk": "char_warrior_up_walk.png"
+  "oath": {
+   "down": "char_oath_down.png",
+   "left": "char_oath_left.png",
+   "up": "char_oath_up.png",
+   "down_walk": "char_oath_down_walk.png",
+   "left_walk": "char_oath_left_walk.png",
+   "up_walk": "char_oath_up_walk.png"
   },
-  "blackmage": {
-   "down": "char_blackmage_down.png",
-   "left": "char_blackmage_left.png",
-   "up": "char_blackmage_up.png"
+  "ashtongue": {
+   "down": "char_ashtongue_down.png",
+   "left": "char_ashtongue_left.png",
+   "up": "char_ashtongue_up.png"
   },
-  "monk": {
-   "down": "char_monk_down.png",
-   "left": "char_monk_left.png",
-   "up": "char_monk_up.png"
+  "resonant": {
+   "down": "char_resonant_down.png",
+   "left": "char_resonant_left.png",
+   "up": "char_resonant_up.png"
   },
-  "redmage": {
-   "down": "char_redmage_down.png",
-   "left": "char_redmage_left.png",
-   "up": "char_redmage_up.png"
+  "wayfarer": {
+   "down": "char_wayfarer_down.png",
+   "left": "char_wayfarer_left.png",
+   "up": "char_wayfarer_up.png"
   },
-  "thief": {
-   "down": "char_thief_down.png",
-   "left": "char_thief_left.png",
-   "up": "char_thief_up.png",
-   "down_walk": "char_thief_down_walk.png",
-   "left_walk": "char_thief_left_walk.png",
-   "up_walk": "char_thief_up_walk.png"
+  "gleaner": {
+   "down": "char_gleaner_down.png",
+   "left": "char_gleaner_left.png",
+   "up": "char_gleaner_up.png",
+   "down_walk": "char_gleaner_down_walk.png",
+   "left_walk": "char_gleaner_left_walk.png",
+   "up_walk": "char_gleaner_up_walk.png"
   },
-  "whitemage": {
-   "down": "char_whitemage_down.png",
-   "left": "char_whitemage_left.png",
-   "up": "char_whitemage_up.png",
-   "down_walk": "char_whitemage_down_walk.png",
-   "left_walk": "char_whitemage_left_walk.png",
-   "up_walk": "char_whitemage_up_walk.png"
+  "mender": {
+   "down": "char_mender_down.png",
+   "left": "char_mender_left.png",
+   "up": "char_mender_up.png",
+   "down_walk": "char_mender_down_walk.png",
+   "left_walk": "char_mender_left_walk.png",
+   "up_walk": "char_mender_up_walk.png"
   }
  },
  "enemies": {},

@@ -55,7 +55,7 @@ export class EquipScene {
     if (this.mode === 'member') {
       drawPartyPanel(ctx, this.game, { cursor: this.cursor });
       drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
-      drawText(ctx, '装备', PARTY_W + 8, 8); drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H, { color: '#9aa4d8' });
+      drawText(ctx, '装备', PARTY_W + 8, 8); drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H, { color: '#8a8468' });
       return;
     }
     const m = this.member, job = this.game.data.jobs[m.jobId], { cur, next } = this.previewStats();
@@ -64,8 +64,8 @@ export class EquipScene {
     drawText(ctx, `${m.name}  ${job.name}  Lv ${m.level}`, 52, 10);
     const stat = (label, a, b, x) => {
       const y = 10 + LINE_H + 4;
-      drawText(ctx, label, x, y, { color: '#9aa4d8' }); drawText(ctx, String(a), x + 28, y);
-      if (b != null && b !== a) drawText(ctx, `→ ${b}`, x + 50, y, { color: b > a ? '#7cfc7c' : '#ff8a80' });
+      drawText(ctx, label, x, y, { color: '#8a8468' }); drawText(ctx, String(a), x + 28, y);
+      if (b != null && b !== a) drawText(ctx, `→ ${b}`, x + 50, y, { color: b > a ? '#9ecf7a' : '#c8705a' });
     };
     stat('攻击', cur.atk, next?.atk, 52); stat('防御', cur.def, next?.def, 150);
     this.slotMenu.render(ctx);
@@ -77,11 +77,11 @@ export class EquipScene {
         const ic = it.icon && icons[it.icon];               // 神话装备的专属造型
         const tx = ic ? 40 : 8, tw = ic ? 208 : 240;
         if (ic) drawSprite(ctx, ic, 6, 132, 28);
-        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? '#ffe66d' : '#fff' });
-        if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: '#9aa4d8' });
-        drawText(ctx, itemStats(it), tx, 120 + LINE_H, { color: '#7cc4ff' });
-        wrapText(ctx, it.desc || '', tw).slice(0, 2).forEach((l, i) => drawText(ctx, l, tx, 120 + LINE_H * (i + 2), { color: '#9aa4d8' }));
-      } else drawText(ctx, '选择要更换的部位', 8, 120, { color: '#9aa4d8' });
+        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? '#e6c46a' : '#fff' });
+        if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: '#8a8468' });
+        drawText(ctx, itemStats(it), tx, 120 + LINE_H, { color: '#8fb9a8' });
+        wrapText(ctx, it.desc || '', tw).slice(0, 2).forEach((l, i) => drawText(ctx, l, tx, 120 + LINE_H * (i + 2), { color: '#8a8468' }));
+      } else drawText(ctx, '选择要更换的部位', 8, 120, { color: '#8a8468' });
     }
   }
 }

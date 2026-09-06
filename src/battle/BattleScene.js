@@ -13,7 +13,7 @@ import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { drawArt, artW, artH } from '../core/draw.js';
 
-const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
+const CMD = { attack: '出手', magic: '言灵', defend: '守势', item: '物品', flee: '退开' };
 const MSG_LINES = 4;
 
 export class BattleScene {
@@ -184,7 +184,7 @@ export class BattleScene {
   damage(t, dmg, { physical = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
     if (t.side === 'party') this.fx.shake(0.2);
-    this.popup(t, String(dmg), t.side === 'party' ? '#ffb0b0' : '#fff');
+    this.popup(t, String(dmg), t.side === 'party' ? '#e0a090' : '#fff');
     if (physical && t.status.sleep) { delete t.status.sleep; this.popup(t, '醒了', '#90caf9'); }
     if (t.hp <= 0) { t.alive = false; t.status = {}; if (t.side === 'enemy') t.dying = 0.5; }
   }
@@ -195,12 +195,12 @@ export class BattleScene {
 
   *victoryCo() {
     this.bgm = null; this.won = true; audio.sfx('victory');
-    this.msg = '胜利！'; yield 1.0;
+    this.msg = '回声平息了'; yield 1.0;
     const exp = this.enemies.reduce((s, e) => s + e.exp, 0), gold = this.enemies.reduce((s, e) => s + e.gold, 0);
     const alive = this.alive(this.party), spells = this.game.data.spells;
     const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;
     this.game.state.gold += gold;
-    this.msg = `获得 ${share} 经验值\n获得 ${gold} 金币`; yield 'confirm';
+    this.msg = `听到 ${share} 点回声\n拾到 ${gold} 枚`; yield 'confirm';
     for (const r of this.opts.reward || []) { // Boss 掉落
       addItem(this.game.state.inventory, r.id, r.qty || 1);
       const it = this.game.data.items[r.id]; audio.sfx('levelup');
@@ -210,13 +210,13 @@ export class BattleScene {
       this.syncMember(a);
       for (const g of grantExp(a.member, share, this.game.data)) {
         a.level = g.level; a.hp = a.member.hp; a.mp = a.member.mp; audio.sfx('levelup');
-        this.msg = `${a.name} 升到了 ${g.level} 级！\nHP 最大值 +${g.hpUp}  MP 最大值 +${g.mpUp}`;
-        if (g.learned.length) this.msg += `\n学会了 ${g.learned.map(id => spells[id]?.name || id).join('、')}！`;
+        this.msg = `${a.name} 的回声更响了（${g.level} 级）\n生机 +${g.hpUp}  余响 +${g.mpUp}`;
+        if (g.learned.length) this.msg += `\n想起了一个词：${g.learned.map(id => spells[id]?.name || id).join('、')}`;
         yield 'confirm';
       }
     }
   }
-  *defeatCo() { this.bgm = null; audio.sfx('defeat'); this.msg = '全军覆没…'; yield 1.4; this.msg = '全军覆没…\n\n（按确认键重新开始）'; yield 'confirm'; }
+  *defeatCo() { this.bgm = null; audio.sfx('defeat'); this.msg = '声音都没了…'; yield 1.4; this.msg = '声音都没了…\n\n（按确认键重新开始）'; yield 'confirm'; }
 
   syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; a.member.status = persistentOnly(a.status); }
   finish() {
@@ -262,7 +262,7 @@ export class BattleScene {
       const t = this.target.list[this.target.idx];
       const [x, y, w, h] = this.actorRect(t);
       drawCursor(ctx, x - 9, y + h / 2 - 3);
-      drawText(ctx, t.name, x + w / 2, y - 12, { align: 'center', color: '#ffe66d' });
+      drawText(ctx, t.name, x + w / 2, y - 12, { align: 'center', color: '#e6c46a' });
     }
     for (const p of this.popups) {
       const q = 1 - p.t / 0.9, dy = q < 0.35 ? -18 * Math.sin(q / 0.35 * Math.PI / 2) : -18 + (q - 0.35) * 12;

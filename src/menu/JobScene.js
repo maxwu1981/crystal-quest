@@ -1,4 +1,4 @@
-// 转职（FF3/FF5 风格）：选角色 → 选职业（右侧预览属性变化）→ 立即生效。需要标志位 jobUnlocked（村长给的水晶碎片）。
+// 转职：选角色 → 选职业（右侧预览属性变化）→ 立即生效。需要标志位 jobUnlocked（记名人给的「记名的碎片」）。
 import { Menu } from '../ui/Menu.js';
 import { drawWindow } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
@@ -24,10 +24,10 @@ export class JobScene {
   }
   pick(jobId) {
     const m = this.member, data = this.game.data;
-    if (jobId === m.jobId) { this.msg = '已经是这个职业了'; audio.sfx('buzz'); return; }
+    if (jobId === m.jobId) { this.msg = '现在就是这个样子'; audio.sfx('buzz'); return; }
     const removed = changeJob(m, jobId, this.game.state.inventory, data);
     audio.sfx('levelup');
-    this.msg = `${m.name} 成为了${this.jobs[jobId].name}！` + (removed.length ? `\n卸下了 ${removed.map(id => data.items[id].name).join('、')}` : '');
+    this.msg = `${m.name} 想起了自己也能是${this.jobs[jobId].name}。` + (removed.length ? `\n卸下了 ${removed.map(id => data.items[id].name).join('、')}` : '');
     this.mode = 'member';
   }
   update() {
@@ -43,7 +43,7 @@ export class JobScene {
     if (this.mode === 'member') {
       drawPartyPanel(ctx, g, { cursor: this.cursor });
       drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
-      drawText(ctx, '转职', PARTY_W + 8, 8); drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H, { color: '#9aa4d8' });
+      drawText(ctx, '转职', PARTY_W + 8, 8); drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H, { color: '#8a8468' });
       drawTextBlock(ctx, this.msg, PARTY_W + 8, 8 + LINE_H * 3, 64);
       return;
     }
@@ -53,14 +53,14 @@ export class JobScene {
     drawWindow(ctx, LEFT_W, 0, 256 - LEFT_W, 224);
     drawSprite(ctx, g.sprites[`${id}_down_0`], LEFT_W + 8, 8, 48);
     drawText(ctx, `${m.name}  Lv ${m.level}`, LEFT_W + 60, 12);
-    drawText(ctx, `${this.jobs[m.jobId].name} → ${job.name}`, LEFT_W + 60, 12 + LINE_H, { color: '#ffe66d' });
-    wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, 3).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: '#9aa4d8' }));
-    const rows = [['HP', cur.maxHp, next.maxHp], ['MP', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['魔法', spellsFor(this.jobs[m.jobId], m.level).length, spellsFor(job, m.level).length]];
+    drawText(ctx, `${this.jobs[m.jobId].name} → ${job.name}`, LEFT_W + 60, 12 + LINE_H, { color: '#e6c46a' });
+    wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, 3).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: '#8a8468' }));
+    const rows = [['生机', cur.maxHp, next.maxHp], ['余响', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['言灵', spellsFor(this.jobs[m.jobId], m.level).length, spellsFor(job, m.level).length]];
     rows.forEach(([k, a, b], i) => {
       const y = 108 + i * LINE_H;
-      drawText(ctx, k, LEFT_W + 8, y, { color: '#9aa4d8' }); drawText(ctx, String(a), LEFT_W + 72, y, { align: 'right' });
-      drawText(ctx, '→', LEFT_W + 80, y, { color: '#9aa4d8' }); drawText(ctx, String(b), LEFT_W + 124, y, { align: 'right', color: b > a ? '#7cfc7c' : b < a ? '#ff8a80' : '#fff' });
+      drawText(ctx, k, LEFT_W + 8, y, { color: '#8a8468' }); drawText(ctx, String(a), LEFT_W + 72, y, { align: 'right' });
+      drawText(ctx, '→', LEFT_W + 80, y, { color: '#8a8468' }); drawText(ctx, String(b), LEFT_W + 124, y, { align: 'right', color: b > a ? '#9ecf7a' : b < a ? '#c8705a' : '#fff' });
     });
-    drawText(ctx, 'Z 确认   X 返回', 256 - 8, 204, { align: 'right', color: '#9aa4d8' });
+    drawText(ctx, 'Z 确认   X 返回', 256 - 8, 204, { align: 'right', color: '#8a8468' });
   }
 }

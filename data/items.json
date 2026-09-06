@@ -1,72 +1,72 @@
 {
  "potion": {
-  "name": "药水",
+  "name": "愈草汁",
   "type": "consumable",
   "effect": {
    "hp": 30
   },
   "price": 30,
-  "desc": "恢复 30 HP",
+  "desc": "补回 30 点生机",
   "battle": true,
   "field": true
  },
  "hipotion": {
-  "name": "高级药水",
+  "name": "浓愈汁",
   "type": "consumable",
   "effect": {
    "hp": 100
   },
   "price": 150,
-  "desc": "恢复 100 HP",
+  "desc": "补回 100 点生机",
   "battle": true,
   "field": true
  },
  "xpotion": {
-  "name": "特效药水",
+  "name": "回魂露",
   "type": "consumable",
   "effect": {
    "hp": 300
   },
   "price": 600,
-  "desc": "恢复 300 HP",
+  "desc": "补回 300 点生机",
   "battle": true,
   "field": true
  },
  "ether": {
-  "name": "以太",
+  "name": "余响之滴",
   "type": "consumable",
   "effect": {
    "mp": 15
   },
   "price": 120,
-  "desc": "恢复 15 MP",
+  "desc": "补回 15 点余响",
   "battle": true,
   "field": true
  },
  "hiether": {
-  "name": "高级以太",
+  "name": "余响之泉",
   "type": "consumable",
   "effect": {
    "mp": 50
   },
   "price": 450,
-  "desc": "恢复 50 MP",
+  "desc": "补回 50 点余响",
   "battle": true,
   "field": true
  },
  "phoenix": {
-  "name": "凤凰尾巴",
+  "name": "未尽之息",
   "type": "consumable",
   "effect": {
    "revive": 0.5
   },
   "price": 200,
-  "desc": "复活并恢复一半 HP",
+  "desc": "把断掉的气接上，回来时剩一半生机",
   "battle": true,
   "field": true
  },
  "antidote": {
-  "name": "解毒药",
+  "name": "祛蚀散",
   "type": "consumable",
   "effect": {
    "cure": [
@@ -74,12 +74,12 @@
    ]
   },
   "price": 20,
-  "desc": "治疗中毒",
+  "desc": "止住褪色",
   "battle": true,
   "field": true
  },
  "eyedrop": {
-  "name": "眼药水",
+  "name": "明目露",
   "type": "consumable",
   "effect": {
    "cure": [
@@ -87,12 +87,12 @@
    ]
   },
   "price": 20,
-  "desc": "治疗黑暗",
+  "desc": "洗去糊在眼上的灰",
   "battle": true,
   "field": true
  },
  "bell": {
-  "name": "唤醒铃",
+  "name": "醒神铃",
   "type": "consumable",
   "effect": {
    "cure": [
@@ -100,12 +100,12 @@
    ]
   },
   "price": 25,
-  "desc": "唤醒沉睡的同伴",
+  "desc": "摇一下，人就醒了",
   "battle": true,
   "field": true
  },
  "elixir": {
-  "name": "万能药",
+  "name": "圆响",
   "type": "consumable",
   "effect": {
    "hp": 999,
@@ -117,18 +117,18 @@
    ]
   },
   "price": 1200,
-  "desc": "完全恢复 HP MP 并解除异常",
+  "desc": "生机与余响一并填满，杂响尽去",
   "battle": true,
   "field": true
  },
  "tent": {
-  "name": "帐篷",
+  "name": "宿营石",
   "type": "consumable",
   "effect": {
    "camp": true
   },
   "price": 100,
-  "desc": "全员完全恢复（只能在地图上用）",
+  "desc": "点起来睡一觉，全员复原（只能在野外用）",
   "battle": false,
   "field": true
  },
@@ -141,8 +141,8 @@
   "acc": 0,
   "price": 55,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "bronze_sword": {
@@ -154,8 +154,8 @@
   "acc": 0,
   "price": 208,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "iron_sword": {
@@ -167,8 +167,8 @@
   "acc": 0,
   "price": 405,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "steel_sword": {
@@ -180,8 +180,8 @@
   "acc": 2,
   "price": 789,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "silver_sword": {
@@ -193,8 +193,8 @@
   "acc": 2,
   "price": 1539,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "mythril_sword": {
@@ -206,8 +206,8 @@
   "acc": 4,
   "price": 3002,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "adamant_sword": {
@@ -219,8 +219,8 @@
   "acc": 4,
   "price": 5854,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "meteor_sword": {
@@ -232,8 +232,8 @@
   "acc": 6,
   "price": 11415,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "dragon_sword": {
@@ -245,8 +245,8 @@
   "acc": 6,
   "price": 22259,
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ]
  },
  "knife": {
@@ -258,11 +258,11 @@
   "acc": 6,
   "price": 55,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "bronze_dagger": {
@@ -274,11 +274,11 @@
   "acc": 6,
   "price": 208,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "iron_dagger": {
@@ -290,11 +290,11 @@
   "acc": 8,
   "price": 405,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "steel_dagger": {
@@ -306,11 +306,11 @@
   "acc": 8,
   "price": 789,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "silver_dagger": {
@@ -322,11 +322,11 @@
   "acc": 10,
   "price": 1539,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "mythril_dagger": {
@@ -338,11 +338,11 @@
   "acc": 10,
   "price": 3002,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "adamant_dagger": {
@@ -354,11 +354,11 @@
   "acc": 12,
   "price": 5854,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "meteor_dagger": {
@@ -370,11 +370,11 @@
   "acc": 12,
   "price": 11415,
   "jobs": [
-   "warrior",
-   "thief",
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "oath",
+   "gleaner",
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "wrap": {
@@ -386,7 +386,7 @@
   "acc": 10,
   "price": 55,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "leather_knuckle": {
@@ -398,7 +398,7 @@
   "acc": 10,
   "price": 106,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "iron_knuckle": {
@@ -410,7 +410,7 @@
   "acc": 12,
   "price": 405,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "steel_knuckle": {
@@ -422,7 +422,7 @@
   "acc": 12,
   "price": 789,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "silver_knuckle": {
@@ -434,7 +434,7 @@
   "acc": 14,
   "price": 1539,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "mythril_knuckle": {
@@ -446,7 +446,7 @@
   "acc": 14,
   "price": 3002,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "adamant_claw": {
@@ -458,7 +458,7 @@
   "acc": 16,
   "price": 5854,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "dragon_claw": {
@@ -470,7 +470,7 @@
   "acc": 18,
   "price": 22259,
   "jobs": [
-   "monk"
+   "resonant"
   ]
  },
  "wood_staff": {
@@ -482,9 +482,9 @@
   "acc": 2,
   "price": 55,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ]
  },
  "oak_staff": {
@@ -496,9 +496,9 @@
   "acc": 2,
   "price": 208,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 2
  },
@@ -511,9 +511,9 @@
   "acc": 4,
   "price": 405,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 3
  },
@@ -526,9 +526,9 @@
   "acc": 4,
   "price": 789,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 4
  },
@@ -541,9 +541,9 @@
   "acc": 6,
   "price": 1539,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 6
  },
@@ -556,9 +556,9 @@
   "acc": 6,
   "price": 3002,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 9
  },
@@ -571,9 +571,9 @@
   "acc": 8,
   "price": 11415,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage"
+   "mender",
+   "ashtongue",
+   "wayfarer"
   ],
   "intBonus": 13
  },
@@ -584,10 +584,10 @@
   "tier": 2,
   "price": 114,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 5
  },
@@ -598,10 +598,10 @@
   "tier": 3,
   "price": 222,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 8
  },
@@ -612,10 +612,10 @@
   "tier": 4,
   "price": 434,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 12
  },
@@ -626,10 +626,10 @@
   "tier": 5,
   "price": 846,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 17
  },
@@ -640,10 +640,10 @@
   "tier": 6,
   "price": 1649,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 23,
   "mdef": 4
@@ -655,10 +655,10 @@
   "tier": 7,
   "price": 3216,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 30,
   "mdef": 6
@@ -670,10 +670,10 @@
   "tier": 8,
   "price": 6272,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 38,
   "mdef": 8
@@ -685,10 +685,10 @@
   "tier": 9,
   "price": 12230,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 47,
   "mdef": 10
@@ -700,10 +700,10 @@
   "tier": 10,
   "price": 23849,
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage",
-   "monk"
+   "oath",
+   "gleaner",
+   "wayfarer",
+   "resonant"
   ],
   "def": 57,
   "mdef": 14
@@ -715,11 +715,11 @@
   "tier": 1,
   "price": 51,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 2,
   "mdef": 2
@@ -731,11 +731,11 @@
   "tier": 2,
   "price": 99,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 4,
   "mdef": 4
@@ -747,11 +747,11 @@
   "tier": 3,
   "price": 193,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 6,
   "mdef": 7
@@ -763,11 +763,11 @@
   "tier": 5,
   "price": 733,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 10,
   "mdef": 12
@@ -779,11 +779,11 @@
   "tier": 7,
   "price": 2788,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 16,
   "mdef": 18
@@ -795,11 +795,11 @@
   "tier": 9,
   "price": 10599,
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief",
-   "monk"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner",
+   "resonant"
   ],
   "def": 24,
   "mdef": 26
@@ -865,8 +865,8 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ],
   "atk": 78,
   "acc": 20,
@@ -884,9 +884,9 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage"
+   "oath",
+   "gleaner",
+   "wayfarer"
   ],
   "atk": 72,
   "acc": 16,
@@ -904,7 +904,7 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior"
+   "oath"
   ],
   "atk": 74,
   "acc": 14,
@@ -922,8 +922,8 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ],
   "atk": 76,
   "acc": 18,
@@ -941,9 +941,9 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage"
+   "oath",
+   "gleaner",
+   "wayfarer"
   ],
   "atk": 70,
   "acc": 22,
@@ -960,7 +960,7 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "warrior"
+   "oath"
   ],
   "atk": 68,
   "acc": 90,
@@ -977,8 +977,8 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "thief",
-   "warrior"
+   "gleaner",
+   "oath"
   ],
   "atk": 52,
   "acc": 24,
@@ -996,7 +996,7 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "thief"
+   "gleaner"
   ],
   "atk": 48,
   "acc": 20,
@@ -1013,8 +1013,8 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "thief",
-   "warrior"
+   "gleaner",
+   "oath"
   ],
   "atk": 44,
   "acc": 18,
@@ -1032,7 +1032,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
-   "monk"
+   "resonant"
   ],
   "atk": 46,
   "acc": 26,
@@ -1050,7 +1050,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
-   "monk"
+   "resonant"
   ],
   "atk": 42,
   "acc": 22,
@@ -1068,8 +1068,8 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "blackmage",
-   "redmage"
+   "ashtongue",
+   "wayfarer"
   ],
   "atk": 30,
   "acc": 10,
@@ -1087,8 +1087,8 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "whitemage",
-   "redmage"
+   "mender",
+   "wayfarer"
   ],
   "atk": 34,
   "acc": 12,
@@ -1106,7 +1106,7 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "blackmage"
+   "ashtongue"
   ],
   "atk": 28,
   "acc": 10,
@@ -1124,8 +1124,8 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "warrior",
-   "redmage"
+   "oath",
+   "wayfarer"
   ],
   "def": 62,
   "mdef": 18,
@@ -1142,9 +1142,9 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "warrior",
-   "thief",
-   "redmage"
+   "oath",
+   "gleaner",
+   "wayfarer"
   ],
   "def": 58,
   "mdef": 22
@@ -1160,8 +1160,8 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "warrior",
-   "monk"
+   "oath",
+   "resonant"
   ],
   "def": 60,
   "mdef": 14,
@@ -1178,10 +1178,10 @@
   "price": 0,
   "cat": "robe",
   "jobs": [
-   "whitemage",
-   "blackmage",
-   "redmage",
-   "thief"
+   "mender",
+   "ashtongue",
+   "wayfarer",
+   "gleaner"
   ],
   "def": 36,
   "mdef": 30,
@@ -1198,9 +1198,9 @@
   "price": 0,
   "cat": "robe",
   "jobs": [
-   "monk",
-   "thief",
-   "warrior"
+   "resonant",
+   "gleaner",
+   "oath"
   ],
   "def": 46,
   "mdef": 12,
