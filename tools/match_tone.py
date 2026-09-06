@@ -48,8 +48,11 @@ def stats(hsv):
     return circ_mean_hue(hs) if hs else 0.0, sm, vm
 
 
-def match(src_name, ref_name, dry=False, pin=False):
-    sp, rp = os.path.join(ART, src_name), os.path.join(ART, ref_name)
+def match(src_name, ref_name, dry=False, pin=False, master=False):
+    # 母版才是权威：只改 assets/art/ 里的成品，下次 set_art 派生就把调好的色退回去了。
+    # 所以补帧对色要对在 master/ 上，改完再派生一次。
+    base = os.path.join(ART, 'master') if master else ART
+    sp, rp = os.path.join(base, src_name), os.path.join(base, ref_name)
     w, h, px, shsv = hsv_pixels(sp)
     _, _, _, rhsv = hsv_pixels(rp)
     sh, ss, sv = stats(shsv)
@@ -77,9 +80,10 @@ def match(src_name, ref_name, dry=False, pin=False):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('src'); ap.add_argument('ref'); ap.add_argument('--dry', action='store_true')
+    ap.add_argument('--master', action='store_true', help='对 assets/art/master/ 里的母版操作（现在补帧一律该用这个）')
     ap.add_argument('--pin', action='store_true',
                     help='把色相钉到目标均值，而不是整体平移。近乎无彩的深色角色（焦黑袍之类）'
                          '色相分布很散，平移会整体跑偏成别的颜色，这时用钉定')
     a = ap.parse_args()
-    match(a.src, a.ref, a.dry, a.pin)
+    match(a.src, a.ref, a.dry, a.pin, a.master)
     print('  完成' if not a.dry else '  （试跑，没写文件）')
