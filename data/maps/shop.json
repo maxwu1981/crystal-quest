@@ -1,170 +1,217 @@
 {
-  "name": "杂货铺",
-  "encounterZone": null,
-  "spawn": {
-    "x": 6,
-    "y": 8
+ "name": "杂货铺",
+ "encounterZone": null,
+ "spawn": {
+  "x": 6,
+  "y": 8
+ },
+ "legend": {
+  "W": {
+   "tile": "wall",
+   "solid": true
   },
-  "legend": {
-    "W": {
-      "tile": "wall",
-      "solid": true
-    },
-    "f": {
-      "tile": "floor"
-    },
-    "D": {
-      "tile": "door"
-    },
-    "C": {
-      "tile": "counter",
-      "solid": true,
-      "counter": true
-    },
-    "B": {
-      "tile": "bed",
-      "solid": true
-    }
+  "f": {
+   "tile": "floor"
   },
-  "rows": [
-    "WWWWWWWWWWWWWW",
-    "WffffffffffffW",
-    "WfCCCCCCCCCCfW",
-    "WffffffffffffW",
-    "WffffffffffffW",
-    "WffffffffffffW",
-    "WffffffffffffW",
-    "WffffffffffffW",
-    "WffffffffffffW",
-    "WWWWWWDWWWWWWW"
-  ],
-  "events": [
+  "D": {
+   "tile": "door"
+  },
+  "C": {
+   "tile": "counter",
+   "solid": true,
+   "counter": true
+  },
+  "B": {
+   "tile": "bed",
+   "solid": true
+  }
+ },
+ "rows": [
+  "WWWWWWWWWWWWWW",
+  "WffffffffffffW",
+  "WfCCCCCCCCCCfW",
+  "WffffffffffffW",
+  "WffffffffffffW",
+  "WffffffffffffW",
+  "WffffffffffffW",
+  "WffffffffffffW",
+  "WffffffffffffW",
+  "WWWWWWDWWWWWWW"
+ ],
+ "events": [
+  {
+   "x": 6,
+   "y": 9,
+   "type": "warp",
+   "to": {
+    "map": "village",
+    "x": 23,
+    "y": 23,
+    "facing": "down"
+   }
+  }
+ ],
+ "npcs": [
+  {
+   "id": "merchant",
+   "name": "杂货铺头家",
+   "sprite": "merchant",
+   "x": 6,
+   "y": 1,
+   "dir": "down",
+   "script": {
+    "type": "shop",
+    "items": [
+     "potion",
+     "hipotion",
+     "xpotion",
+     "ether",
+     "hiether",
+     "phoenix",
+     "antidote",
+     "eyedrop",
+     "bell",
+     "elixir",
+     "tent",
+     "wood_sword",
+     "bronze_sword",
+     "iron_sword",
+     "knife",
+     "bronze_dagger",
+     "iron_dagger",
+     "wrap",
+     "leather_knuckle",
+     "iron_knuckle",
+     "wood_staff",
+     "oak_staff",
+     "iron_staff",
+     "leather_armor",
+     "bronze_armor",
+     "iron_armor",
+     "cloth_robe",
+     "linen_robe",
+     "silk_robe",
+     "copper_ring",
+     "silver_ring",
+     "power_band",
+     "guard_band"
+    ]
+   },
+   "dialogue": [
     {
-      "x": 6,
-      "y": 9,
-      "type": "warp",
-      "to": {
-        "map": "village",
-        "x": 23,
-        "y": 23,
-        "facing": "down"
-      }
-    }
-  ],
-  "npcs": [
-    {
-      "id": "merchant",
-      "name": "杂货铺头家",
-      "sprite": "merchant",
-      "x": 6,
-      "y": 1,
-      "dir": "down",
-      "script": {
-        "type": "shop",
-        "items": [
-          "potion",
-          "hipotion",
-          "ether",
-          "phoenix",
-          "antidote",
-          "eyedrop",
-          "bell",
-          "tent",
-          "wood_sword",
-          "bronze_sword",
-          "iron_sword",
-          "knife",
-          "bronze_dagger",
-          "iron_dagger",
-          "wrap",
-          "leather_knuckle",
-          "iron_knuckle",
-          "wood_staff",
-          "oak_staff",
-          "iron_staff",
-          "leather_armor",
-          "bronze_armor",
-          "iron_armor",
-          "cloth_robe",
-          "linen_robe",
-          "silk_robe",
-          "copper_ring",
-          "silver_ring",
-          "power_band",
-          "guard_band"
-        ]
-      },
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "转来啦！我册子上你们四个的名，今日划掉了。",
-            "要什么自己看，价钱照旧，我不哄人。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "阿伯讲的我听说了。要上山的，药仔多带一点。",
-            "打的物件坏了可以再买，人坏了买不到。"
-          ]
-        },
-        {
-          "lines": [
-            "入来看看。青草、符仔、家私，我这都有。",
-            "要上山的话，药仔多带一点，不骗你。"
-          ]
-        }
-      ]
+     "if": "gameCleared",
+     "lines": [
+      "转来啦！我册子上你们四个的名，今日划掉了。",
+      "要什么自己看，价钱照旧，我不哄人。"
+     ]
     },
     {
-      "id": "shop_daughter",
-      "name": "顾店的细妹",
-      "sprite": "woman",
-      "x": 11,
-      "y": 5,
-      "dir": "left",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "我阿爸昨暗划了一晚上的勾。",
-            "你们四个的名，划得最用力。",
-            "只剩一个名没勾。那人比你们先上山。"
-          ]
-        },
-        {
-          "lines": [
-            "我阿爸算钱很慢，你们莫笑他。",
-            "他把每个上山的人都记在册子上，写谁转来了。",
-            "这两页，都还没画勾。"
-          ]
-        }
-      ]
+     "if": "questStarted",
+     "lines": [
+      "阿伯讲的我听说了。要上山的，药仔多带一点。",
+      "打的物件坏了可以再买，人坏了买不到。"
+     ]
     },
     {
-      "id": "incense_buyer",
-      "name": "来买香的阿婶",
-      "sprite": "elder",
-      "x": 2,
-      "y": 5,
-      "dir": "right",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "香还是缺货，不过这回是谢神用的。",
-            "怕的时候买，跟还愿的时候买，价钱一样。",
-            "心情差很多。"
-          ]
-        },
-        {
-          "lines": [
-            "香、金纸、盐米，这几日卖到缺货。",
-            "大家怕，就多买一点。好像买了就安心。"
-          ]
-        }
-      ]
+     "lines": [
+      "入来看看。青草、符仔、家私，我这都有。",
+      "要上山的话，药仔多带一点，不骗你。"
+     ]
     }
-  ]
+   ]
+  },
+  {
+   "id": "smith",
+   "name": "寄货的打铁师傅",
+   "sprite": "man",
+   "x": 10,
+   "y": 1,
+   "dir": "down",
+   "script": {
+    "type": "shop",
+    "items": [
+     "steel_sword",
+     "steel_dagger",
+     "steel_knuckle",
+     "crystal_staff",
+     "steel_armor",
+     "rune_robe",
+     "swift_boots",
+     "mythril_ring"
+    ]
+   },
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "转来了？架仔空一半，都是你们搬走的。",
+      "我明日就转去开炉。火转来了，铁才打得动。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "阿伯的令旗我看到了。上山的都来这看一下。",
+      "架上的钢是我打的，袍仔跟杖是别人寄的。",
+      "钱不够就先拿一件。人转来了再来买第二件。"
+     ]
+    },
+    {
+     "lines": [
+      "打铁庄这几日不敢开炉，我把货寄在这。",
+      "钢的贵，砍落去不一样。要上山的，看一下。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "shop_daughter",
+   "name": "顾店的细妹",
+   "sprite": "woman",
+   "x": 11,
+   "y": 5,
+   "dir": "left",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "我阿爸昨暗划了一晚上的勾。",
+      "你们四个的名，划得最用力。",
+      "只剩一个名没勾。那人比你们先上山。"
+     ]
+    },
+    {
+     "lines": [
+      "我阿爸算钱很慢，你们莫笑他。",
+      "他把每个上山的人都记在册子上，写谁转来了。",
+      "这两页，都还没画勾。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "incense_buyer",
+   "name": "来买香的阿婶",
+   "sprite": "elder",
+   "x": 2,
+   "y": 5,
+   "dir": "right",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "香还是缺货，不过这回是谢神用的。",
+      "怕的时候买，跟还愿的时候买，价钱一样。",
+      "心情差很多。"
+     ]
+    },
+    {
+     "lines": [
+      "香、金纸、盐米，这几日卖到缺货。",
+      "大家怕，就多买一点。好像买了就安心。"
+     ]
+    }
+   ]
+  }
+ ]
 }

@@ -87,9 +87,9 @@
    ]
   },
   "price": 20,
-  "desc": "洗去糊在眼上的灰",
+  "desc": "洗去糊在眼上的灰（只在战斗中有用）",
   "battle": true,
-  "field": true
+  "field": false
  },
  "bell": {
   "name": "醒神铃",
@@ -100,9 +100,9 @@
    ]
   },
   "price": 25,
-  "desc": "摇一下，人就醒了",
+  "desc": "摇一下，人就醒了（只在战斗中有用）",
   "battle": true,
-  "field": true
+  "field": false
  },
  "elixir": {
   "name": "补运汤",
@@ -386,6 +386,7 @@
   "acc": 10,
   "price": 55,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -398,6 +399,7 @@
   "acc": 10,
   "price": 106,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -410,6 +412,7 @@
   "acc": 12,
   "price": 405,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -422,6 +425,7 @@
   "acc": 12,
   "price": 789,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -434,6 +438,7 @@
   "acc": 14,
   "price": 1539,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -446,6 +451,7 @@
   "acc": 14,
   "price": 3002,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -458,6 +464,7 @@
   "acc": 16,
   "price": 5854,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -470,6 +477,7 @@
   "acc": 18,
   "price": 22259,
   "jobs": [
+   "boxer",
    "general"
   ]
  },
@@ -1104,7 +1112,7 @@
   "myth": true,
   "icon": "was_scepter",
   "lore": "埃及神话",
-  "desc": "兽首长杖，象征统治与混沌。",
+  "desc": "兽首长杖，象征统治与混沌。阴气压得住活物，对属阴的东西反而使不上力。",
   "price": 0,
   "cat": "staff",
   "jobs": [
@@ -1200,9 +1208,12 @@
   "price": 0,
   "cat": "robe",
   "jobs": [
-   "general",
+   "boxer",
    "hunter",
-   "boxer"
+   "general",
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "def": 46,
   "mdef": 12,

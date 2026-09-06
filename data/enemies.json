@@ -34,7 +34,8 @@
   "exp": 22,
   "gold": 12,
   "weak": [
-   "fire"
+   "fire",
+   "dark"
   ],
   "resist": [],
   "immune": [],
@@ -106,7 +107,8 @@
   "exp": 35,
   "gold": 20,
   "weak": [
-   "thunder"
+   "thunder",
+   "light"
   ],
   "resist": [
    "fire"
@@ -134,7 +136,8 @@
   "exp": 45,
   "gold": 30,
   "weak": [
-   "fire"
+   "fire",
+   "light"
   ],
   "resist": [],
   "immune": [
@@ -159,7 +162,9 @@
   "crit": 10,
   "exp": 900,
   "gold": 1200,
-  "weak": [],
+  "weak": [
+   "light"
+  ],
   "resist": [
    "dark"
   ],
@@ -218,7 +223,8 @@
   "exp": 32,
   "gold": 18,
   "weak": [
-   "fire"
+   "fire",
+   "dark"
   ],
   "resist": [
    "thunder"
@@ -247,7 +253,8 @@
   "exp": 40,
   "gold": 26,
   "weak": [
-   "fire"
+   "fire",
+   "light"
   ],
   "resist": [
    "ice",
