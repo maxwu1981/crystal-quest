@@ -103,6 +103,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('art', nargs='?', type=int)
     ap.add_argument('--dry', action='store_true')
+    ap.add_argument('--force', action='store_true',
+                    help='忽略过期判定，全部派生。刚出完一批新母版时用——'
+                         '那时成品还是旧的，逐像素比会把新母版判成过期而跳过，成品永远追不上（死锁）。'
+                         '只有在确认 master/ 里全是刚出的权威图时才用。')
     a = ap.parse_args()
 
     cur = current_art()
@@ -115,7 +119,7 @@ def main():
     missing = sorted(used - set(masters))
 
     print(f'当前 ART = {cur}（画布 {256*cur}×{224*cur}，角色 {16*cur}×{24*cur}，瓦片 {16*cur}×{16*cur}）')
-    stale = stale_masters()
+    stale = [] if getattr(a, 'force', False) else stale_masters()
     print(f'母版覆盖 {len(masters)}/{len(used)} 张' + (f'，其中 {len(stale)} 张已过期' if stale else ''))
     if stale:
         print('过期母版（比当前美术旧，派生会把美术退回去，必须重新出图）：')
@@ -134,7 +138,7 @@ def main():
     n = skipped = 0
     for f in masters:
         if f not in used: continue
-        if f in stale_names:
+        if f in stale_names and not a.force:
             skipped += 1; continue        # 过期母版一律不派生，宁可保持旧精度也不能退回旧设计
         r = derive(f, a.art, a.dry)
         if r != 'already': n += 1
