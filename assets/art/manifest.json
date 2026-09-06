@@ -84,7 +84,9 @@
   "bridge": "tile_bridge.png",
   "cave_entrance": "tile_cave_entrance.png",
   "counter": "tile_counter.png",
-  "town": "tile_town.png"
+  "town": "tile_town.png",
+  "glowstone": "tile_glowstone.png",
+  "flagstone": "tile_flagstone.png"
  },
  "icons": {}
 }

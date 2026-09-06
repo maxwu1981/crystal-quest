@@ -1,141 +1,141 @@
 {
-  "name": "罗经圈 深处",
-  "encounterZone": "cave_deep",
-  "spawn": {
-    "x": 1,
-    "y": 17
+ "name": "罗经圈 深处",
+ "encounterZone": "cave_deep",
+ "spawn": {
+  "x": 1,
+  "y": 17
+ },
+ "legend": {
+  "#": {
+   "tile": "cave_wall",
+   "solid": true
   },
-  "legend": {
-    "#": {
-      "tile": "cave_wall",
-      "solid": true
-    },
-    ".": {
-      "tile": "cave_floor",
-      "encounter": true
-    },
-    "o": {
-      "tile": "path"
-    },
-    "X": {
-      "tile": "crystal",
-      "solid": true
-    },
-    "<": {
-      "tile": "stairs_up"
-    },
-    ">": {
-      "tile": "stairs_down"
-    }
+  ".": {
+   "tile": "cave_floor",
+   "encounter": true
   },
-  "rows": [
-    "########################",
-    "#.............########>#",
-    "#...#######.########...#",
-    "###..######.#######..###",
-    "####..#####.######..X###",
-    "#####..####.#####..X####",
-    "#####...###.####..X#####",
-    "#######..##.###..X######",
-    "#..#####.oooooo.X####..#",
-    "#........oooXoo######..#",
-    "#..######ooXooo........#",
-    "#..#####.oooooo.#####..#",
-    "#######..###.##..#######",
-    "######..####.###..######",
-    "####...#####.####..#####",
-    "####..######.#####..####",
-    "#<#..#######.######..###",
-    "#...########.#######...#",
-    "#..............#####...#",
-    "########################"
-  ],
-  "events": [
-    {
-      "x": 1,
-      "y": 16,
-      "type": "warp",
-      "to": {
-        "map": "cave_1",
-        "x": 12,
-        "y": 9,
-        "facing": "left"
-      }
-    },
-    {
-      "x": 22,
-      "y": 1,
-      "type": "warp",
-      "to": {
-        "map": "cave_3",
-        "x": 11,
-        "y": 13,
-        "facing": "up"
-      }
-    },
-    {
-      "x": 1,
-      "y": 1,
-      "type": "chest",
-      "id": "c2_ironsword",
-      "item": "steel_sword",
-      "qty": 1
-    },
-    {
-      "x": 13,
-      "y": 1,
-      "type": "chest",
-      "id": "c2_phoenix",
-      "item": "phoenix",
-      "qty": 2
-    },
-    {
-      "x": 1,
-      "y": 11,
-      "type": "chest",
-      "id": "c2_ring",
-      "item": "silver_ring",
-      "qty": 1
-    },
-    {
-      "x": 5,
-      "y": 6,
-      "type": "chest",
-      "id": "c2_hiether",
-      "item": "hiether",
-      "qty": 2
-    },
-    {
-      "x": 4,
-      "y": 14,
-      "type": "chest",
-      "id": "c2_hipotion",
-      "item": "hipotion",
-      "qty": 2
-    },
-    {
-      "x": 14,
-      "y": 18,
-      "type": "chest",
-      "id": "c2_gold",
-      "gold": 400
-    },
-    {
-      "x": 22,
-      "y": 8,
-      "type": "chest",
-      "id": "c2_ganjiang",
-      "item": "ganjiang",
-      "qty": 1
-    },
-    {
-      "x": 22,
-      "y": 18,
-      "type": "chest",
-      "id": "c2_hagoromo",
-      "item": "hagoromo",
-      "qty": 1
-    }
-  ],
-  "npcs": []
+  "o": {
+   "tile": "flagstone"
+  },
+  "X": {
+   "tile": "glowstone",
+   "solid": true
+  },
+  "<": {
+   "tile": "stairs_up"
+  },
+  ">": {
+   "tile": "stairs_down"
+  }
+ },
+ "rows": [
+  "########################",
+  "#.............########>#",
+  "#...#######.########...#",
+  "###..######.#######..###",
+  "####..#####.######..X###",
+  "#####..####.#####..X####",
+  "#####...###.####..X#####",
+  "#######..##.###..X######",
+  "#..#####.oooooo.X####..#",
+  "#........oooXoo######..#",
+  "#..######ooXooo........#",
+  "#..#####.oooooo.#####..#",
+  "#######..###.##..#######",
+  "######..####.###..######",
+  "####...#####.####..#####",
+  "####..######.#####..####",
+  "#<#..#######.######..###",
+  "#...########.#######...#",
+  "#..............#####...#",
+  "########################"
+ ],
+ "events": [
+  {
+   "x": 1,
+   "y": 16,
+   "type": "warp",
+   "to": {
+    "map": "cave_1",
+    "x": 12,
+    "y": 9,
+    "facing": "left"
+   }
+  },
+  {
+   "x": 22,
+   "y": 1,
+   "type": "warp",
+   "to": {
+    "map": "cave_3",
+    "x": 11,
+    "y": 13,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 1,
+   "y": 1,
+   "type": "chest",
+   "id": "c2_ironsword",
+   "item": "steel_sword",
+   "qty": 1
+  },
+  {
+   "x": 13,
+   "y": 1,
+   "type": "chest",
+   "id": "c2_phoenix",
+   "item": "phoenix",
+   "qty": 2
+  },
+  {
+   "x": 1,
+   "y": 11,
+   "type": "chest",
+   "id": "c2_ring",
+   "item": "silver_ring",
+   "qty": 1
+  },
+  {
+   "x": 5,
+   "y": 6,
+   "type": "chest",
+   "id": "c2_hiether",
+   "item": "hiether",
+   "qty": 2
+  },
+  {
+   "x": 4,
+   "y": 14,
+   "type": "chest",
+   "id": "c2_hipotion",
+   "item": "hipotion",
+   "qty": 2
+  },
+  {
+   "x": 14,
+   "y": 18,
+   "type": "chest",
+   "id": "c2_gold",
+   "gold": 400
+  },
+  {
+   "x": 22,
+   "y": 8,
+   "type": "chest",
+   "id": "c2_ganjiang",
+   "item": "ganjiang",
+   "qty": 1
+  },
+  {
+   "x": 22,
+   "y": 18,
+   "type": "chest",
+   "id": "c2_hagoromo",
+   "item": "hagoromo",
+   "qty": 1
+  }
+ ],
+ "npcs": []
 }

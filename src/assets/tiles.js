@@ -46,6 +46,13 @@ const DRAW = {
   sand(ctx, rng) { fill(ctx, '#e6d5a3'); scatter(ctx, rng, 8, '#d4c08a'); scatter(ctx, rng, 4, '#f3e6bd'); },
   bridge(ctx) { DRAW.water(ctx); ctx.fillStyle = '#8d6e63'; ctx.fillRect(2, 0, 12, 16); ctx.fillStyle = '#6d4c41'; for (let y = 1; y < 16; y += 3) ctx.fillRect(2, y, 12, 1); ctx.fillStyle = '#5d4037'; ctx.fillRect(1, 0, 1, 16); ctx.fillRect(14, 0, 1, 16); },
   town(ctx, rng) { DRAW.grass(ctx, rng); ctx.fillStyle = '#bdbdbd'; ctx.fillRect(2, 8, 5, 6); ctx.fillRect(9, 9, 5, 5); ctx.fillStyle = '#c62828'; ctx.fillRect(1, 5, 7, 3); ctx.fillRect(8, 6, 7, 3); ctx.fillStyle = '#4e342e'; ctx.fillRect(4, 11, 2, 3); ctx.fillRect(11, 11, 2, 3); },
+  glowstone(ctx, rng) { DRAW.cave_floor(ctx, rng); ctx.fillStyle = '#2f5b57'; ctx.fillRect(4, 8, 8, 6);
+    ctx.fillStyle = '#69b6ac'; ctx.fillRect(5, 6, 2, 7); ctx.fillRect(8, 4, 3, 9); ctx.fillRect(11, 8, 2, 5);
+    ctx.fillStyle = '#a8e6dc'; ctx.fillRect(5, 7, 1, 3); ctx.fillRect(9, 5, 1, 4); },
+  flagstone(ctx, rng) { fill(ctx, '#8c837a'); ctx.fillStyle = '#4a443e';
+    for (const v of [0, 5, 11]) { ctx.fillRect(0, v, 16, 1); ctx.fillRect(v, 0, 1, 16); }
+    ctx.fillStyle = '#9c948b'; ctx.fillRect(2, 2, 2, 2); ctx.fillRect(8, 7, 3, 2); ctx.fillRect(12, 13, 2, 1);
+    scatter(ctx, rng, 5, '#7a726a'); },
   bed(ctx) { DRAW.floor(ctx); ctx.fillStyle = '#5d4037'; ctx.fillRect(1, 0, 14, 16); ctx.fillStyle = '#1e88e5'; ctx.fillRect(2, 6, 12, 9); ctx.fillStyle = '#fafafa'; ctx.fillRect(3, 1, 10, 4); },
 };
 
