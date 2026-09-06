@@ -25,3 +25,24 @@ export function artCanvas(logicalW, logicalH, fn) {
   fn(ctx);
   return c;
 }
+
+// 受击闪白/闪红：把整张精灵染成一个纯色的版本，缓存起来。
+// 用它代替「隔帧不画」的老做法——那等于每秒让人消失 15 次，是频闪不是打击感。
+const tintCache = new WeakMap();
+export function tintedSprite(img, color) {
+  let per = tintCache.get(img);
+  if (!per) tintCache.set(img, per = new Map());
+  let c = per.get(color);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const x = c.getContext('2d');
+    x.imageSmoothingEnabled = false;
+    x.drawImage(img, 0, 0);
+    x.globalCompositeOperation = 'source-atop';   // 只染精灵本身，不染透明背景
+    x.fillStyle = color;
+    x.fillRect(0, 0, c.width, c.height);
+    per.set(color, c);
+  }
+  return c;
+}

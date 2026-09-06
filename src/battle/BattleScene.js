@@ -11,7 +11,7 @@ import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, m
 import { grantExp } from '../game/party.js';
 import { canUseOn, addItem } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
-import { drawArt, artW, artH } from '../core/draw.js';
+import { drawArt, artW, artH, tintedSprite } from '../core/draw.js';
 import { layersFor } from '../assets/equip.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
@@ -187,7 +187,8 @@ export class BattleScene {
 
   damage(t, dmg, { physical = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
-    if (t.side === 'party') this.fx.shake(0.2);
+    // 震屏幅度跟着伤害占最大 HP 的比例走：擦破皮不该跟快被打死一样晃
+    if (t.side === 'party') this.fx.shake(0.12 + Math.min(0.28, dmg / Math.max(1, t.maxHp) * 0.9));
     this.popup(t, String(dmg), t.side === 'party' ? '#e0a090' : '#fff');
     if (physical && t.status.sleep) { delete t.status.sleep; this.popup(t, '醒了', '#90caf9'); }
     if (t.hp <= 0) { t.alive = false; t.status = {}; if (t.side === 'enemy') t.dying = 0.5; }
@@ -240,7 +241,21 @@ export class BattleScene {
     return [Math.round(cx - artW(spr) / 2), Math.round(cy - artH(spr) / 2), artW(spr), artH(spr)];
   }
   lungeOffset(a) { return a.lunge > 0 ? Math.round(10 * Math.sin((0.3 - a.lunge) / 0.3 * Math.PI)) : 0; }
-  blinking(a) { return a.flash > 0 && Math.floor(a.flash * 30) % 2 === 0; }
+  // 受击表现：原本是 `Math.floor(flash*30)%2` 隔帧不画——每秒让人消失 15 次，
+  // 那是频闪不是打击感，而且被打的那零点几秒里根本看不清挨打的是谁。
+  // 改成整体染色：先闪白（像被打出的高光），迅速转红，再褪回本色。全程不消失。
+  hitTint(a) {
+    if (!(a.flash > 0)) return null;
+    const k = a.flash / 0.3;                    // 1 → 0
+    if (k > 0.62) return '#ffffff';
+    if (k > 0.28) return '#ff6a5a';
+    return null;
+  }
+  // 画一个可能正在受击的精灵：染色版画完再叠一层原图，保留一点本来的明暗层次
+  drawHit(ctx, img, x, y, tint) {
+    drawArt(ctx, img, x, y);
+    if (tint) { ctx.globalAlpha = tint === '#ffffff' ? 0.85 : 0.6; drawArt(ctx, tintedSprite(img, tint), x, y); ctx.globalAlpha = 1; }
+  }
 
   // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
   // 只有 ±1 逻辑像素、周期 2.6–3.0 秒，并按队列序号错开相位与周期——
@@ -267,13 +282,12 @@ export class BattleScene {
     drawBackground(ctx, W, this.backdrop, this.time);
     for (const e of this.enemies) {
       if (!e.alive && !(e.dying > 0)) continue;
-      if (this.blinking(e)) continue;
       const [x, y] = this.actorRect(e);
-      if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
-      drawArt(ctx, this.game.sprites['enemy_' + e.sprite], x + this.lungeOffset(e), y + this.idleBob(e));
+      const spr = this.game.sprites['enemy_' + e.sprite];
+      if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); drawArt(ctx, spr, x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
+      this.drawHit(ctx, spr, x + this.lungeOffset(e), y + this.idleBob(e), this.hitTint(e));
     }
     for (const p of this.party) {
-      if (this.blinking(p)) continue;
       const [x, y] = this.actorRect(p);
       // 轮到谁行动，actorRect 已经把他往前挪了 6px，不必再换帧。
       // 原本每秒换 4 次走路帧：站着打架却在原地踏步，而且有几个职业的站立帧与迈步帧朝向
@@ -282,8 +296,9 @@ export class BattleScene {
       const cheer = this.won && p.alive && Math.floor(this.time * 3) % 2 ? 2 : 0;
       const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
       const dx = x - this.lungeOffset(p), dy = y - cheer + this.faintSink(p);
-      drawArt(ctx, this.game.sprites[key], dx, dy);
-      if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, g, dx, dy); // 装备叠加
+      const tint = this.hitTint(p);
+      this.drawHit(ctx, this.game.sprites[key], dx, dy, tint);
+      if (p.alive) for (const g of layersFor(p.member, 'left')) this.drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
     }
     this.fx.render(ctx);
     if (this.phase === 'input' && this.sub === 'target') {

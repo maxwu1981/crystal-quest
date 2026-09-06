@@ -91,7 +91,9 @@ function* attack(scene, actor, a) {
   // 武器属性：对弱点翻倍、被抗性减半
   const mult = F.elementMultiplier(t, actor.element);
   if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
-  scene.fx.add(actor.element ? (ELEMENT_FX[actor.element] || 'slash') : 'slash', ...scene.center(t), { dir: face });
+  // 打在敌人身上是白色月牙，打在自己人身上是红色冲击环——一眼要能分出挨打的是谁
+  const impact = actor.element ? (ELEMENT_FX[actor.element] || 'slash') : (t.side === 'party' ? 'hurt' : 'slash');
+  scene.fx.add(impact, ...scene.center(t), { dir: face });
   if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
   scene.damage(t, r.damage, { physical: true });

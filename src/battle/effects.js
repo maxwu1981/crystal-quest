@@ -72,6 +72,29 @@ const FX = {
       ctx.fillRect(-s / 2, -20 - s / 2, s, s);
     } };
   },
+  // 挨打：一圈向外扩的冲击环 + 朝受击方向甩出去的血色碎片。
+  // 跟自己出手时的白色月牙(slash)刻意分开——玩家要一眼看出「这下是打在我身上」。
+  hurt: (x, y, rng, o = {}) => {
+    const dir = o.dir ?? 1;                        // 冲击来的方向
+    const bits = Array.from({ length: 9 }, () => ({
+      a: (rng.next() - 0.5) * 2.4, v: 12 + rng.next() * 18, s: rng.next() < 0.35 ? 2 : 1 }));
+    return { t: 0, dur: 0.34, render(ctx, p) {
+      ctx.translate(x, y);
+      // 冲击环：从被打中的点炸开，越扩越淡越细
+      ctx.globalAlpha = (1 - p) ** 0.6;
+      ctx.strokeStyle = '#ffd0c0'; ctx.lineWidth = 3 * (1 - p) + 0.6;
+      ctx.beginPath(); ctx.arc(0, 0, 3 + p * 19, 0, 6.29); ctx.stroke();
+      ctx.globalAlpha = (1 - p) * 0.55; ctx.strokeStyle = '#e2564a'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(0, 0, 1 + p * 25, 0, 6.29); ctx.stroke();
+      // 碎片顺着冲击方向甩出去，带一点重力
+      for (const q of bits) {
+        const d = q.v * p;
+        ctx.globalAlpha = (1 - p) ** 1.4;
+        ctx.fillStyle = p < 0.4 ? '#fff1e6' : '#c2453c';
+        ctx.fillRect(Math.round(Math.cos(q.a) * d * dir), Math.round(Math.sin(q.a) * d + p * p * 10), q.s, q.s);
+      }
+    } };
+  },
   // ---- 属性魔法 ----
   // 都做成「起手→爆开→散去」三段，而不是单纯撒一把粒子：
   // 先有一个亮核撑开，再是本体，最后余烬/余晖。刻意避开高频闪烁（会晃眼）。
