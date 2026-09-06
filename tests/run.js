@@ -13,6 +13,9 @@ import { spellsFor, changeJob, healFull, equipmentAfterJobChange } from '../src/
 import { STATUS, cureStatus, persistentOnly } from '../src/game/status.js';
 import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
 import { execute, inflict } from '../src/battle/actions.js';
+import { MIRROR, NO_TOUCH } from '../src/assets/terrain.js';
+import { U, u, us } from '../src/assets/terrainBits.js';
+import { ART, snap } from '../src/core/draw.js';
 
 const results = [];
 const assert = (c, m = 'assert') => { if (!c) throw new Error(m); };
@@ -52,7 +55,26 @@ async function measureArt() {
   }
   return out;
 }
+// 量所有美术的**原始像素尺寸**（不看内容，只看长宽），给 ART 换算的那组测试用
+async function measureSizes() {
+  let m; try { const r = await fetch('../assets/art/manifest.json', { cache: 'no-store' }); if (!r.ok) return null; m = await r.json(); } catch { return null; }
+  const load = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  const out = { characters: {}, enemies: {}, tiles: {} };
+  for (const [cid, views] of Object.entries(m.characters || {}))
+    for (const [view, file] of Object.entries(views)) {
+      const im = await load('../assets/art/' + file);
+      if (im) out.characters[`${cid}_${view}`] = [im.width, im.height];
+    }
+  for (const [kind, key] of [['enemies', 'enemies'], ['tiles', 'tiles']])
+    for (const [id, file] of Object.entries(m[key] || {})) {
+      const im = await load('../assets/art/' + file);
+      if (im) out[kind][id] = [im.width, im.height];
+    }
+  return out;
+}
+
 const artRows = await measureArt();
+const artSizes = await measureSizes();
 
 test('RNG 同种子可复现', () => {
   const a = new RNG(42), b = new RNG(42);
@@ -505,6 +527,94 @@ test('正式美术：同一角色同一方向，站姿与迈步帧必须是同�
     }
   }
   assert(!bad.length, '这些帧的体型对不上，看起来像两个人：\n      ' + bad.join('\n      '));
+});
+
+// ---------------------------------------------------------------------------
+// ART 换算的契约。这一组守的是「提高 ART 会暴露一整类写死的物理像素常量」那批坑
+// （见项目 CLAUDE.md 的复查表）——每一条都对应一个真踩过的问题。
+// ---------------------------------------------------------------------------
+
+test('u() 给尺寸：永远不小于 1 物理像素', () => {
+  // 尺寸缩成 0 宽等于这块东西直接消失。ART 再小也得留 1 像素。
+  for (const v of [0, 0.1, 0.4, 1, 2, 5, 9]) assert(u(v) >= 1, `u(${v}) = ${u(v)}，小于 1`);
+  assert(u(4) === Math.max(1, Math.round(4 * U)), 'u() 的换算比例不对');
+});
+
+test('us() 给有符号偏移：必须保号，不能被 u() 的 max(1) 夹住', () => {
+  // 真踩过：把 u() 用在 rng.int(-1,1) 上，u(-1) 变成 +1，
+  // 于是裂缝只往一边歪、草叶全偏同一侧，抖动整个消失。
+  assert(us(-1) < 0, `us(-1) = ${us(-1)}，应该是负的`);
+  assert(us(0) === 0, `us(0) = ${us(0)}，应该是 0`);
+  assert(us(1) > 0, `us(1) = ${us(1)}，应该是正的`);
+  assert(us(-1) === -us(1), 'us() 应该对称');
+  assert(u(-1) >= 1, 'u() 本来就该夹取（这条是提醒两者别混用）');
+});
+
+test('snap() 把逻辑坐标对齐到物理像素网格', () => {
+  // 特效原本用 Math.round(x)，那是对齐**逻辑**网格，等于每步至少挪 ART 个物理像素。
+  for (const v of [0, 0.1, 1.4, 7.77, -3.2]) {
+    const p = snap(v) * ART;
+    assert(Math.abs(p - Math.round(p)) < 1e-9, `snap(${v})*ART = ${p}，不是整数`);
+  }
+  // 最小步长应当是 1 个物理像素，不是 1 个逻辑像素
+  assert(snap(1 / ART) !== snap(0) || ART === 1, 'snap() 的分辨率没有跟着 ART 变细');
+});
+
+test('镜像名单里不能出现有方向含义的瓦片', () => {
+  // 楼梯/门/屋顶/桥/柜台翻过来就是错的（门开向反了、楼梯朝向反了）。
+  // 房子那一套还在 tiles.js 里手工画好了从屋脊到墙脚的明暗序，翻转会把受光面翻到底下。
+  const DIRECTIONAL = ['stairs_up', 'stairs_down', 'door', 'door_front', 'bridge', 'counter', 'bed',
+    'roof', 'roof_ridge', 'roof_eave', 'wall_upper', 'wall_window', 'wall_base', 'cave_entrance'];
+  const bad = DIRECTIONAL.filter(t => MIRROR.has(t));
+  assert(!bad.length, '这些瓦片有方向含义，不能镜像：' + bad.join(' '));
+  // NO_TOUCH 是「从不接受任何叠加」的那批，和镜像名单必须互斥
+  const overlap = [...MIRROR].filter(t => NO_TOUCH.has(t));
+  assert(!overlap.length, 'MIRROR 与 NO_TOUCH 重叠：' + overlap.join(' '));
+});
+
+test('角色与瓦片的美术尺寸必须正好是 逻辑尺寸 × ART', () => {
+  if (!artSizes) return;
+  const bad = [];
+  for (const [k, [w, h]] of Object.entries(artSizes.characters))
+    if (w !== 16 * ART || h !== 24 * ART) bad.push(`char ${k} 是 ${w}×${h}，应为 ${16 * ART}×${24 * ART}`);
+  for (const [k, [w, h]] of Object.entries(artSizes.tiles))
+    if (w !== 16 * ART || h !== 16 * ART) bad.push(`tile ${k} 是 ${w}×${h}，应为 ${16 * ART}×${16 * ART}`);
+  assert(!bad.length, bad.join('\n      '));
+});
+
+test('怪物的逻辑尺寸各不相同，且没有被压成瓦片大小', () => {
+  if (!artSizes) return;
+  // 这条守的是一个真出现过、而且**零报错**的坑：
+  // set_art.py 早先把所有非角色资源一律按瓦片（16×16）派生，
+  // 而战斗画面是用 `artW = img.width / ART` 反推逻辑宽度的，
+  // 于是每只怪都会被压成 16 逻辑像素——山猪本该 44、乌火本该 64。
+  const logical = {};
+  const bad = [];
+  for (const [id, [w, h]] of Object.entries(artSizes.enemies)) {
+    if (w % ART || h % ART) { bad.push(`${id} 的 ${w}×${h} 不是 ART(${ART}) 的整数倍`); continue; }
+    const lw = w / ART;
+    logical[id] = lw;
+    if (lw < 24) bad.push(`${id} 只有 ${lw} 逻辑像素宽——像是被按瓦片尺寸派生了`);
+    if (lw > 96) bad.push(`${id} 有 ${lw} 逻辑像素宽，超出战斗画面能放下的范围`);
+  }
+  assert(!bad.length, bad.join('\n      '));
+  const vals = Object.values(logical);
+  if (vals.length > 3) {
+    // 全部一样大 = 逐只的逻辑尺寸丢了。小虫该比 Boss 小。
+    assert(new Set(vals).size > 1, `${vals.length} 只怪全是同一个尺寸（${vals[0]}），逐只的逻辑尺寸丢了`);
+    assert(Math.max(...vals) >= Math.min(...vals) * 1.5,
+      `最大的怪只有最小的 ${(Math.max(...vals) / Math.min(...vals)).toFixed(2)} 倍，体型差被抹平了`);
+  }
+});
+
+test('每只怪都能取到自己的美术，没有指向不存在的图', () => {
+  const miss = [];
+  for (const [id, e] of Object.entries(data.enemies)) {
+    const key = e.sprite || id;
+    if (!artSizes) continue;
+    if (!(key in artSizes.enemies)) miss.push(`${id}${e.sprite ? `（借用 ${e.sprite}）` : ''}`);
+  }
+  assert(!miss.length, '这些怪取不到美术：' + miss.join(' '));
 });
 
 const out = document.getElementById('out');

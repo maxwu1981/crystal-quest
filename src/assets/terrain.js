@@ -49,7 +49,7 @@ const CASTER = {
 };
 // 从来不接受任何叠加的瓦片。房子那一套在 tiles.js 里已经手工画好了从屋脊到墙脚的明暗序，
 // 再自动加一层就是双重影子。（shadow_* 不在这里：它们只接受上面那条「咬掉硬竖边」的过渡。）
-const NO_TOUCH = new Set(['roof', 'roof_ridge', 'roof_eave', 'wall_upper', 'wall_window',
+export const NO_TOUCH = new Set(['roof', 'roof_ridge', 'roof_eave', 'wall_upper', 'wall_window',
   'wall_base', 'door_front', 'bridge', 'door']);
 // 会被水打湿的陆地
 const WETTABLE = new Set(['sand', 'grass', 'path', 'forest', 'cave_floor', 'flagstone', 'town']);
@@ -74,7 +74,7 @@ const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'flo
 //
 // 树也在里面。抠底合成图（草地 + 抠好的树）整张翻过去连草底一起翻了，但草是近乎均匀的纹理，
 // 翻了看不出来；而树形一翻，大地图上那一列十几棵一模一样、还等距排开的树就散了。
-const MIRROR = new Set(['mountain', 'forest', 'cave_wall', 'cave_floor', 'tree', 'sand']);
+export const MIRROR = new Set(['mountain', 'forest', 'cave_wall', 'cave_floor', 'tree', 'sand']);
 
 // 把一组帧整体做水平镜像，返回和 anim 条目同形的记录（f/k/dur/ts），
 // 这样渲染时挑帧的算法可以和普通动画瓦片共用一套。
