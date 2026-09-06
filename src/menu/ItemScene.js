@@ -62,6 +62,7 @@ export class ItemScene {
       drawMenuIcons(ctx, this.menu, m => m.value ? itemIcon(m.value, data.items[m.value]) : null);
       return;
     }
+    fillWindowBg(ctx);            // 同上：选目标那一屏也是左右相接
     drawPartyPanel(ctx, this.game, { cursor: this.cursor });
     drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
     // 右栏分两段：上段说「拿的是什么」，一条刻线之后是「结果怎么样」

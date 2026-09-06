@@ -73,7 +73,7 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
 - `state.party[i].status` 持久状态（目前只有 poison）；`state.settings` 设置；`state.flags.jobUnlocked` 转职解锁（昌黎祠的庙祝给六堆令旗）
 
 ## 美术管线
-- 逻辑分辨率仍是 256×224，但画布是它的 `ART` 倍（`src/core/draw.js`，现在 ART=2 → 512×448）。
+- 逻辑分辨率仍是 256×224，但画布是它的 `ART` 倍（`src/core/draw.js`，现在 ART=6 → 1536×1344）。
   瓦片 32×32、角色 32×48，绘制一律走 `drawArt()`，UI 坐标不受影响。
 - 角色图由 Gemini 生成，`tools/import_downloads.py` 处理导入；`assets/art/raw/` 存原图，改处理参数可直接重算。
 - 处理链：洋红抠底 → `largest_blob` 只留最大连通块（Gemini 有时一张画两个姿势）→ 按身高归一化裁剪

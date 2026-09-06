@@ -6,8 +6,6 @@ export const STATUS = {
   blind:   { name: '黑暗', short: '盲', color: '#bdbdbd', persist: false },
   protect: { name: '防护', short: '护', color: '#ffe082', persist: false, turns: [4, 6], buff: true },
 };
-export const STATUS_IDS = Object.keys(STATUS);
-export const isAilment = id => !!STATUS[id] && !STATUS[id].buff;
 
 // 移除列表里的状态，返回被治好的状态名
 export function cureStatus(target, list) {

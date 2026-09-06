@@ -24,7 +24,6 @@ export function drawArt(ctx, img, x, y) {
   ctx.drawImage(img, x, y, img.width / ART, img.height / ART);
 }
 // 指定逻辑宽高（缩放绘制，用于菜单里的头像）
-export function drawArtSized(ctx, img, x, y, w, h) { ctx.drawImage(img, x, y, w, h); }
 
 // 生成一张 ART 倍分辨率的离屏画布，回调里仍用逻辑坐标绘制
 export function artCanvas(logicalW, logicalH, fn) {

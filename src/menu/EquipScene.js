@@ -79,6 +79,7 @@ export class EquipScene {
   }
   render(ctx) {
     if (this.mode === 'member') {
+      fillWindowBg(ctx);          // 队伍面板与右栏左右相接，接缝处会漏出野外
       drawPartyPanel(ctx, this.game, { cursor: this.cursor });
       drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
       drawText(ctx, '装备', PARTY_W + 8, 8, { color: UI.accent });

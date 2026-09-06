@@ -5,15 +5,22 @@
 用法：python3 tools/build.py
 发布：
   - itch.io：上传 dist/ 里的 zip，勾选 "This file will be played in the browser"，入口是 index.html
-  - GitHub Pages：把 dist/ 内容推到 gh-pages 分支（或直接开启仓库根目录的 Pages，index.html 在根目录即可）
+  - GitHub Pages：仓库根目录本身就能直接发（index.html 在根目录），不需要先 build；
+    只想发一个干净目录的话，把 dist/ 内容推到 gh-pages 分支
   - 本地试玩：cd dist && python3 -m http.server 8080
-注意：index.html 里字体路径是 /assets/...（绝对路径）。放到子目录（如 user.github.io/repo/）时本脚本会改成相对路径。"""
-import os, shutil, zipfile, re
+路径：index.html 里所有资源路径都是相对的（./assets/...），子目录部署（user.github.io/仓库名/）不用改任何东西。
+sw.js：本脚本会先跑一遍 tools/gen_sw.py，保证打进包里的离线清单是最新的。"""
+import os, sys, shutil, zipfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gen_sw
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 DIST = os.path.join(ROOT, 'dist')
-INCLUDE = ['index.html', 'src', 'data', 'assets/fonts', 'assets/art']
-EXCLUDE_DIRS = {'raw', '__pycache__'}
+INCLUDE = ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'data',
+           'assets/fonts', 'assets/art', 'assets/icon-192.png', 'assets/icon-512.png']
+# master/ 是 128px 高清母版，只有 tools/ 里的美术脚本用，游戏从不加载（sw.js 的清单也不收）
+EXCLUDE_DIRS = {'raw', 'master', '__pycache__'}
 
 def copy(src, dst):
     if os.path.isdir(src):
@@ -24,14 +31,11 @@ def copy(src, dst):
         os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy2(src, dst)
 
 def main():
+    gen_sw.main(check=False)   # 先刷新离线清单，免得打包出去的 sw.js 还缓存着上一版资源
     if os.path.exists(DIST): shutil.rmtree(DIST)
     for rel in INCLUDE:
         p = os.path.join(ROOT, rel)
         if os.path.exists(p): copy(p, os.path.join(DIST, rel))
-    # 绝对路径 → 相对路径，方便放在子目录
-    idx = os.path.join(DIST, 'index.html'); html = open(idx, encoding='utf-8').read()
-    html = re.sub(r'url\("/assets/', 'url("./assets/', html)
-    open(idx, 'w', encoding='utf-8').write(html)
     import json
     title = json.load(open(os.path.join(ROOT, 'data', 'config.json'), encoding='utf-8')).get('title', 'game')
     zpath = os.path.join(DIST, f'{title}.zip'); total = 0

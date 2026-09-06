@@ -26,7 +26,7 @@ export function makeEnemyActors(ids, data) {
       id: `e${i}`, side: 'enemy', enemyId: id, name: e.name + (total[id] > 1 ? 'ABCDEFGH'[k - 1] : ''),
       hp: e.hp, maxHp: e.hp, mp: e.mp || 0, maxMp: e.mp || 0,
       atk: e.atk, def: e.def, acc: e.acc, eva: e.eva, spd: e.spd,
-      mdef: e.mdef || 0, int: e.int || 0, crit: e.crit || 3, hits: 1,
+      mdef: e.mdef ?? 0, int: e.int ?? 0, crit: e.crit ?? 3, hits: 1,   // ?? 不是 ||：海漂和乌泥明确写了 crit: 0（这东西不会爆击），|| 会把 0 改写成 3
       weak: e.weak || [], resist: e.resist || [], immune: e.immune || [],
       spells: e.spells || [], ai: e.ai || 'basic', onHit: e.onHit || null, exp: e.exp, gold: e.gold, sprite: e.sprite || id,
       status: {},

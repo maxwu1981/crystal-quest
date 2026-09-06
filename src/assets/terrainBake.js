@@ -24,7 +24,6 @@ export function baked(key, make) {
   if (v === undefined) CACHE.set(key, v = make(new RNG(hash(key))));
   return v;
 }
-export const bakedCount = () => CACHE.size;
 
 // 沿 side 这条边，第 i 列（行）从深度 a 填到深度 b。四条边共用一套坐标换算。
 function fillSide(g, side, i, a, b) {

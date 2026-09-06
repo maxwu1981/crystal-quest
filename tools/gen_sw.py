@@ -144,10 +144,12 @@ self.addEventListener('fetch', e => {{
 '''
 
 
-def main():
+def main(check=None):
+    """check=True 只检查不写（返回 1 表示过期）；None 表示看命令行的 --check。"""
     files = collect()
     text, version = render(files)
-    check = '--check' in sys.argv
+    if check is None:
+        check = '--check' in sys.argv
     old = open(OUT, encoding='utf-8').read() if os.path.exists(OUT) else None
     if old == text:
         print(f'sw.js 已是最新（版本 {version}，{len(files) + 1} 个文件）')
