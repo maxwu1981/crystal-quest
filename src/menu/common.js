@@ -6,7 +6,7 @@ import { computeStats } from '../game/party.js';
 import { statusTags } from '../game/status.js';
 import { artW, artH } from '../core/draw.js';
 
-export const PARTY_W = 176, ROW_H = 48;
+export const PARTY_W = 176, ROW_H = 52; // 行高要放得下 48 高的角色图，否则会显得被切掉
 
 // 按整数倍放大画精灵（逻辑尺寸），高度不超过 maxH，底部对齐在 y + maxH
 export function drawSprite(ctx, img, x, y, maxH) {
@@ -19,14 +19,15 @@ export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, 
   drawWindow(ctx, x, y, w, h);
   game.state.party.forEach((m, i) => {
     const s = computeStats(m, game.data), job = game.data.jobs[m.jobId];
-    const ry = y + 12 + i * ROW_H, dead = m.hp <= 0;
-    drawSprite(ctx, game.sprites[`${m.jobId}_down_0`], x + 8, ry - 4, 48);
+    const ry = y + 8 + i * ROW_H, dead = m.hp <= 0;
+    drawSprite(ctx, game.sprites[`${m.jobId}_down_0`], x + 6, ry, 48);   // 完整一格，不再被下一行挤掉
+    const tx = x + 46, ty = ry + 4;                                       // 文字整体在图右侧、垂直居中
     const col = dead ? '#6b6858' : '#fff';
-    if (cursor === i) drawCursor(ctx, x + 5, ry + 12);
-    drawText(ctx, `${m.name}  ${job.name}`, x + 52, ry, { color: col });
-    drawText(ctx, `Lv ${m.level}`, x + 52, ry + LINE_H, { color: col });
-    statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, x + 92 + k * 28, ry + LINE_H, { color: t.color }));
-    drawText(ctx, dead ? '失去声音' : `HP ${m.hp}/${s.maxHp}  MP ${m.mp}/${s.maxMp}`, x + 52, ry + LINE_H * 2,
+    if (cursor === i) drawCursor(ctx, x + 1, ry + 20);
+    drawText(ctx, `${m.name}  ${job.name}`, tx, ty, { color: col });
+    drawText(ctx, `Lv ${m.level}`, tx, ty + LINE_H, { color: col });
+    statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, tx + 46 + k * 28, ty + LINE_H, { color: t.color }));
+    drawText(ctx, dead ? '失去声音' : `HP ${m.hp}/${s.maxHp}  MP ${m.mp}/${s.maxMp}`, tx, ty + LINE_H * 2,
       { color: !dead && m.hp <= s.maxHp / 4 ? '#c8705a' : col });
   });
 }
