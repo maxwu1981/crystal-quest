@@ -141,9 +141,11 @@ const WAVE_Y = [1, 1, 1, 0, 0, -1, -1, -1, -1, 0, 0, 1];  // 相位差 90°，�
 const SWAY = [0, 1, 0, -1];                               // 风：左右各 1 物理像素，四帧一循环
 const breathe = (i, n) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / n); // 0→1→0，两端导数为 0，接得平滑
 
-// phase：0 = 全图同相位（水面要连成一整片）
-//        1 = 按 (x+y) 错开（风一波一波斜着扫过去，而不是满屏一起动）
-//        2 = 散开（好几盏灯一起呼吸就成了频闪，必须错开）
+// phase：0 = 全图同相位。只有水面用它——一整片水必须一起流，各流各的就碎成马赛克了。
+//        1 = 按格子坐标把「翻帧的时刻」错开（见 FieldScene 的 SUB）。
+//            关键不在于每格长得不一样，而在于它们不在同一瞬间翻帧：
+//            满屏两百多格同时跳一下，哪怕位移只有 1 像素、亮度完全不变，也会被看成「画面闪了一下」。
+//            错开之后翻帧散在整个周期里，看到的就只是草在窸窸窣窣、灯各呼吸各的。
 export const TILE_FX = {
   // 5.4 秒一圈。漂移 ±2px 让水在流，涌浪是唯一的亮度变化，峰值只有 0.10
   water: { n: 12, dur: 0.45, phase: 0, paint: (c, img, w, h, i, n) => {
@@ -155,9 +157,9 @@ export const TILE_FX = {
   tree: { n: 4, dur: 1.2, phase: 1, paint: (c, img, w, h, i) => swayTop(c, img, w, h, SWAY[i], 0.62) },
   forest: { n: 4, dur: 1.2, phase: 1, paint: (c, img, w, h, i) => swayTop(c, img, w, h, SWAY[i], 0.55) },
   // 5.6 秒一次呼吸，中心透明度 0.05↔0.20，边缘为 0。罗经圈深处就靠它照明
-  glowstone: { n: 8, dur: 0.7, phase: 2, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '120,232,214', 0.05 + 0.15 * breathe(i, n)) },
+  glowstone: { n: 8, dur: 0.7, phase: 1, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '120,232,214', 0.05 + 0.15 * breathe(i, n)) },
   // 6.4 秒一次。风之水晶是故事道具，允许比磷光石亮一点
-  crystal: { n: 8, dur: 0.8, phase: 2, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '158,244,255', 0.06 + 0.18 * breathe(i, n)) },
+  crystal: { n: 8, dur: 0.8, phase: 1, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '158,244,255', 0.06 + 0.18 * breathe(i, n)) },
 };
 
 // 基图 → 帧数组。换地图、来回进出都命中缓存，全游戏总共只烘 40 张 32×32 画布。

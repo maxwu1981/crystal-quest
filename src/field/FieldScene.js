@@ -110,7 +110,7 @@ export class FieldScene {
       const spec = TILE_FX[c.tile];
       if (!spec || anim[c.tile]) continue;
       const f = tileFrames(this.game.tiles?.[c.tile], spec);
-      if (f) list.push(anim[c.tile] = { f, k: spec.phase, dur: spec.dur, t: 0 });
+      if (f) list.push(anim[c.tile] = { f, k: spec.phase, dur: spec.dur, ts: 0 });
     }
     // 粒子活动范围取「地图」和「屏幕」的较小者：小地图（屋内）不会把粒子撒到屋外的黑边上
     const bw = Math.min(this.game.W, this.map.w * TILE), bh = Math.min(this.game.H, this.map.h * TILE);
@@ -282,12 +282,16 @@ export class FieldScene {
     const x0 = Math.max(0, Math.floor(camX / TILE)), y0 = Math.max(0, Math.floor(camY / TILE));
     const x1 = Math.min(map.w - 1, Math.ceil((camX + W) / TILE)), y1 = Math.min(map.h - 1, Math.ceil((camY + H) / TILE));
     // 动画瓦片：帧是初始化时烘好的，这里只是「指到另一张图」，每格仍然只有一次 drawImage。
-    // 每种动画瓦片每帧算一次时间下标；相位按格子坐标错开，风才是一波一波扫过去而不是满屏同时抖。
+    // a.ts 把时间换算成「1/16 帧长」的刻度；加上格子自己的错位量再整除回去，
+    // 等于让每格在同一个帧长里的不同时刻翻帧 —— 满屏两百多格永远不会在同一瞬间一起跳。
+    // 这一步是防「闪」的关键：位移只有 1 像素、亮度完全不变，但只要全屏同时变，人眼就会看成闪。
     const fx = this.fx, anim = fx.anim, tiles = this.game.tiles;
-    for (const a of fx.list) a.t = Math.floor(this.animT / a.dur);
+    for (const a of fx.list) a.ts = this.animT * (16 / a.dur);
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const id = map.cells[y * map.w + x].tile, a = anim[id];
-      const img = a ? a.f[(a.t + (a.k === 1 ? x + y : a.k === 2 ? x * 3 + y * 5 : 0)) % a.f.length] : tiles[id];
+      // (5x+9y)&15：5 和 9 都与 16 互质，同一时刻翻帧的格子在屏幕上是零散的十来个点，
+      // 连不成线也凑不成块，看着就是「草在窸窣」而不是「有一道边扫过去」
+      const img = a ? a.f[Math.floor((a.ts + (a.k ? (x * 5 + y * 9) & 15 : 0)) / 16) % a.f.length] : tiles[id];
       drawArt(ctx, img, x * TILE - camX, y * TILE - camY);
     }
     for (const ev of Object.values(map.events)) {
