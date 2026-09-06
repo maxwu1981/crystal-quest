@@ -30,5 +30,41 @@
   "look": "a travelling pedlar with shoulder-length blond hair under a wide-brimmed olive-green felt hat with a single white feather, an olive-green travelling coat, brown boots, a bulky pack on his back and a short sword at his hip",
   "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
  },
- "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。"
+ "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。",
+ "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。",
+ "man": {
+  "name": "男庄民",
+  "look": "an ordinary village man with short dark hair, a plain blue tunic with a leather belt, brown trousers and simple shoes",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build"
+ },
+ "woman": {
+  "name": "妇人",
+  "look": "an ordinary village woman with shoulder-length brown hair, a rose-pink long dress with a pale apron over it",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, the dress falls straight and does not flare into a bell"
+ },
+ "elder": {
+  "name": "老人",
+  "look": "a stooped old villager with white hair and a short white beard, a plain brown robe, leaning on a simple wooden walking stick",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). slightly hunched, shorter and rounder than the other adults"
+ },
+ "kid": {
+  "name": "囝仔",
+  "look": "a small village child with messy yellow hair, a green short-sleeved shirt and brown short trousers, bare feet",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and round, clearly a child but the same total height as the other sprites"
+ },
+ "merchant": {
+  "name": "商人",
+  "look": "a village shopkeeper with brown hair under a small flat teal cap, a teal-green coat over a cream shirt, a coin pouch at the belt",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+ },
+ "innkeeper": {
+  "name": "旅馆头家",
+  "look": "an innkeeper with tied-back brown hair, a deep red shirt under a long white apron, a cloth towel over one shoulder",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+ },
+ "guard": {
+  "name": "巡更的",
+  "look": "a village watchman in grey-blue studded leather armour over a slate tunic, a simple helmet, holding a plain wooden spear upright",
+  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). solid, broad-shouldered adult build"
+ }
 }
