@@ -1,73 +1,76 @@
 {
- "_why": "每个角色的权威外观描述。补生成任何一帧都必须用这里的文字，不要临时另写——各帧分批生成、描述漂移，正是「站着戴斗笠、走起来变兜帽」这类问题的根源。build 一栏专门锁体型，因为 fit='height' 只归一化身高，胖瘦是不管的。改这里之前先看 tools/proportion_check.py 的体检结果。",
- "boxer": {
-  "name": "拳头师 阿勇",
-  "look": "a young martial artist boy with short bright blond hair and a straight fringe, wearing dark red leather armour over a darker red tunic, a brown belt, brown boots, and cloth wraps on both hands",
-  "build": "LARGE head with a big voluminous mop of blond hair — head including hair is about ONE THIRD of his total height (classic chibi SNES proportion, not realistic). Body is STOCKY and solid: broad shoulders, thick arms and thick legs. NOT slim, NOT realistic proportions"
- },
- "hunter": {
-  "name": "山猎人 巴冷",
-  "look": "a young hunter with tousled orange hair (NO hood, NO hat, the hair is always visible), a teal-green tunic with a leather belt, brown trousers and tall brown boots",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium, wiry but not thin: shoulders about one and a third head-widths, normal SNES proportions"
- },
- "general": {
-  "name": "家将 (转职用)",
-  "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on both forearms, brown hair pulled back into a small topknot at the BACK of the head",
-  "build": "CHIBI two-and-a-half-heads-tall: the head is ONE THIRD of the figure. But a big head does NOT mean a fat body — the body stays LEAN, narrow-waisted and athletic, with slim bare arms. Not chubby, not bulky"
- },
- "herbwife": {
-  "name": "青草婆 秀琴",
-  "look": "a herbalist woman in a long deep indigo-blue hooded robe with a warm cream-yellow scalloped trim along the hem, holding a plain wooden staff",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). the robe falls straight down in a narrow column and does NOT flare out into a wide bell; shoulders about one and a quarter head-widths"
- },
- "talisman": {
-  "name": "符仔仙 文彬",
-  "look": "a small sinister spellcaster in a WIDE-BRIMMED TALL POINTED witch hat (always the wide flat brim, never a hood) and a long charcoal-brown robe, face entirely in shadow under the brim with only glowing yellow eyes visible, holding a plain wooden staff",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and squat, the hat brim is the widest part of the silhouette and is clearly wider than the shoulders"
- },
- "peddler": {
-  "name": "走贩 (转职用)",
-  "look": "a travelling pedlar with shoulder-length blond hair under a wide-brimmed olive-green felt hat with a single white feather, an olive-green travelling coat, brown boots, a bulky pack on his back and a short sword at his hip",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
- },
- "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。",
- "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。",
- "man": {
-  "name": "男庄民",
-  "look": "an ordinary village man with short dark hair, a plain blue tunic with a leather belt, brown trousers and simple shoes",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build"
- },
- "woman": {
-  "name": "妇人",
-  "look": "an ordinary village woman with shoulder-length brown hair, a rose-pink long dress with a pale apron over it",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, the dress falls straight and does not flare into a bell"
- },
- "elder": {
-  "name": "老人",
-  "look": "a stooped old villager with white hair and a short white beard, a plain brown robe, leaning on a simple wooden walking stick",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). slightly hunched, shorter and rounder than the other adults"
- },
- "kid": {
-  "name": "囝仔",
-  "look": "a small village child with messy yellow hair, a green short-sleeved shirt and brown short trousers, bare feet",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and round, clearly a child but the same total height as the other sprites"
- },
- "merchant": {
-  "name": "商人",
-  "look": "a village shopkeeper with brown hair under a small flat teal cap, a teal-green coat over a cream shirt, a coin pouch at the belt",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
- },
- "innkeeper": {
-  "name": "旅馆头家",
-  "look": "an innkeeper with tied-back brown hair, a deep red shirt under a long white apron, a cloth towel over one shoulder",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
- },
- "guard": {
-  "name": "巡更的",
-  "look": "a village watchman in grey-blue studded leather armour over a slate tunic, a simple helmet, holding a plain wooden spear upright",
-  "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). solid, broad-shouldered adult build"
- },
- "_side_view": "侧面帧反复踩到的三个坑，写提示词时必须带上：① 头发/发髻要明确说在脑后——不说的话 Gemini 会把整团头发画到脸的前面（家将的发髻踩过两次）。朝左的侧面就写：脸、鼻、额在左边缘，所有头发和发髻在右边、在他身后，脸前面不许有头发。② 「大头」那句会被理解成整个人一起放大，身体跟着变胖。③ 但只补一句「不要胖」又会把头也缩掉。有效的写法是把头和身分开各说一句：「头必须巨大——含头发占身高三分之一，明显比肩膀宽；只有身体是瘦的——细腰、细手臂、细腿。是大头配精瘦小身子，不要缩头，也不要把躯干画胖。」「头比肩宽」是最好用的锚，因为它是可验证的几何关系，不是形容词。 ④ 出完侧面帧一定要**看朝向**：Gemini 有时会给出朝右的侧面，而战斗里敌人在左边、所有人都该朝左。这个数值测不出来（比例、面积全都正常），只能看图。好消息是不用重出——水平镜像一下就好，art.js 的 right 帧本来就是 left 镜像来的。巴冷踩过这个：正面侧面比例都对，就是整个人背对着敌人。",
- "_tiles": "瓦片重出后要复查配色：Gemini 画石材爱带粉红，铺石地已经踩过两次。修法是色相钉到 0.085（暖褐）、饱和 ×0.30、明度 ×0.80 转成灰石，跟 tools/match_tone.py --pin 同一个思路。山瓦片同理——不写死「亚热带无雪」它会画雪顶，而且第一版会跟森林长得一样，必须强调块状岩壁与强烈明暗，否则玩家分不出「山不能走、森林能走」。",
- "_verify": "**每出一张就要看图，尤其是朝向。** 踩过一次：`char_boxer_left` 和 `down` 同一批出，我只验了 down，结果 left 出成了背面（一团头发没有脸），ship 上去还覆盖了原本正确的那张。方向错误**任何数值都测不出来**——比例、实心面积、朝向槽位全都正常，因为「朝左的图」和「朝右的图」「背面的图」在这些度量上完全一样。试过用「头部肤色占比」自动判断，对露脸的角色有效（阿勇 正63/侧52/背23），但符仔仙脸在斗笠阴影里、青草婆戴兜帽，全是 0%，会误报。所以做法是：每出 3–4 张就用 proportion_check.py --sheet 渲一张对照图，人眼扫一遍再往下走。"
+  "_why": "每个角色的权威外观描述。补生成任何一帧都必须用这里的文字，不要临时另写——各帧分批生成、描述漂移，正是「站着戴斗笠、走起来变兜帽」这类问题的根源。build 一栏专门锁体型，因为 fit='height' 只归一化身高，胖瘦是不管的。改这里之前先看 tools/proportion_check.py 的体检结果。",
+  "boxer": {
+    "name": "拳头师 阿勇",
+    "look": "a young martial artist boy with short bright blond hair and a straight fringe, wearing dark red leather armour over a darker red tunic, a brown belt, brown boots, and cloth wraps on both hands",
+    "build": "LARGE head with a big voluminous mop of blond hair — head including hair is about ONE THIRD of his total height (classic chibi SNES proportion, not realistic). Body is STOCKY and solid: broad shoulders, thick arms and thick legs. NOT slim, NOT realistic proportions"
+  },
+  "hunter": {
+    "name": "山猎人 巴冷",
+    "look": "a young hunter with tousled orange hair (NO hood, NO hat, the hair is always visible), a teal-green tunic with a leather belt, brown trousers and tall brown boots",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium, wiry but not thin: shoulders about one and a third head-widths, normal SNES proportions"
+  },
+  "general": {
+    "name": "家将 (转职用)",
+    "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on both forearms, brown hair pulled back into a small topknot at the BACK of the head",
+    "build": "CHIBI two-and-a-half-heads-tall: the head is ONE THIRD of the figure. But a big head does NOT mean a fat body — the body stays LEAN, narrow-waisted and athletic, with slim bare arms. Not chubby, not bulky"
+  },
+  "herbwife": {
+    "name": "青草婆 秀琴",
+    "look": "a herbalist woman in a long deep indigo-blue hooded robe with a warm cream-yellow scalloped trim along the hem, holding a plain wooden staff",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). the robe falls straight down in a narrow column and does NOT flare out into a wide bell; shoulders about one and a quarter head-widths"
+  },
+  "talisman": {
+    "name": "符仔仙 文彬",
+    "look": "a small sinister spellcaster in a WIDE-BRIMMED TALL POINTED witch hat (always the wide flat brim, never a hood) and a long charcoal-brown robe, face entirely in shadow under the brim with only glowing yellow eyes visible, holding a plain wooden staff",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and squat, the hat brim is the widest part of the silhouette and is clearly wider than the shoulders"
+  },
+  "peddler": {
+    "name": "走贩 (转职用)",
+    "look": "a travelling pedlar with shoulder-length blond hair under a wide-brimmed olive-green felt hat with a single white feather, an olive-green travelling coat, brown boots, a bulky pack on his back and a short sword at his hip",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
+  },
+  "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。",
+  "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。",
+  "man": {
+    "name": "男庄民",
+    "look": "an ordinary village man with short dark hair, a plain blue tunic with a leather belt, brown trousers and simple shoes",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build"
+  },
+  "woman": {
+    "name": "妇人",
+    "look": "an ordinary village woman with shoulder-length brown hair, a rose-pink long dress with a pale apron over it",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, the dress falls straight and does not flare into a bell"
+  },
+  "elder": {
+    "name": "老人",
+    "look": "a stooped old villager with white hair and a short white beard, a plain brown robe, leaning on a simple wooden walking stick",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). slightly hunched, shorter and rounder than the other adults"
+  },
+  "kid": {
+    "name": "囝仔",
+    "look": "a small village child with messy yellow hair, a green short-sleeved shirt and brown short trousers, bare feet",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and round, clearly a child but the same total height as the other sprites"
+  },
+  "merchant": {
+    "name": "商人",
+    "look": "a village shopkeeper with brown hair under a small flat teal cap, a teal-green coat over a cream shirt, a coin pouch at the belt",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+  },
+  "innkeeper": {
+    "name": "旅馆头家",
+    "look": "an innkeeper with tied-back brown hair, a deep red shirt under a long white apron, a cloth towel over one shoulder",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+  },
+  "guard": {
+    "name": "巡更的",
+    "look": "a village watchman in grey-blue studded leather armour over a slate tunic, a simple helmet, holding a plain wooden spear upright",
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). solid, broad-shouldered adult build"
+  },
+  "_side_view": "侧面帧反复踩到的三个坑，写提示词时必须带上：① 头发/发髻要明确说在脑后——不说的话 Gemini 会把整团头发画到脸的前面（家将的发髻踩过两次）。朝左的侧面就写：脸、鼻、额在左边缘，所有头发和发髻在右边、在他身后，脸前面不许有头发。② 「大头」那句会被理解成整个人一起放大，身体跟着变胖。③ 但只补一句「不要胖」又会把头也缩掉。有效的写法是把头和身分开各说一句：「头必须巨大——含头发占身高三分之一，明显比肩膀宽；只有身体是瘦的——细腰、细手臂、细腿。是大头配精瘦小身子，不要缩头，也不要把躯干画胖。」「头比肩宽」是最好用的锚，因为它是可验证的几何关系，不是形容词。 ④ 出完侧面帧一定要**看朝向**：Gemini 有时会给出朝右的侧面，而战斗里敌人在左边、所有人都该朝左。这个数值测不出来（比例、面积全都正常），只能看图。好消息是不用重出——水平镜像一下就好，art.js 的 right 帧本来就是 left 镜像来的。巴冷踩过这个：正面侧面比例都对，就是整个人背对着敌人。",
+  "_tiles": "瓦片重出后要复查配色：Gemini 画石材爱带粉红，铺石地已经踩过两次。修法是色相钉到 0.085（暖褐）、饱和 ×0.30、明度 ×0.80 转成灰石，跟 tools/match_tone.py --pin 同一个思路。山瓦片同理——不写死「亚热带无雪」它会画雪顶，而且第一版会跟森林长得一样，必须强调块状岩壁与强烈明暗，否则玩家分不出「山不能走、森林能走」。",
+  "_verify": "**每出一张就要看图，尤其是朝向。** 踩过一次：`char_boxer_left` 和 `down` 同一批出，我只验了 down，结果 left 出成了背面（一团头发没有脸），ship 上去还覆盖了原本正确的那张。方向错误**任何数值都测不出来**——比例、实心面积、朝向槽位全都正常，因为「朝左的图」和「朝右的图」「背面的图」在这些度量上完全一样。试过用「头部肤色占比」自动判断，对露脸的角色有效（阿勇 正63/侧52/背23），但符仔仙脸在斗笠阴影里、青草婆戴兜帽，全是 0%，会误报。所以做法是：每出 3–4 张就用 proportion_check.py --sheet 渲一张对照图，人眼扫一遍再往下走。",
+  "_monsters": "怪物的母版是 512×512，不是角色/瓦片的 128 档——战斗画面用 `img.width/ART` 反推逻辑宽度，而每只怪的逻辑尺寸各不相同（小虫 36、走兽 44、Boss 64），最大的那只在 ART=8 下就要 512px。出完用 `python3 tools/ship_enemy.py <id> <逻辑尺寸>` 一条命令走完派生/注册/去借用/预览。",
+  "_tone": "**分批出图会有色调漂移，必须量、不能凭印象。** 同一套提示词在不同时候给的亮度并不稳定：实测后出的五只怪平均饱和度比先出的十只高 0.227、明度高 0.195，放进同一张对照图一眼是两批东西。修法是 `python3 tools/tone_fit.py enemy_x.png --master`（只压明度/饱和，色相一位不动）。两个坑：① 不要拉到均值——旧组本身跨度就大（乌泥明度 0.123、芒神 0.576），对齐均值会把这种差异抹平，让所有怪一样暗；只把出界的收回上界（饱和 0.68、明度 0.50）。② 别拿 match_tone.py 干这件事，那个会连色相一起对齐，用在怪物身上会把绿史莱姆拧成棕色。③ 数值在区间内**不代表**看着对：虎姑婆的 S/V 都合格，但那身干净的亮蓝整组里没有第二个，还是得重出。色相偏差要靠眼睛，不靠数字。",
+  "_prompt_tone": "提示词里光写「阴森/menacing」不够，Gemini 照样给鲜艳干净的配色。要直接写颜色约束：WORN / FADED / DIRTY / grimy / drained of colour / muted，再补一句反例（NOT bright, NOT clean）。虎姑婆第一版就是只写了民俗设定没写色调，出来像个穿运动服的阿婆。"
 }
