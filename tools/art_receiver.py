@@ -49,6 +49,25 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(204); self.cors(); self.end_headers()
 
     def do_GET(self):
+        # /px?f=<文件名>&d=<base64 PNG>：给浏览器用 <img> 发数据用的（img 请求不受 CORS 限制，
+        # 而 fetch 会被 Chrome 的 Private Network Access 挡掉）。收到就写盘，回一张 1x1 GIF。
+        if self.path.startswith('/px?'):
+            from urllib.parse import urlparse, parse_qs, unquote
+            q = parse_qs(urlparse(self.path).query)
+            fname = unquote(q.get('f', [''])[0]); data = unquote(q.get('d', [''])[0])
+            try:
+                if not SAFE.match(fname): raise ValueError('bad name ' + fname)
+                raw = base64.b64decode(data + '=' * (-len(data) % 4))
+                if raw[:8] != b'\x89PNG\r\n\x1a\n': raise ValueError('not png')
+                os.makedirs(ART, exist_ok=True)
+                open(os.path.join(ART, fname), 'wb').write(raw)
+                print(f'  <- {fname}  {len(raw)} bytes')
+            except Exception as e:
+                print(f'  !! {fname}: {e}')
+            gif = base64.b64decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')
+            self.send_response(200); self.cors()
+            self.send_header('Content-Type', 'image/gif'); self.send_header('Content-Length', str(len(gif)))
+            self.end_headers(); self.wfile.write(gif); return
         files = sorted(f for f in os.listdir(ART) if f.endswith('.png')) if os.path.isdir(ART) else []
         self.reply(200, {'count': len(files), 'files': files, 'manifest': load_manifest()})
 
