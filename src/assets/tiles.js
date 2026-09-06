@@ -1,6 +1,6 @@
 // 程序生成的占位瓦片。逻辑尺寸 16×16，实际画布是 16*ART（美术精度倍率，见 core/Game.js）。
 // 换正式素材时：assets/art/tile_*.png 会覆盖这里，只要 PNG 是 16*ART 见方即可。
-import { artCanvas } from '../core/draw.js';
+import { artCanvas, ART } from '../core/draw.js';
 export const TILE = 16;
 
 function fill(ctx, c) { ctx.fillStyle = c; ctx.fillRect(0, 0, TILE, TILE); }
@@ -223,8 +223,10 @@ export function buildTiles(rng) {
 // （= 0.5~1 逻辑像素），亮度振幅 ≤0.2 而且只落在光源那一小块。
 // 相邻两帧的差永远不超过 1 像素，所以看到的是「慢慢挪」，不是「闪」。
 
-// 这里的离屏画布不走 artCanvas 的 ART 缩放：动画讲的是「挪一个物理像素」，
-// 直接用基图自己的像素坐标最省事，ART 改了也不用跟着改。
+// 这里的离屏画布不走 artCanvas 的 ART 缩放，直接用基图自己的像素坐标。
+// 注意：位移量本身**必须**跟着 ART 换算（见 WAVE_X/SWAY 上面那段）——
+// 这里原本写着「ART 改了也不用跟着改」，那是错的：
+// 「挪一个物理像素」在 ART=2 下是半个逻辑像素，在 ART=6 下只有六分之一个，肉眼就没了。
 function fxCanvas(img, fn) {
   const c = document.createElement('canvas');
   c.width = img.width; c.height = img.height;
@@ -280,9 +282,15 @@ function glow(ctx, img, w, h, rgb, a) {
   ctx.globalCompositeOperation = 'source-over';
 }
 
-const WAVE_X = [0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2, -1]; // 水面 12 帧一圈的水平摇摆（物理像素）
-const WAVE_Y = [1, 1, 1, 0, 0, -1, -1, -1, -1, 0, 0, 1];  // 相位差 90°，合起来是很小的一圈打转
-const SWAY = [0, 1, 0, -1];                               // 风：左右各 1 物理像素，四帧一循环
+// 幅度当初是按 ART=2 定的**物理**像素。ART 提到 6 之后不换算，
+// 相对幅度就只剩三分之一——水面和草几乎看不出在动。
+// 按 ART/2 放大回去：防闪那条「相邻两帧差不超过 1 像素」管的其实是**逻辑**位移，
+// 换算之后逻辑位移和 ART=2 时一模一样，分寸没变。
+const AMP = ART / 2;
+const amp = a => a.map(v => Math.round(v * AMP));
+const WAVE_X = amp([0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2, -1]); // 水面 12 帧一圈的水平摇摆
+const WAVE_Y = amp([1, 1, 1, 0, 0, -1, -1, -1, -1, 0, 0, 1]);  // 相位差 90°，合起来是很小的一圈打转
+const SWAY = amp([0, 1, 0, -1]);                               // 风：左右各 1 逻辑半像素，四帧一循环
 const breathe = (i, n) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / n); // 0→1→0，两端导数为 0，接得平滑
 
 // phase：0 = 全图同相位。只有水面用它——一整片水必须一起流，各流各的就碎成马赛克了。
