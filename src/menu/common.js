@@ -3,7 +3,7 @@ import { drawWindow, drawDivider, drawGauge, drawHighlight, UI } from '../ui/Win
 import { drawText, measure, wrapText, LINE_H } from '../core/text.js';
 import { drawCursor } from '../ui/Menu.js';
 import { computeStats } from '../game/party.js';
-import { statusTags } from '../game/status.js';
+import { drawStatusIcons } from './icons.js';
 import { artW, artH } from '../core/draw.js';
 
 export const PARTY_W = 176, ROW_H = 52; // 行高要放得下 48 高的角色图，否则会显得被切掉
@@ -63,10 +63,11 @@ export function drawPartyPanel(ctx, game, { x = 0, y = 0, w = PARTY_W, h = 224, 
     // 第一行：名字（亮）+ 职业（暗、右对齐）。职业是补充信息，不该和名字抢
     drawText(ctx, m.name, tx, ty, { color: col });
     drawText(ctx, job.name, right, ty, { align: 'right', color: dead ? UI.gray : UI.dim });
-    // 第二行：等级 + 状态异常
+    // 第二行：等级 + 状态异常。状态用图标不用「中毒」这样的汉字标签：
+    // 一个标签 24px，这一行总共只有 60px，两个异常就顶到右边的职业名上去了
     drawText(ctx, 'Lv', tx, ty + LINE_H, { color: UI.dim });
     drawText(ctx, String(m.level), tx + 18, ty + LINE_H, { color: col });
-    statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, tx + 46 + k * 28, ty + LINE_H, { color: t.color }));
+    drawStatusIcons(ctx, m.status, tx + 44, ty + LINE_H);
     // 第三行：HP / MP 分两栏，数字右对齐到固定竖线；下面各压一条 3px 横条，
     // 「还剩多少」一眼就看得出，不用先读完两个数字再心算。
     const y3 = ty + LINE_H * 2, hpR = tx + 56, mpX = tx + 66, gy = ry + 42;

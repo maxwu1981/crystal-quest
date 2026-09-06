@@ -4,7 +4,9 @@ import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, memberSpells } from '../game/party.js';
 import { expForLevel } from '../battle/formulas.js';
 import { drawSprite, drawRatio, portrait } from './common.js';
-import { statusTags } from '../game/status.js';
+import { drawStatusIcons } from './icons.js';
+import { itemIcon } from '../assets/equip.js';
+import { icons } from '../assets/art.js';
 
 // 这一页信息最杂，全靠三样东西分层：暗色的标签 vs 亮色的数值、
 // 三条刻线切出的四个区块（身份 / 属性 / 装备 / 魔法）、以及和队伍面板一致的横条。
@@ -30,7 +32,7 @@ export class StatusScene {
     drawText(ctx, m.name, 76, 12, { color: UI.accent });                       // 名字是这一页的标题，给暗金
     drawText(ctx, '← → 换人   X 返回', NUM_R, 12, { align: 'right', color: UI.dim }); // 操作提示放页首右上角，把页尾整行让给魔法
     drawText(ctx, `${job.name}  Lv ${m.level}`, 76, 25, { color: UI.dim });
-    statusTags(m.status).forEach((t, k) => drawText(ctx, t.name, NUM_R - k * 30, 25, { align: 'right', color: t.color }));
+    drawStatusIcons(ctx, m.status, NUM_R, 24, { align: 'right' });   // 图标比「中毒」两个字窄一半，四个也排得下
     const bar = (label, y, cur, max, ratio, color) => {
       drawText(ctx, label, 76, y, { color: UI.dim });
       drawGauge(ctx, GX, y + 5, GW, ratio, color);
@@ -47,21 +49,29 @@ export class StatusScene {
     drawText(ctx, `还需 ${Math.max(0, next - m.exp)}`, NUM_R, 66, { align: 'right', color: UI.dim });
 
     // ---- 属性 ----
+    // 每一项后面挂一个暗色的「下一级 +n」：FF6 的状态页只报当下的数字，
+    // 玩家看不出这个角色往哪长。多算一次 computeStats（纯函数、不改状态）就能讲清楚，
+    // 于是「符仔仙升级涨智力、家将涨体力」这件事在页面上是看得见的。
     drawDivider(ctx, 12, SEC[0], 232);
-    const rows = [[['力量', s.str], ['敏捷', s.agi], ['智力', s.int], ['体力', s.vit]], [['攻击', s.atk], ['防御', s.def], ['命中', s.acc], ['回避', s.eva]]];
-    rows.forEach((list, c) => list.forEach(([k, v], i) => {
-      const x = 20 + c * 120, y = 92 + i * LINE_H;
+    const up = computeStats({ ...m, level: m.level + 1 }, g.data);
+    const rows = [[['力量', 'str'], ['敏捷', 'agi'], ['智力', 'int'], ['体力', 'vit']], [['攻击', 'atk'], ['防御', 'def'], ['命中', 'acc'], ['回避', 'eva']]];
+    rows.forEach((list, c) => list.forEach(([k, key], i) => {
+      const x = 20 + c * 120, y = 92 + i * LINE_H, d = up[key] - s[key];
       drawText(ctx, k, x, y, { color: UI.dim });
-      drawText(ctx, String(v), x + 84, y, { align: 'right', color: UI.text });
+      drawText(ctx, String(s[key]), x + 76, y, { align: 'right', color: UI.text });
+      if (d > 0) drawText(ctx, `+${d}`, x + 80, y, { color: UI.gray });
     }));
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(126, 92, 1, 50); // 两栏之间一道竖缝，数字才不会串行
 
     // ---- 装备 ----
     drawDivider(ctx, 12, SEC[1], 232);
-    const eq = id => id ? items[id].name : '—';
+    // 装备名前面挂一枚 12px 小图标（正式美术优先，没有就用 equip.js 程序化画的），
+    // 和道具/装备列表里的是同一枚，三个地方看到的是同一件东西
     const slot = (label, id, x, y) => {
+      const it = id ? items[id] : null;
       drawText(ctx, label, x, y, { color: UI.dim });
-      drawText(ctx, eq(id), x + 36, y, { color: id ? (items[id].myth ? UI.accent : UI.text) : UI.gray }); // 神话装备给暗金
+      if (it) { const ic = (it.icon && icons[it.icon]) || itemIcon(id, it); if (ic) ctx.drawImage(ic, x + 27, y, 12, 12); }
+      drawText(ctx, it ? it.name : '—', x + 42, y, { color: it ? (it.myth ? UI.accent : UI.text) : UI.gray }); // 神话装备给暗金
     };
     slot('武器', m.equipment.weapon, 20, 154); slot('防具', m.equipment.armor, 140, 154);
     slot('饰品', m.equipment.accessory, 20, 167);

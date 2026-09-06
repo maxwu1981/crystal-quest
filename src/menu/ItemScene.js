@@ -3,7 +3,9 @@ import { Menu } from '../ui/Menu.js';
 import { drawWindow, drawDivider, UI } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
-import { drawPartyPanel, drawTextBlock, stepCursor, PARTY_W } from './common.js';
+import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W } from './common.js';
+import { drawMenuIcons, iconGap } from './icons.js';
+import { itemIcon } from '../assets/equip.js';
 import { audio } from '../core/audio.js';
 import { itemStats } from '../game/shop.js';
 
@@ -11,8 +13,10 @@ export class ItemScene {
   constructor(game) { this.game = game; this.transparent = true; this.mode = 'list'; this.cursor = 0; this.msg = ''; this.buildMenu(); }
   get inv() { return this.game.state.inventory; }
   buildMenu(keep = 0) {
-    const data = this.game.data;
-    const items = this.inv.map(s => { const it = data.items[s.id]; return { label: it.name, value: s.id, right: `×${s.qty}`, disabled: it.type !== 'consumable' || !it.field }; });
+    const data = this.game.data, gap = iconGap();
+    // 标签前面留一段量出来的空白，图标画在那上面（见 icons.js）。
+    // FF6 的道具列表每行都有图标，没有的话 87 件东西在这里长得一模一样，只能一个个读名字
+    const items = this.inv.map(s => { const it = data.items[s.id]; return { label: gap + it.name, value: s.id, right: `×${s.qty}`, disabled: it.type !== 'consumable' || !it.field }; });
     if (!items.length) items.push({ label: '（没有道具）', disabled: true });
     this.menu = new Menu({
       items, x: 0, y: 32, w: 256, h: 192, cols: 2,
@@ -54,13 +58,15 @@ export class ItemScene {
       const desc = it ? (it.type === 'consumable' ? (it.desc || '') : itemStats(it)) : '道具';
       drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? UI.accent : UI.text });
       this.menu.render(ctx);
+      drawMenuIcons(ctx, this.menu, m => m.value ? itemIcon(m.value, data.items[m.value]) : null);
       return;
     }
     drawPartyPanel(ctx, this.game, { cursor: this.cursor });
     drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
     // 右栏分两段：上段说「拿的是什么」，一条刻线之后是「结果怎么样」
-    const it = data.items[this.itemId], x = PARTY_W + 8;
-    drawText(ctx, it.name, x, 8, { color: UI.accent });
+    const it = data.items[this.itemId], x = PARTY_W + 8, ic = itemIcon(this.itemId, it);
+    if (ic) drawSprite(ctx, ic, x, 6, 12);           // 手上拿的是哪一件，图标跟着一起过来
+    drawText(ctx, it.name, x + (ic ? 15 : 0), 8, { color: UI.accent });
     drawText(ctx, `剩余 ×${countItem(this.inv, this.itemId)}`, x, 8 + LINE_H, { color: UI.dim });
     drawDivider(ctx, x, 8 + LINE_H * 2 + 2, 256 - PARTY_W - 16);
     drawText(ctx, '选择对象', x, 8 + LINE_H * 2 + 8, { color: UI.dim });

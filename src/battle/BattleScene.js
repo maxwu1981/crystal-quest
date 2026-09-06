@@ -1,33 +1,55 @@
 // 战斗场景：FF1/3 式回合制指令战斗（流程与 UI）。行动执行见 actions.js。
 // 调度器同时支持 'turn'（回合制）和 'atb'（FF5 式时间槽），由 config.json 的 battleMode 或 state.settings.battleMode 切换。
-import { drawText, wrapText, LINE_H } from '../core/text.js';
+import { drawText, measure, LINE_H } from '../core/text.js';
 import { Menu, drawCursor } from '../ui/Menu.js';
 import { UI } from '../ui/Window.js';
 import { audio } from '../core/audio.js';
 import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
+import { decideAutoAction } from './autoBattle.js';
 import { execute } from './actions.js';
 import { Effects } from './effects.js';
 import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, makeBackdrop, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
-import { grantExp } from '../game/party.js';
-import { canUseOn, addItem } from '../game/items.js';
+import { settleVictory, renderResult, renderLootCard, renderLevelCard } from './victory.js';
+import { canUseOn } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
-import { drawArt, artW, artH, tintedSprite } from '../core/draw.js';
+import { drawArt, artW, artH, tintedSprite, ART } from '../core/draw.js';
 import { layersFor } from '../assets/equip.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
 const CHEER_T = 2.6; // 胜利雀跃一个来回的秒数。全项目的规矩是动效周期 ≥1.5 秒
+// 敌人登场：滑入 + 聚拢成形，按确认可跳过。转场期间场景是冻结的（Game.update 里 transitioning 就不 update），
+// 所以这段只能等遇敌淡入那 0.45 秒走完才开始——收在 0.7 秒，免得「空场地」看着太久
+const INTRO_T = 0.7;
+const DYING_T = 0.7; // 敌人溶解消失
+
+// 战斗讯息断行。core 的 wrapText 是逐字断的（中文没空格），碰上数字就会把
+// 「魔神仔 受到 541 伤害」断成「…受到 54」+「1 伤害」——伤害数字被劈成两半。
+// 这里把连续的半角字符（数字、MISS、HP）当成一个不可分的词，其余仍旧逐字断。
+function wrapMsg(ctx, text, maxW) {
+  const out = []; let cur = '';
+  for (const tk of text.match(/[!-~]+|[\s\S]/g) || []) {
+    if (tk === '\n') { out.push(cur); cur = ''; }
+    else if (cur && measure(ctx, cur + tk) > maxW) { out.push(cur); cur = tk === ' ' ? '' : tk; }
+    else cur += tk;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
 
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
     this.game = game;
     this.transparent = false; this.bgm = opts.bgm || 'battle'; this.opts = opts;
     this.mode = game.state.settings?.battleMode || game.data.config.battleMode || 'turn';
+    // 自动战斗：设置里可开关，默认关。战斗中按取消键也能随时切换（见 update）
+    this.autoBattle = !!(game.state.settings?.autoBattle ?? game.data.config.autoBattle);
     this.party = makePartyActors(game.state, game.data);
     this.enemies = makeEnemyActors(enemyIds, game.data);
     this.canFlee = opts.canFlee !== false;
-    this.phase = 'intro'; this.timer = 0.5; this.time = 0;
+    this.phase = 'intro'; this.timer = INTRO_T; this.time = 0;
+    this.result = null; this.loot = null; this.card = null; this.resultAt = 0; // 胜利结算屏 / 战利品卡 / 升级卡（见 victoryCo）
     this.msg = ''; this.popups = []; this.fx = new Effects(game.rngFx);
     // 按地形选战斗背景。随机细节（星星、钟乳石…）在这里一次性掷定，render 只读——
     // 每帧重掷会让整片背景变成雪花。
@@ -46,12 +68,22 @@ export class BattleScene {
   // ---------- 主循环 ----------
   update(dt) {
     const input = this.game.input;
+    // 战斗中随时按 Tab/Q 切换自动战斗——打到一半发现形势不对想接手，
+    // 不该逼玩家退出去改设置。开的那一刻如果正等着下令，就把这一手也交给 AI。
+    if (input.justPressed('map')) {
+      this.autoBattle = !this.autoBattle;
+      this.game.state.settings = { ...(this.game.state.settings || {}), autoBattle: this.autoBattle };
+      audio.sfx('confirm');
+      this.msg = this.autoBattle ? '自动战斗：开' : '自动战斗：关';
+      if (this.autoBattle && this.phase === 'input' && this.current) { const a = this.current; this.current = null; this.beginInput(a); }
+    }
     this.time += dt;
     this.fx.update(dt);
     this.popups = this.popups.filter(p => (p.t -= dt) > 0);
     for (const a of this.all) { if (a.flash > 0) a.flash -= dt; if (a.lunge > 0) a.lunge -= dt; if (a.dying > 0) a.dying -= dt; }
     switch (this.phase) {
-      case 'intro': if ((this.timer -= dt) <= 0) this.phase = 'idle'; break;
+      // 登场演出按确认可跳过：自动试玩靠连按确认推战斗，任何演出都不能是「只能等」
+      case 'intro': if ((this.timer -= dt) <= 0 || input.justPressed('confirm')) this.phase = 'idle'; break;
       case 'idle': this.updateIdle(dt); break;
       case 'input': this.updateInput(input); break;
       case 'acting': this.runCo(dt, input); break;
@@ -94,9 +126,21 @@ export class BattleScene {
   // ---------- 玩家下令 ----------
   beginInput(actor) {
     if (!actor.alive) return;
-    this.current = actor; this.phase = 'input'; this.openMain();
+    this.current = actor;
+    // 自动战斗：替玩家下这一手。决策模块返回的指令跟手动下的完全同形，
+    // 所以直接走 commit，不需要为它开第二条执行路径。
+    // 决策不掷骰（期望值估算），所以同一局面永远给同一手，自动试玩的路线仍可复现。
+    if (this.autoBattle) {
+      const act = decideAutoAction(actor, this.party, this.enemies, this.game.data, this.game.state.inventory || []);
+      if (act) { this.phase = 'input'; this.commit(act); return; }
+    }
+    this.phase = 'input'; this.openMain();
   }
-  menuAt(items, onSelect, onCancel) { return new Menu({ items, x: 0, y: PANEL_Y, w: LEFT_W, h: PANEL_H, onSelect, onCancel }); }
+  // 指令窗：rowH 12 / pad 6，五条指令一次全露出来。原本是 LINE_H(13) + pad 8，
+  // 一屏只放得下 4 条——会魔法的三个职业「逃跑」被卷到看不见的地方，玩家得先往下滚才知道还能不能跑。
+  // FF6 的指令窗从不滚动。x 往右挪 2、w 收窄 4 是为了补回缩小的 pad，
+  // 让文字与选中底落在和从前一模一样的位置（否则选中底会压到窗框的米色内线上）。
+  menuAt(items, onSelect, onCancel) { return new Menu({ items, x: 2, y: PANEL_Y, w: LEFT_W - 4, h: PANEL_H, rowH: 12, pad: 6, onSelect, onCancel }); }
   openMain() {
     this.sub = 'main'; this.target = null;
     const items = this.current.commands.map(c => ({ label: CMD[c] || c, value: c, disabled: (c === 'flee' && !this.canFlee) || (c === 'item' && !this.battleItems().length) }));
@@ -187,46 +231,45 @@ export class BattleScene {
   }
   center(a) { const [x, y, w, h] = this.actorRect(a); return [x + w / 2, y + h / 2]; }
 
-  damage(t, dmg, { physical = false } = {}) {
+  damage(t, dmg, { physical = false, crit = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
     // 震屏幅度跟着伤害占最大 HP 的比例走：擦破皮不该跟快被打死一样晃
     if (t.side === 'party') this.fx.shake(0.12 + Math.min(0.28, dmg / Math.max(1, t.maxHp) * 0.9));
-    this.popup(t, String(dmg), t.side === 'party' ? '#e0a090' : '#fff');
+    this.popup(t, String(dmg), t.side === 'party' ? '#e0a090' : '#fff', crit);
     if (physical && t.status.sleep) { delete t.status.sleep; this.popup(t, '醒了', '#90caf9'); }
-    if (t.hp <= 0) { t.alive = false; t.status = {}; if (t.side === 'enemy') t.dying = 0.5; }
+    if (t.hp <= 0) {
+      t.alive = false; t.status = {};
+      // 敌人倒下：溶解 + 往上飘的灰烬。FF6 的怪是碎掉/化掉的，不是整张图淡出去
+      if (t.side === 'enemy') { t.dying = DYING_T; this.fx.add('motes', ...this.center(t)); }
+    }
   }
-  popup(t, text, color) {
+  popup(t, text, color, big = false) {
     const [x, y, w] = this.actorRect(t);
-    this.popups.push({ x: x + w / 2, y: y - 6, text, color, t: 0.9 });
+    this.popups.push({ x: x + w / 2, y: y - 6, text, color, big, t: 0.9 });
   }
 
+  // 胜利演出：胜利姿势 + 专属短曲 → 一屏结算 → 战利品卡 → 每个升级的人一张升级卡。
+  // 原本是在左下角那个 112×72 的小面板里滚三行字，和「捡到一瓶药水」同一个框、同一种语气，
+  // 而且要连按四五次确认（经验、每件掉落、每人每一级各一次）才回得到地图。
+  // 全程用 yield 'confirm' 推进，所以自动试玩连按确认就能走完，不会卡住。
   *victoryCo() {
-    this.bgm = null; this.won = true; audio.sfx('victory');
-    this.msg = '打赢了！'; yield 1.0;
-    const exp = this.enemies.reduce((s, e) => s + e.exp, 0), gold = this.enemies.reduce((s, e) => s + e.gold, 0);
-    const alive = this.alive(this.party), spells = this.game.data.spells;
-    const share = this.game.data.config.expSplit ? Math.floor(exp / alive.length) : exp;
-    this.game.state.gold += gold;
-    this.msg = `获得 ${share} 经验值\n获得 ${gold} 金币`; yield 'confirm';
-    for (const r of this.opts.reward || []) { // Boss 掉落
-      addItem(this.game.state.inventory, r.id, r.qty || 1);
-      const it = this.game.data.items[r.id]; audio.sfx('levelup');
-      this.msg = `获得了 ${it?.name || r.id}${r.qty > 1 ? ' ×' + r.qty : ''}！` + (it?.myth ? '\n★ 神话装备' : ''); yield 'confirm';
-    }
-    for (const a of alive) {
-      this.syncMember(a);
-      for (const g of grantExp(a.member, share, this.game.data)) {
-        a.level = g.level; a.hp = a.member.hp; a.mp = a.member.mp; audio.sfx('levelup');
-        this.msg = `${a.name} 升到了 ${g.level} 级！\nHP 最大值 +${g.hpUp}  MP 最大值 +${g.mpUp}`;
-        if (g.learned.length) this.msg += `\n学会了 ${g.learned.map(id => spells[id]?.name || id).join('、')}！`;
-        yield 'confirm';
-      }
-    }
+    this.bgm = null; this.won = true; audio.jingle('fanfare');
+    this.msg = '打赢了！'; yield 1.5;      // 先让雀跃和短曲的头一句走完，再谈钱
+    const { result, cards } = settleVictory(this);
+    this.result = result; this.resultAt = this.time;
+    yield 'confirm';
+    // 掉落多于一件时单开一页列清楚（乌火一次掉五件，结算屏那一行放不下）
+    if (result.items.length > 1) { this.loot = result.items; audio.sfx('item'); yield 'confirm'; this.loot = null; }
+    for (const c of cards) { this.card = c; audio.sfx('levelup'); yield 'confirm'; }
+    this.card = null;
   }
   *defeatCo() { this.bgm = null; audio.sfx('defeat'); this.msg = '声音都没了…'; yield 1.4; this.msg = '声音都没了…\n\n（按确认键重新开始）'; yield 'confirm'; }
 
   syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; a.member.status = persistentOnly(a.status); }
   finish() {
+    // 胜利短曲的音符是提前排进 Web Audio 的：玩家一路按确认冲过结算屏时，
+    // 尾音会压在地图 BGM 上。退场时把它淡掉（等得完的人照样听得到整首）。
+    audio.stopJingle();
     for (const a of this.party) this.syncMember(a);
     if (this.won && this.opts.winFlag) this.game.state.flags[this.opts.winFlag] = true;
     this.game.fadeTo(() => this.game.scenes.pop());
@@ -257,6 +300,22 @@ export class BattleScene {
   drawHit(ctx, img, x, y, tint) {
     drawArt(ctx, img, x, y);
     if (tint) { ctx.globalAlpha = tint === '#ffffff' ? 0.85 : 0.6; drawArt(ctx, tintedSprite(img, tint), x, y); ctx.globalAlpha = 1; }
+  }
+  // 敌人登场进度 0→1。每只错开 0.08 秒依次现身：整队一起冒出来没有层次，也看不清有几只。
+  enterP(e) {
+    if (this.phase !== 'intro') return 1;
+    return Math.max(0, Math.min(1, (INTRO_T - this.timer - this.enemies.indexOf(e) * 0.07) / 0.48));
+  }
+  // 溶解：把精灵按 2 逻辑像素一条横切开，每条的显隐阈值由行号定死（不掷骰——渲染消耗随机数
+  // 会让同一场战斗每次画得不一样）。vis=1 全在、vis=0 全没；死亡 1→0，登场 0→1，一进一出同一套语汇。
+  drawDissolve(ctx, img, x, y, vis) {
+    const step = 2 * ART, rows = Math.ceil(img.height / step);
+    for (let r = 0; r < rows; r++) {
+      const k = Math.abs(Math.sin(r * 12.9898 + 1.7) * 43758.5453) % 1;  // 打散的阈值：像碎掉，不像拉幕
+      if (vis <= k * 0.9) continue;
+      const sh = Math.min(step, img.height - r * step);
+      ctx.drawImage(img, 0, r * step, img.width, sh, x, y + r * 2, artW(img), sh / ART);
+    }
   }
 
   // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
@@ -296,7 +355,20 @@ export class BattleScene {
       if (!e.alive && !(e.dying > 0)) continue;
       const [x, y] = this.actorRect(e);
       const spr = this.game.sprites['enemy_' + e.sprite];
-      if (!e.alive) { ctx.globalAlpha = Math.max(0, e.dying / 0.5); drawArt(ctx, spr, x, y + Math.round((0.5 - e.dying) * 8)); ctx.globalAlpha = 1; continue; }
+      // 倒下：逐条溶解 + 略微下沉，最后剩的几条整体淡掉。从前是整张图淡出，读起来像「贴纸被撕走」
+      if (!e.alive) {
+        const k = Math.max(0, e.dying / DYING_T);
+        ctx.globalAlpha = Math.min(1, k * 2.2);
+        this.drawDissolve(ctx, spr, x, y + Math.round((1 - k) * 4), k);
+        ctx.globalAlpha = 1; continue;
+      }
+      const p = this.enterP(e);
+      if (p <= 0) continue;                    // 还没轮到这只现身
+      if (p < 1) {                             // 登场：从画面外侧滑进来，同时逐条聚拢成形
+        ctx.globalAlpha = Math.min(1, p * 1.6);
+        this.drawDissolve(ctx, spr, x - Math.round(14 * (1 - p) ** 2), y, p);
+        ctx.globalAlpha = 1; continue;
+      }
       this.drawHit(ctx, spr, x + this.lungeOffset(e), y + this.idleBob(e), this.hitTint(e));
     }
     for (const p of this.party) {
@@ -317,18 +389,32 @@ export class BattleScene {
       const t = this.target.list[this.target.idx];
       const [x, y, w, h] = this.actorRect(t);
       drawCursor(ctx, x - 9, y + h / 2 - 3);
-      drawText(ctx, t.name, x + w / 2, y - 12, { align: 'center', color: UI.accent });
+      // 目标名字压一块暗底再写：光标会指到草地、岩壁、星空上，加阴影的字在浅色地面上还是会糊。
+      // 底下那道暗金线和光标、选中底同色，说的是同一件事：「现在指的是这个」
+      const nx = Math.round(x + w / 2), ny = y - 13, hw = Math.round(measure(ctx, t.name) / 2) + 3;
+      ctx.fillStyle = 'rgba(8,16,12,0.82)'; ctx.fillRect(nx - hw, ny - 1, hw * 2, 13);
+      ctx.fillStyle = 'rgba(230,196,106,0.5)'; ctx.fillRect(nx - hw, ny + 12, hw * 2, 1);
+      drawText(ctx, t.name, nx, ny, { align: 'center', color: UI.accent });
     }
     for (const p of this.popups) {
       const q = 1 - p.t / 0.9, dy = q < 0.35 ? -18 * Math.sin(q / 0.35 * Math.PI / 2) : -18 + (q - 0.35) * 12;
-      drawText(ctx, p.text, p.x, p.y + Math.round(dy), { color: p.color, align: 'center' });
+      const py = p.y + Math.round(dy);
+      // 会心的数字加一圈暗金描边，比普通伤害「重」一点。只是描边，没有任何闪烁
+      if (p.big) for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawText(ctx, p.text, p.x + ox, py + oy, { align: 'center', color: '#8a5a12', shadow: false });
+      drawText(ctx, p.text, p.x, py, { color: p.big ? '#ffe9a8' : p.color, align: 'center' });
     }
     ctx.restore();
     drawPanels(ctx, W);
     if (this.phase === 'input' && this.menu) this.menu.render(ctx, { window: false });
-    else if (this.msg) wrapText(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));
+    else if (this.msg) wrapMsg(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));
     else drawEnemyList(ctx, this);
     drawPartyStatus(ctx, this);
+    // 选目标时把指令窗压暗：注意力该在战场上的光标，不在刚才那张菜单。只压内容区、留着窗框，
+    // 看起来是「退到后面」而不是「被盖住」。胜利结算屏则铺满整个画面，连面板一起盖掉
+    if (this.phase === 'input' && this.sub === 'target') { ctx.fillStyle = 'rgba(6,14,10,0.45)'; ctx.fillRect(5, PANEL_Y + 5, LEFT_W - 10, PANEL_H - 10); }
+    if (this.result) renderResult(ctx, this.game, this.result, this.time - this.resultAt, !this.card && !this.loot);
+    if (this.loot) renderLootCard(ctx, this.loot);
+    if (this.card) renderLevelCard(ctx, this.card);
   }
   debugInfo() { return `战斗 ${this.mode} ${this.phase}/${this.sub || ''}`; }
 }

@@ -95,6 +95,20 @@ const FX = {
       }
     } };
   },
+  // 敌人溶解时飘散的灰烬。配合 BattleScene 的逐条溶解：光让精灵消失只是「不见了」，
+  // 有东西往上飘才读得出「化掉了」。慢、少、暗——这是死亡的收尾，不该比魔法还抢眼。
+  motes: (x, y, rng) => {
+    const ps = Array.from({ length: 12 }, () => ({
+      dx: rng.int(-10, 10), dy: rng.int(-8, 8), v: 10 + rng.next() * 15, d: rng.next() * 0.3, s: rng.next() < 0.3 ? 2 : 1 }));
+    return { t: 0, dur: 0.8, render(ctx, p) {
+      for (const q of ps) {
+        const lp = (p - q.d) / (1 - q.d); if (lp <= 0) continue;
+        ctx.globalAlpha = (1 - lp) ** 1.2 * 0.8;
+        ctx.fillStyle = lp < 0.4 ? '#efe6cc' : '#8b8474';   // 先亮后暗，像烧尽的灰
+        ctx.fillRect(Math.round(x + q.dx + Math.sin(lp * 3 + q.dx) * 2), Math.round(y + q.dy - q.v * lp), q.s, q.s);
+      }
+    } };
+  },
   // ---- 属性魔法 ----
   // 都做成「起手→爆开→散去」三段，而不是单纯撒一把粒子：
   // 先有一个亮核撑开，再是本体，最后余烬/余晖。刻意避开高频闪烁（会晃眼）。

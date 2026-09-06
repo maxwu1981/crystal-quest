@@ -118,7 +118,7 @@ export class FieldScene {
     // 地形过渡（草咬进路、崖影、水岸浪花、地面装饰）也在这里一次算完，
     // 结果是两张与 cells 等长的「这一格再叠哪几张图」的表，渲染时零计算。
     const ter = buildTerrainFx(this.map, this.game.tiles, id);
-    this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, foamN: ter.foamN,
+    this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, obj: ter.obj, foamN: ter.foamN,
       motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
   }
 
@@ -411,7 +411,10 @@ export class FieldScene {
         ctx.fillRect(cx - TILE * 1.2, cy - TILE * 1.2, TILE * 2.4, TILE * 2.4);
         ctx.restore();
       }
-      drawArt(ctx, this.game.tiles[opened ? 'chest_open' : 'chest'], bx, by);
+      // 箱子的瓦片自带一层洞窟地面，摆在草地/沙地上就是一个灰方块。
+      // fx.obj 里那张是抠掉底、只剩箱子加一小片落影的透明图；抠不出来（换了套美术）就退回原图。
+      const co = opened ? 'chest_open' : 'chest';
+      drawArt(ctx, fx.obj?.[co] || this.game.tiles[co], bx, by);
       // 箱盖上飘两点碎光，位置是时间的纯函数（不掷随机数，免得变噪点）
       if (!opened) {
         ctx.save();

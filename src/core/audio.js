@@ -45,14 +45,29 @@ const SFX = {
   encounter: a => { for (let i = 0; i < 4; i++) a.tone({ freq: 300, dur: 0.12, vol: 0.14, slide: 900, at: i * 0.12 }); },
   door: a => a.tone({ freq: 160, type: 'triangle', dur: 0.12, vol: 0.2, slide: -60 }),
   levelup: a => ['C5', 'E5', 'G5', 'C6'].forEach((n, i) => a.tone({ freq: noteFreq(n), dur: 0.12, vol: 0.13, at: i * 0.09 })),
-  victory: a => ['G4', 'C5', 'E5', 'G5', 'E5', 'G5'].forEach((n, i) => a.tone({ freq: noteFreq(n), dur: i === 5 ? 0.5 : 0.13, vol: 0.13, at: i * 0.13 })),
+  // 胜利短曲（约 3.8 秒，放一遍不循环）。原本打赢只放一条 0.8 秒的六音音效（victory），
+  // 那跟「捡到一个道具」是同一个量级；FF6 打赢是一段专门的曲子——差别就在这里，所以整条换掉。
+  // 不写进 SONGS：那张表是给循环 BGM 用的，短曲要的正是「放完就没了」，
+  // 所以用绝对时间（at）把音符一次排好，交给 Web Audio 自己走完。
+  // C 大调 I–V–I：三下前奏 → 摊开的主题 → 收在高八度的属音上。
+  // 音量压在战斗曲之下（方波 0.10 + 三角 0.12，战斗曲是 0.09 + 0.17），打赢不该比打架还吵。
+  fanfare: a => {
+    const mel = [['G4', 0, 0.14], ['G4', 0.16, 0.14], ['G4', 0.32, 0.14], ['C5', 0.48, 0.44],
+      ['C5', 0.96, 0.14], ['D5', 1.12, 0.14], ['E5', 1.28, 0.28],
+      ['G5', 1.60, 0.14], ['F5', 1.76, 0.14], ['E5', 1.92, 0.14], ['D5', 2.08, 0.14],
+      ['C5', 2.24, 0.30], ['D5', 2.56, 0.14], ['E5', 2.72, 0.14], ['G5', 2.88, 0.95]];
+    const bass = [['C3', 0, 0.92], ['C3', 0.96, 0.60], ['G2', 1.60, 0.60],
+      ['C3', 2.24, 0.30], ['G2', 2.56, 0.30], ['C3', 2.88, 0.95]];
+    for (const [n, at, dur] of mel) a.tone({ freq: noteFreq(n), type: 'square', dur, vol: 0.10, at });
+    for (const [n, at, dur] of bass) a.tone({ freq: noteFreq(n), type: 'triangle', dur, vol: 0.12, at });
+  },
   defeat: a => ['E4', 'D#4', 'D4', 'C#4'].forEach((n, i) => a.tone({ freq: noteFreq(n), type: 'triangle', dur: 0.35, vol: 0.17, at: i * 0.35 })),
   flee: a => a.tone({ freq: 800, dur: 0.25, vol: 0.12, slide: -600 }),
   coin: a => [1500, 2000].forEach((f, i) => a.tone({ freq: f, dur: 0.06, vol: 0.12, at: i * 0.06 })),
 };
 
 class AudioSystem {
-  constructor() { this.ctx = null; this.muted = false; this.bgmName = null; this.timer = null; this.pos = 0; this.nextTime = 0; }
+  constructor() { this.ctx = null; this.muted = false; this.bgmName = null; this.timer = null; this.pos = 0; this.nextTime = 0; this.jingleGains = []; this.tracking = false; }
   // 浏览器要求用户交互后才能出声：Game 在第一次按键时调用
   ensure() {
     if (!this.ctx) {
@@ -81,6 +96,7 @@ class AudioSystem {
     if (slide) osc.frequency.linearRampToValueAtTime(Math.max(20, freq + slide), t0 + dur);
     g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     osc.connect(g); g.connect(this.master); osc.start(t0); osc.stop(t0 + dur + 0.02);
+    if (this.tracking) this.jingleGains.push(g);   // 短曲的音符要记下来，才收得回（见 jingle）
   }
   noise({ dur = 0.1, vol = 0.3, at = 0 }) {
     const ctx = this.ctx; if (!ctx) return;
@@ -90,6 +106,23 @@ class AudioSystem {
     src.connect(g); g.connect(this.master); src.start(t0); src.stop(t0 + dur + 0.02);
   }
   sfx(name) { if (this.ctx) SFX[name]?.(this); }
+
+  // 短曲（胜利曲）：和 sfx 走同一条路，差别只在「排出去的音符记得住、收得回」。
+  // Web Audio 的音符是提前排好时间的，玩家一路按确认冲过结算屏时，
+  // 曲子的尾巴会压在地图 BGM 上——所以场景退出时 stopJingle() 把它 0.12 秒淡掉。
+  jingle(name) {
+    if (!this.ctx) return;
+    this.stopJingle();
+    this.tracking = true;
+    try { SFX[name]?.(this); } finally { this.tracking = false; }
+  }
+  stopJingle() {
+    const t = this.ctx?.currentTime;
+    for (const g of this.jingleGains) {
+      try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0.0001, t + 0.12); } catch { /* 已经播完的节点不用管 */ }
+    }
+    this.jingleGains = [];
+  }
 
   playBgm(name) {
     if (name === this.bgmName && (this.timer || !name)) return;

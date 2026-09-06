@@ -96,7 +96,7 @@ function* attack(scene, actor, a) {
   scene.fx.add(impact, ...scene.center(t), { dir: face });
   if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
-  scene.damage(t, r.damage, { physical: true });
+  scene.damage(t, r.damage, { physical: true, crit: r.crit });   // crit 只用来决定伤害数字的样式，不参与结算
   scene.msg += `\n${r.hits} 次命中${r.crit ? '  会心一击！' : ''}`;
   if (actor.element && mult > 1) scene.msg += '  效果拔群！'; else if (actor.element && mult < 1 && mult > 0) scene.msg += '  效果不佳…';
   scene.msg += `\n${t.name} 受到 ${r.damage} 伤害`;

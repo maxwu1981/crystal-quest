@@ -6,13 +6,18 @@ import { audio } from '../core/audio.js';
 
 export const OPTIONS = [
   { key: 'battleMode', label: '交手方式', values: [['turn', '回合制'], ['atb', 'ATB']], desc: '回合制：全员下令后按速度结算。ATB：时间槽满了才能行动，敌人不等你。' },
+  { key: 'autoBattle', label: '自动战斗', values: [[false, '关'], [true, '开']],
+    desc: '开着就由 AI 替你下令：先救人再治疗，能打弱点就打弱点，普攻杀得死就不浪费 MP。战斗中按 Tab 或 Q 也能随时切换。' },
   { key: 'mute', label: '声音', values: [[false, '开'], [true, '关']], desc: '游戏中随时按 M 也能切换。' },
 ];
 
 export function getSetting(game, key) {
   const v = game.state.settings?.[key];
   if (v !== undefined) return v;
-  return key === 'battleMode' ? (game.data.config.battleMode || 'turn') : key === 'mute' ? audio.muted : OPTIONS.find(o => o.key === key).values[0][0];
+  if (key === 'battleMode') return game.data.config.battleMode || 'turn';
+  if (key === 'mute') return audio.muted;
+  if (key === 'autoBattle') return !!game.data.config.autoBattle;
+  return OPTIONS.find(o => o.key === key).values[0][0];
 }
 export function applySettings(game) { audio.setMute(!!game.state.settings?.mute); }
 

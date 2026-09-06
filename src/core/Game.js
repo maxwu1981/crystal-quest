@@ -99,7 +99,11 @@ export class Game {
     const t = this.tmp.getContext('2d'); t.imageSmoothingEnabled = false;
     t.clearRect(0, 0, W, H); t.drawImage(this.snap, 0, 0, W, H, 0, 0, sw, sh);
     ctx.drawImage(this.tmp, 0, 0, sw, sh, 0, 0, sw * block, sh * block);
-    if (a < 0.6 && Math.floor(a * 10) % 2 === 1) { ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(0, 0, W, H); }
+    // 遇敌闪光：原本是 `Math.floor(a * 10) % 2` 的通断——转场每推进 0.1 就切一次，
+    // 实际约 10Hz 的白色频闪，是全项目最后一处真·高频闪烁（其余动效周期都 ≥1.5 秒）。
+    // 改成一次性白闪：转场刚起最亮，进度 0.35 之前平滑褪干净。冲击感留着，频闪没了。
+    const flash = a < 0.35 ? 0.5 * (1 - a / 0.35) : 0;
+    if (flash > 0) { ctx.globalAlpha = flash; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
     ctx.globalAlpha = Math.max(0, a * 1.6 - 0.6); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
   }
 
