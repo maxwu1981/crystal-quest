@@ -47,6 +47,27 @@
    "left_walk": "char_herbwife_left_walk.png",
    "up": "char_herbwife_up.png",
    "up_walk": "char_herbwife_up_walk.png"
+  },
+  "man": {
+   "down": "char_man_down.png"
+  },
+  "woman": {
+   "down": "char_woman_down.png"
+  },
+  "elder": {
+   "down": "char_elder_down.png"
+  },
+  "kid": {
+   "down": "char_kid_down.png"
+  },
+  "merchant": {
+   "down": "char_merchant_down.png"
+  },
+  "innkeeper": {
+   "down": "char_innkeeper_down.png"
+  },
+  "guard": {
+   "down": "char_guard_down.png"
   }
  },
  "enemies": {
