@@ -37,21 +37,21 @@ WALK = ('mid-stride walking pose: one leg clearly lifted and stepping forward, t
 # ---------- 资产清单：id → 描述。要加新角色/怪物/瓦片只改这里 ----------
 CHARACTERS = {  # 玩家职业（对应 data/jobs.json）与 NPC（对应地图 npcs[].sprite）
     # 六职业刻意避开常见 JRPG 套路：每个都靠一个「随身物件」认人，而不是靠帽子/袍子的颜色
-    'oath':      'A young oath-keeper warrior: dark moss-green half-cape, plain unpolished iron chestplate, '
+    'boxer':      'A young oath-keeper warrior: dark moss-green half-cape, plain unpolished iron chestplate, '
                  'the entire LEFT ARM wrapped in layers of pale cloth strips tied into many small knots, '
                  'short dark hair, a heavy thick-backed cleaver strapped to the back.',
-    'gleaner':   'A young gleaner scavenger: worn brown hooded cloak with the hood down, many small pouches, '
+    'hunter':   'A young gleaner scavenger: worn brown hooded cloak with the hood down, many small pouches, '
                  'tin cups and salvaged trinkets hanging off the belt and chest straps, one fingerless leather glove, '
                  'messy ash-blonde hair, a short curved knife at the hip.',
-    'resonant':  'A resonant monk: shaved head, bare muscular torso, wide loose charcoal trousers, '
+    'general':  'A resonant monk: shaved head, bare muscular torso, wide loose charcoal trousers, '
                  'thick dull-bronze metal rings clamped around both wrists and both ankles, barefoot, no shirt.',
-    'mender':    'A memory-mender healer: deep indigo-blue long coat buttoned to the neck, '
+    'herbwife':    'A memory-mender healer: deep indigo-blue long coat buttoned to the neck, '
                  'a row of sewing needles and thread spools pinned across the chest like medals, '
                  'lower half of the face covered by a pale gauze veil, dark braided hair, no hat.',
-    'ashtongue': 'An ash-tongue caster: scorched charcoal-black long coat with burnt frayed hem, '
+    'talisman': 'An ash-tongue caster: scorched charcoal-black long coat with burnt frayed hem, '
                  'mouth and jaw wrapped in soot-stained bandages, bare short dark hair (NO hat), '
                  'both hands blackened with burn marks, faint embers drifting from the sleeves.',
-    'wayfarer':  'A wandering scholar: olive travelling cloak, round wire-rim spectacles, '
+    'peddler':  'A wandering scholar: olive travelling cloak, round wire-rim spectacles, '
                  'a closed brown umbrella strapped to the back together with a bundle of rolled scrolls, '
                  'sturdy boots, a satchel of books at the hip.',
     # 村民
