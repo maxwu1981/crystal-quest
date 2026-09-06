@@ -1,6 +1,6 @@
 // 道具菜单：列表 → 选目标 → 使用
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, drawDivider, UI } from '../ui/Window.js';
+import { drawWindow, drawDivider, fillWindowBg, UI } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W } from './common.js';
@@ -53,6 +53,7 @@ export class ItemScene {
   render(ctx) {
     const data = this.game.data;
     if (this.mode === 'list') {
+      fillWindowBg(ctx);          // 上下两段窗的接缝会透出下层菜单，先垫一层
       drawWindow(ctx, 0, 0, 256, 32);
       const it = this.menu.item?.value ? data.items[this.menu.item.value] : null;
       const desc = it ? (it.type === 'consumable' ? (it.desc || '') : itemStats(it)) : '道具';

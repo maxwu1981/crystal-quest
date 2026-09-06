@@ -7,7 +7,7 @@
 // 「换上之后会变成多少」是这一页唯一重要的事，所以数值一律显示「换上后的值」＋升降箭头，
 // 不让玩家自己去心算差额。
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, drawDivider, UI } from '../ui/Window.js';
+import { drawWindow, drawDivider, fillWindowBg, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
@@ -90,6 +90,8 @@ export class EquipScene {
     const { cur, next } = this.previewStats();
 
     // ---- 上段：谁在换、换完血量魔力变多少 ----
+    // 三段窗上下相接（0-56 / 56-112 / 112-224），接缝处会透出下层菜单，先垫一层
+    fillWindowBg(ctx);
     drawWindow(ctx, 0, 0, 256, 56);
     const po = portrait(this.game, m.jobId);
     drawSprite(ctx, po.img, 8, 8 + po.bob, 40);

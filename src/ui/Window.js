@@ -33,6 +33,21 @@ function roundPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+// 铺满整屏的页面在画窗之前先垫这一层。
+//
+// **为什么需要**：drawWindow 的窗体是内缩 1px + 圆角画的（那 1px 留给外影描边），
+// 所以两个窗上下相接时中间会留一条 1 逻辑像素的透明带。
+// 这些页面又都是 transparent = true（好让主菜单/队伍面板在别的模式下露出来），
+// 于是下层菜单的字就从这条带里透出来——实测装备页能看清「转职」的字顶、
+// 道具页能看清「装备」，字越清晰越显脏。
+//
+// 垫成纯深色而不是照抄窗底的渐变：缝本来就该读成「两块面板之间的阴影」，
+// 渐变反而会让接缝处出现一段说不清的亮度跳变。
+export function fillWindowBg(ctx, x = 0, y = 0, w = 256, h = 224) {
+  ctx.fillStyle = '#08100d';
+  ctx.fillRect(x, y, w, h);
+}
+
 export function drawWindow(ctx, x, y, w, h) {
   ctx.save();
   // ① 外影

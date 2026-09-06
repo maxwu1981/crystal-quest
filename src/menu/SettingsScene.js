@@ -1,6 +1,6 @@
 // 设置：战斗模式（回合制 / ATB）、声音。存在 state.settings 里，随存档保存。
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, UI } from '../ui/Window.js';
+import { drawWindow, UI, fillWindowBg } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { audio } from '../core/audio.js';
 
@@ -43,6 +43,9 @@ export class SettingsScene {
     this.menu.update(input);
   }
   render(ctx) {
+    // 三段窗上下相接（24-48 / 48-… / …-…+56）。窗体内缩 1px 画，接缝处会漏出
+    // 下面的主菜单和队伍面板，看着像三块板没对齐。先把整个模态的范围垫实。
+    fillWindowBg(ctx, 48, 24, 160, 24 + this.menu.h + 56);
     drawWindow(ctx, 48, 24, 160, 24); drawText(ctx, '设置', 128, 30, { align: 'center', color: UI.accent });
     this.menu.render(ctx);
     const o = OPTIONS.find(x => x.key === this.menu.item?.value);
