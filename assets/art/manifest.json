@@ -4,23 +4,33 @@
    "down": "char_talisman_down.png",
    "down_walk": "char_talisman_down_walk.png",
    "left": "char_talisman_left.png",
-   "up": "char_talisman_up.png"
+   "up": "char_talisman_up.png",
+   "left_walk": "char_talisman_left_walk.png",
+   "up_walk": "char_talisman_up_walk.png"
   },
   "general": {
    "down": "char_general_down.png",
    "down_walk": "char_general_down_walk.png",
    "left": "char_general_left.png",
-   "up": "char_general_up.png"
+   "up": "char_general_up.png",
+   "left_walk": "char_general_left_walk.png",
+   "up_walk": "char_general_up_walk.png"
   },
   "peddler": {
    "left": "char_peddler_left.png",
-   "up": "char_peddler_up.png"
+   "up": "char_peddler_up.png",
+   "down": "char_peddler_down.png",
+   "down_walk": "char_peddler_down_walk.png",
+   "left_walk": "char_peddler_left_walk.png",
+   "up_walk": "char_peddler_up_walk.png"
   },
   "hunter": {
    "down_walk": "char_hunter_down_walk.png",
    "left": "char_hunter_left.png",
    "left_walk": "char_hunter_left_walk.png",
-   "up": "char_hunter_up.png"
+   "up": "char_hunter_up.png",
+   "down": "char_hunter_down.png",
+   "up_walk": "char_hunter_up_walk.png"
   },
   "boxer": {
    "down": "char_boxer_down.png",
