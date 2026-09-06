@@ -2,7 +2,7 @@
 // 这样 UI 代码继续用 256×224 逻辑坐标，而美术精度可以随 ART 提升。
 // 美术精度倍率：逻辑坐标仍是 256×224（UI 代码不用改），画布物理像素是它的 ART 倍。
 // 瓦片 16→32px、角色 16×24→32×48px。想再细化只需调大 ART 并重新生成美术。
-export const ART = 2;
+export const ART = 6;
 export const LOGICAL_W = 256, LOGICAL_H = 224;
 
 export const artW = img => img.width / ART;
