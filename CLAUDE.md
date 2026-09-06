@@ -1,6 +1,7 @@
-# 水晶传说 Crystal Quest — 项目规则（Claude 必读）
+# 去屏東打怪 — 项目规则（Claude 必读）
 
-FF1 / FF3 / FF5 风格的 2D 回合制 JRPG。现代 JavaScript（ES Modules）+ HTML5 Canvas，
+台湾屏东六堆背景的 2D 回合制 RPG。玩法骨架是经典 JRPG，但设定、命名与美术都刻意避开 FF 的招牌形象。
+现代 JavaScript（ES Modules）+ HTML5 Canvas，
 **零运行时依赖、零构建步骤**。运行：`python3 tools/serve.py`（禁缓存的静态服务器），打开 http://localhost:8123 。
 
 ## 目录
@@ -45,6 +46,7 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
 
 ## 数据 schema
 - `jobs.json`  `{ id: { name, desc, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:["id" | {id, level}], unarmed?, hits? } }`
+  职业 id：`boxer` 拳头师 / `hunter` 山猎人 / `general` 家将 / `herbwife` 青草婆 / `talisman` 符仔仙 / `peddler` 走贩
   攻击 = 力量/2 + 武器（武僧空手 = 力量/2 + unarmed×等级，hits 是命中数倍率）
 - `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', scope:'single'|'all', heal?, status?, cure?:[状态], revive?:比例, desc } }`
   power 为 0 且有 status = 纯状态魔法；状态 id 见 src/game/status.js（poison sleep blind protect）
@@ -57,10 +59,24 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
   事件还有 `{type:'chest', id, gold|item, qty}`（开过记 `flags['chest:'+id]`）、`{type:'crystal', needFlag}`（触发结局）
 - `story.json` 水晶三段文本 + 结局字幕（`# ` 开头为大标题，`·` 开头为灰色小字）
 - `config.json` `maps:[加载的地图 id 列表]`
-- `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor', effect?:{hp|mp|revive|camp}, atk?, def?, acc?, price, jobs?:[], battle?, field?, desc? } }`
-- `party.json` `[{ name, jobId, level, equipment:{weapon, armor} }]`
+- `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor'|'accessory', cat?, tier?, myth?, icon?, lore?,
+  effect?:{hp|mp|revive|camp|cure}, atk?, def?, acc?, eva?, mdef?, crit?, spd?, hits?, element?, status?,
+  hpBonus?, mpBonus?, atkBonus?, defBonus?, intBonus?, immuneAll?, price, jobs?:[], battle?, field?, desc? } }`
+  材质线按 `tier` 递增（硬度排序）；`myth:true` 的是神话装备，价格 0、只能靠宝箱与掉落取得，
+  且在 `src/assets/equip.js` 里有专属造型
+- `party.json` `[{ name, jobId, level, equipment:{weapon, armor, accessory} }]`
 - `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`（玩家可在设置里覆盖，存 state.settings）、`expSplit`
 - `state.party[i].status` 持久状态（目前只有 poison）；`state.settings` 设置；`state.flags.jobUnlocked` 转职解锁（村长给碎片）
+
+## 美术管线
+- 逻辑分辨率仍是 256×224，但画布是它的 `ART` 倍（`src/core/draw.js`，现在 ART=2 → 512×448）。
+  瓦片 32×32、角色 32×48，绘制一律走 `drawArt()`，UI 坐标不受影响。
+- 角色图由 Gemini 生成，`tools/import_downloads.py` 处理导入；`assets/art/raw/` 存原图，改处理参数可直接重算。
+- 处理链：洋红抠底 → `largest_blob` 只留最大连通块（Gemini 有时一张画两个姿势）→ 按身高归一化裁剪
+  → 面积平均缩小 → 色阶量化 → 描边。**角色一律 `fit='height'`**，否则宽袍角色会被整体缩小。
+- `tools/reassign.py` 按配色重新归位（多轮改名后错乱时用）、`tools/recolor.py` 换配色。
+- 每个方向可有两帧：`<view>` 站立、`<view>_walk` 迈步；缺迈步帧就退回程序化的上身下沉。
+- 装备外观在 `src/assets/equip.js`：按类别 + 材质程序化生成叠加层，神话装备有专属形状。
 
 ## 字体与声音
 - 像素字体「缝合怪 Fusion Pixel 12px」在 assets/fonts/（OFL 许可，可商用）；text.js 用测宽法检测，检测不到就退回系统字体
@@ -82,13 +98,12 @@ Boss 是「乌火」——它说自己不是妖不是鬼，是这块地欠的债
 
 
 ## 路线图
-- [x] 0 骨架：循环 / 输入 / 场景栈 / RNG / 文字
-- [x] 1 垂直切片：地图行走 + 步数遇敌 + 回合制战斗 + 胜利/失败/逃跑 + 经验升级
-- [x] 2a 标题画面、主菜单（X 键）、道具、装备、状态、存档/读档（localStorage）、战斗中道具
-- [x] 2b 对话框（打字机/翻页/选项）、NPC（闲逛、隔柜台说话、按标志位选台词）、门传送、旅馆、商店、剧情前提
-- [x] 3 状态异常、按等级学魔法、全体魔法、转职（6 职业）、设置菜单（回合制/ATB 切换）
-- [x] 4 NPC 对话、剧情标志位、多地图传送（在 2b 里一并完成）
-- [x] 5 回音洞窟三层（宝箱/楼梯/Boss 剧情战/水晶/结局滚动字幕）、世界地图「铃兰平原」；飞空艇未做（超出垂直切片范围）
-- [x] 6a 音效/BGM（Web Audio 合成，src/core/audio.js）、战斗特效（src/battle/effects.js）、遇敌马赛克转场、像素字体（assets/fonts，OFL）
-- [x] 6b 数值平衡（tests/balance.js）、打包（tools/build.py）、Gemini 美术管线（tools/gen_art.py，需要 API key 才能真正出图）
-- [ ] 以后：第二个城镇 / 更多迷宫 / 飞空艇 / 真正的音乐文件 / 手柄与触屏
+- [x] 0–2 引擎骨架、地图行走、步数遇敌、回合制战斗、菜单、道具装备存档、对话 NPC 旅馆商店
+- [x] 3 状态异常、按等级学魔法、全体魔法、六职业转职、设置（回合制/ATB 切换）
+- [x] 5 罗经圈两层 + 大武山祭场（宝箱/Boss/火种/结局）、世界地图六堆平原
+- [x] 6a 音效 BGM 战斗特效 像素字体
+- [x] 6b 数值平衡（tests/?balance）、打包（tools/build.py）
+- [x] 美术精度翻倍（ART=2）、角色三视角与迈步帧、装备穿戴外观、23 件神话装备造型
+- [ ] 补齐缺的角色帧（山猎人 down/up_walk、家将与符仔仙的 left_walk/up_walk、走贩四帧）
+- [ ] 怪物与瓦片换成 Gemini 正式美术（目前是程序化占位）
+- [ ] 第二个村庄 / 更多迷宫 / 真正的音乐文件 / 手柄与触屏

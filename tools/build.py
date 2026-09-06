@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""打包发布：把游戏需要的文件复制到 dist/ 并压成 dist/crystal-quest.zip。
+"""打包发布：把游戏需要的文件复制到 dist/ 并压成一个 zip（名字取自 data/config.json 的 title）。
 零构建：因为是纯 ES Module + 静态资源，"打包" 只是挑出运行时文件（不含测试、工具、原图缓存、git）。
 
 用法：python3 tools/build.py
 发布：
-  - itch.io：上传 dist/crystal-quest.zip，勾选 "This file will be played in the browser"，入口是 index.html
+  - itch.io：上传 dist/ 里的 zip，勾选 "This file will be played in the browser"，入口是 index.html
   - GitHub Pages：把 dist/ 内容推到 gh-pages 分支（或直接开启仓库根目录的 Pages，index.html 在根目录即可）
   - 本地试玩：cd dist && python3 -m http.server 8080
 注意：index.html 里字体路径是 /assets/...（绝对路径）。放到子目录（如 user.github.io/repo/）时本脚本会改成相对路径。"""
@@ -32,7 +32,9 @@ def main():
     idx = os.path.join(DIST, 'index.html'); html = open(idx, encoding='utf-8').read()
     html = re.sub(r'url\("/assets/', 'url("./assets/', html)
     open(idx, 'w', encoding='utf-8').write(html)
-    zpath = os.path.join(DIST, 'crystal-quest.zip'); total = 0
+    import json
+    title = json.load(open(os.path.join(ROOT, 'data', 'config.json'), encoding='utf-8')).get('title', 'game')
+    zpath = os.path.join(DIST, f'{title}.zip'); total = 0
     with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
         for base, dirs, files in os.walk(DIST):
             for f in files:
