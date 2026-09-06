@@ -40,6 +40,7 @@ export class NPC {
     this.anim += dt;
     if (this.moving) {
       this.t += dt / NPC_STEP_TIME;
+      this.phase = ((this.phase || 0) + dt / NPC_STEP_TIME) % 2;   // 每格换一次脚，跟主角同一套
       if (this.t >= 1) this.stop();
       return;
     }
@@ -57,7 +58,7 @@ export class NPC {
   renderPos() { return [lerp(this.fromX, this.x, this.t) * TILE, lerp(this.fromY, this.y, this.t) * TILE]; }
   render(ctx, camX, camY, sprites) {
     const [px, py] = this.renderPos();
-    const frame = this.moving ? Math.floor(this.anim * 8) % 2 : 0;
+    const frame = this.moving ? (Math.floor(this.phase || 0) ? 2 : 1) : 0;
     const spr = sprites[`${this.sprite}_${this.dir}_${frame}`] || sprites[`man_${this.dir}_0`];
     drawArt(ctx, spr, Math.round(px - camX), Math.round(py - camY) - (artH(spr) - TILE));
   }

@@ -47,6 +47,12 @@ export async function loadArt(sprites, tiles, base = './assets/art/') {
       sprites[`${id}_${dir}_0`] = frame(s0, { mirror });
       // 有真迈步帧就用真的，否则退回程序化的下沉动作
       sprites[`${id}_${dir}_1`] = s1 ? frame(s1, { mirror }) : frame(s0, { mirror, bob: true });
+      // 第三帧＝另一只脚。正面/背面把迈步帧左右镜像就是另一只脚迈出去，
+      // 于是走起来是「左脚→右脚」两拍循环；侧面镜像会把人整个转过去，
+      // 所以侧面退回站立帧，走起来是「迈步→站立」。
+      sprites[`${id}_${dir}_2`] = s1 && (dir === 'down' || dir === 'up')
+        ? frame(s1, { mirror: !mirror })
+        : sprites[`${id}_${dir}_0`];
     }
     sprites[`${id}_downed`] = downed(sprites[`${id}_left_0`]); n++;
   }

@@ -56,9 +56,13 @@ function drawHumanoid(ctx, p, dir, frame) {
 }
 
 function humanoid(p, dir, frame) {
+  // 程序化小人只有两种脚型，frame 0 与 1 本来就是左右脚交替。
+  // 第 3 帧是给 Gemini 正式角色图准备的「另一只脚」，这里没有对应的画法，
+  // 直接退回 0——于是渲染端 1↔2 的轮换，等价于这里原本的 0↔1。
+  const f = frame === 2 ? 0 : frame;
   return artCanvas(16, 16, ctx => {
-    if (dir === 'right') { ctx.translate(16, 0); ctx.scale(-1, 1); drawHumanoid(ctx, p, 'left', frame); }
-    else drawHumanoid(ctx, p, dir, frame);
+    if (dir === 'right') { ctx.translate(16, 0); ctx.scale(-1, 1); drawHumanoid(ctx, p, 'left', f); }
+    else drawHumanoid(ctx, p, dir, f);
   });
 }
 
@@ -88,7 +92,7 @@ export function buildSprites() {
   const S = {};
   for (const [id, pal] of Object.entries({ ...PALETTES, ...NPC_PALETTES })) {
     const p = { ...BASE, ...pal };
-    for (const d of DIRS) for (const f of [0, 1]) S[`${id}_${d}_${f}`] = humanoid(p, d, f);
+    for (const d of DIRS) for (const f of [0, 1, 2]) S[`${id}_${d}_${f}`] = humanoid(p, d, f);
     S[`${id}_downed`] = downed(S[`${id}_left_0`]);
   }
   for (const [id, art] of Object.entries(ENEMY_ART)) S[`enemy_${id}`] = spriteFromRows(art.rows, art.palette, id);

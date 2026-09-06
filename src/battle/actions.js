@@ -65,15 +65,34 @@ function* useItem(scene, actor, a) {
   scene.msg += '\n' + describeUse(it, t.name, out); yield 0.8;
 }
 
+// 刀光的颜色跟着武器材质走：木/青铜偏暖，铁钢偏冷，银与秘银发亮，神话装备带自己的属性色
+const SWING_COLOR = { wood: '#d9c08a', oak: '#d9c08a', bronze: '#d8a86a', iron: '#dfe3e6',
+  steel: '#eef3f6', silver: '#f2f4ff', mythril: '#cfe8ff', adamant: '#bcd0e0', meteor: '#e0d2f0',
+  dragon: '#ffd9b0', crystal: '#cdeff2', star: '#e6dcff', knife: '#dfe3e6',
+  wrap: '#e2cfa8', leather: '#c9a074' };
+const ELEMENT_COLOR = { fire: '#ffb060', thunder: '#ffe98a', ice: '#a8e4ff', dark: '#b28fd0', light: '#fff3c0' };
+function swingColor(actor) {
+  if (actor.element && ELEMENT_COLOR[actor.element]) return ELEMENT_COLOR[actor.element];
+  const id = actor.member?.equipment?.weapon || '';   // 战斗 actor 把队员挂在 .member 上
+  for (const k in SWING_COLOR) if (id.startsWith(k)) return SWING_COLOR[k];
+  return '#efe9d2';
+}
+
 function* attack(scene, actor, a) {
   const t = scene.retarget(a.target); if (!t) return;
-  scene.msg = `${actor.name} 出手`; actor.lunge = 0.3; yield 0.3;
+  scene.msg = `${actor.name} 出手`; actor.lunge = 0.3;
+  // 先看到武器挥出去，再看到命中——原本只有一个前冲位移，武器根本不动。
+  // 我方站右边打向左，敌人反过来。刀光颜色跟着武器材质走。
+  const face = actor.side === 'party' ? -1 : 1;
+  scene.fx.add('swing', ...scene.center(actor), { dir: face, color: swingColor(actor) });
+  yield 0.3;
   const r = F.physicalAttack(F.effectiveStats(actor), F.effectiveStats(t), scene.rng);
   if (r.miss) { scene.popup(t, 'MISS', '#ddd'); audio.sfx('miss'); scene.msg += '\n没有命中'; yield 0.7; return; }
   // 武器属性：对弱点翻倍、被抗性减半
   const mult = F.elementMultiplier(t, actor.element);
   if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
-  scene.fx.add(actor.element ? (ELEMENT_FX[actor.element] || 'slash') : 'slash', ...scene.center(t));
+  scene.fx.add(actor.element ? (ELEMENT_FX[actor.element] || 'slash') : 'slash', ...scene.center(t), { dir: face });
+  if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
   scene.damage(t, r.damage, { physical: true });
   scene.msg += `\n${r.hits} 次命中${r.crit ? '  会心一击！' : ''}`;
@@ -94,7 +113,10 @@ function* castSpell(scene, actor, a) {
     : [sp.revive ? a.target : scene.retarget(a.target)].filter(Boolean);
   if (!targets.length) { scene.msg = `${actor.name} 施放了 ${sp.name}！\n没有对象`; yield 0.6; return; }
   actor.mp -= sp.mp;
-  scene.msg = `${actor.name} 施放了 ${sp.name}！`; actor.lunge = 0.3; audio.sfx('magic'); yield 0.4;
+  // 施法不前冲——法师扑上去砍人的观感不对。改成脚下浮起光环的起手式。
+  scene.msg = `${actor.name} 施放了 ${sp.name}！`;
+  scene.fx.add('cast', ...scene.center(actor), { color: sp.target === 'ally' ? '#9fd8c8' : '#c9a8e8' });
+  audio.sfx('magic'); yield 0.45;
   for (const t of targets) yield* spellOn(scene, actor, sp, t);
 }
 

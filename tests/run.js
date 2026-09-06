@@ -311,7 +311,7 @@ test('魔法 / 道具 / 敌人数据字段合法', () => {
 function fakeBattle(partyJobs, enemyIds, seed = 5) {
   const st = newGameState(data); st.party = st.party.filter(m => partyJobs.includes(m.jobId)); st.party.forEach(m => { m.level = 12; healFull(m, data); });
   const scene = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: true,
-    fx: { add() {} }, popup() {}, center() { return [0, 0]; },
+    fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; },   // 桩要跟 Effects 的接口一致
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
     alive(l) { return l.filter(a => a.alive); },
     retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },

@@ -44,7 +44,7 @@ export class FieldScene {
     const md = this.game.data.maps[id];
     if (!md) throw new Error(`地图不存在: ${id}`);
     this.mapId = id; this.map = parseMap(md);
-    this.p = { x, y, fromX: x, fromY: y, dir: facing || 'down', moving: false, t: 0 };
+    this.p = { x, y, fromX: x, fromY: y, dir: facing || 'down', moving: false, t: 0, phase: 0 };
     this.npcDefs = md.npcs || []; this.refreshNpcs();
     Object.assign(this.game.state.map, { id, x, y, facing: this.p.dir });
     this.nameT = 2;
@@ -100,6 +100,7 @@ export class FieldScene {
     }
     if (p.moving) {
       p.t += dt / STEP_TIME;
+      p.phase = (p.phase + dt / STEP_TIME) % 2;   // 每走满一格 +1，两拍一循环
       if (p.t >= 1) {
         p.t = 0; p.moving = false; p.fromX = p.x; p.fromY = p.y;
         this.onStep();
@@ -223,7 +224,10 @@ export class FieldScene {
     }
     // 角色按 y 排序绘制
     const leader = this.game.state.party[0];
-    const frame = p.moving ? Math.floor(this.animT * 8) % 2 : 0;
+    // 走路帧跟着位移走，不跟墙上时钟走。原本是 Math.floor(animT * 8) % 2，
+    // 每格 0.16 秒而帧每秒只翻 4 次，腿的节奏和实际迈步对不上，看着像在滑步。
+    // 现在每走满一格换一次脚：正/背面是「左脚→右脚」，侧面是「迈步→站立」。
+    const frame = p.moving ? (Math.floor(p.phase) ? 2 : 1) : 0;
     const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
     const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
     const gear = layersFor(leader, p.dir); // 穿在身上的装备
