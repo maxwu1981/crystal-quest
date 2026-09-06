@@ -17,8 +17,9 @@ import { TILE, TILE_FX, tileFrames } from './tiles.js';
 import { ART } from '../core/draw.js';
 import { RNG } from '../core/RNG.js';
 import { u, PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
-import { DECO_PAINT, DECO_VARIANTS, baked, canvasPX, foamFrames, fringeTile, hash,
-         keyOutGround, objectTile, palette, seamRecord, shadowTile, wetTile } from './terrainBake.js';
+import { baked, canvasPX, foamFrames, fringeTile, hash,
+         keyOutGround, objectTile, seamRecord, shadowTile, wetTile } from './terrainBake.js';
+import { DECO_PAINT, DECO_VARIANTS, palette } from './terrainDeco.js';
 
 
 // 邻居方向位。四条边 + 四个角。

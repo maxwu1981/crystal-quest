@@ -1,43 +1,21 @@
-// 战斗场景：FF1/3 式回合制指令战斗（流程与 UI）。行动执行见 actions.js。
+// 战斗场景：FF1/3 式回合制指令战斗（流程与 UI）。行动执行见 actions.js，画面绘制见 render.js。
 // 调度器同时支持 'turn'（回合制）和 'atb'（FF5 式时间槽），由 config.json 的 battleMode 或 state.settings.battleMode 切换。
-import { drawText, measure, LINE_H } from '../core/text.js';
-import { Menu, drawCursor } from '../ui/Menu.js';
-import { UI } from '../ui/Window.js';
+import { Menu } from '../ui/Menu.js';
 import { audio } from '../core/audio.js';
 import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
 import { decideAutoAction } from './autoBattle.js';
 import { execute } from './actions.js';
 import { Effects } from './effects.js';
-import { PANEL_Y, PANEL_H, LEFT_W, ENEMY_CENTERS, PARTY_X, PARTY_Y0, PARTY_DY, makeBackdrop, drawBackground, drawPanels, drawEnemyList, drawPartyStatus } from './hud.js';
-import { settleVictory, renderResult, renderLootCard, renderLevelCard } from './victory.js';
+import { PANEL_Y, PANEL_H, LEFT_W } from './hudBits.js';
+import { makeBackdrop } from './backdrop.js';
+import { actorRect, renderBattle, INTRO_T, DYING_T } from './render.js';
+import { settleVictory } from './victory.js';
 import { canUseOn } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
-import { drawArt, artW, artH, tintedSprite, ART } from '../core/draw.js';
-import { layersFor, itemIcon } from '../assets/equip.js';
-import { drawMenuIcons, spellIcon, iconGap } from '../menu/icons.js';
+import { iconGap } from '../menu/icons.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
-const MSG_LINES = 4;
-const CHEER_T = 2.6; // 胜利雀跃一个来回的秒数。全项目的规矩是动效周期 ≥1.5 秒
-// 敌人登场：滑入 + 聚拢成形，按确认可跳过。转场期间场景是冻结的（Game.update 里 transitioning 就不 update），
-// 所以这段只能等遇敌淡入那 0.45 秒走完才开始——收在 0.7 秒，免得「空场地」看着太久
-const INTRO_T = 0.7;
-const DYING_T = 0.7; // 敌人溶解消失
-
-// 战斗讯息断行。core 的 wrapText 是逐字断的（中文没空格），碰上数字就会把
-// 「魔神仔 受到 541 伤害」断成「…受到 54」+「1 伤害」——伤害数字被劈成两半。
-// 这里把连续的半角字符（数字、MISS、HP）当成一个不可分的词，其余仍旧逐字断。
-function wrapMsg(ctx, text, maxW) {
-  const out = []; let cur = '';
-  for (const tk of text.match(/[!-~]+|[\s\S]/g) || []) {
-    if (tk === '\n') { out.push(cur); cur = ''; }
-    else if (cur && measure(ctx, cur + tk) > maxW) { out.push(cur); cur = tk === ' ' ? '' : tk; }
-    else cur += tk;
-  }
-  if (cur) out.push(cur);
-  return out;
-}
 
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
@@ -232,7 +210,7 @@ export class BattleScene {
     const pool = this.alive(t.side === 'enemy' ? this.enemies : this.party);
     return pool.length ? this.rng.pick(pool) : null;
   }
-  center(a) { const [x, y, w, h] = this.actorRect(a); return [x + w / 2, y + h / 2]; }
+  center(a) { const [x, y, w, h] = actorRect(this, a); return [x + w / 2, y + h / 2]; }
 
   damage(t, dmg, { physical = false, crit = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;
@@ -247,7 +225,7 @@ export class BattleScene {
     }
   }
   popup(t, text, color, big = false) {
-    const [x, y, w] = this.actorRect(t);
+    const [x, y, w] = actorRect(this, t);
     this.popups.push({ x: x + w / 2, y: y - 6, text, color, big, t: 0.9 });
   }
 
@@ -278,154 +256,8 @@ export class BattleScene {
     this.game.fadeTo(() => this.game.scenes.pop());
   }
 
-  // ---------- 渲染 ----------
-  actorRect(a) {
-    if (a.side === 'party') {
-      const i = this.party.indexOf(a), spr = this.game.sprites[`${a.jobId}_left_0`];
-      return [PARTY_X - (this.current === a ? 6 : 0), PARTY_Y0 + i * PARTY_DY + 16 - artH(spr), artW(spr), artH(spr)];
-    }
-    const i = this.enemies.indexOf(a), spr = this.game.sprites['enemy_' + a.sprite];
-    const [cx, cy] = ENEMY_CENTERS[i] || ENEMY_CENTERS[0];
-    return [Math.round(cx - artW(spr) / 2), Math.round(cy - artH(spr) / 2), artW(spr), artH(spr)];
-  }
-  lungeOffset(a) { return a.lunge > 0 ? Math.round(10 * Math.sin((0.3 - a.lunge) / 0.3 * Math.PI)) : 0; }
-  // 受击表现：原本是 `Math.floor(flash*30)%2` 隔帧不画——每秒让人消失 15 次，
-  // 那是频闪不是打击感，而且被打的那零点几秒里根本看不清挨打的是谁。
-  // 改成整体染色：先闪白（像被打出的高光），迅速转红，再褪回本色。全程不消失。
-  hitTint(a) {
-    if (!(a.flash > 0)) return null;
-    const k = a.flash / 0.3;                    // 1 → 0
-    if (k > 0.62) return '#ffffff';
-    if (k > 0.28) return '#ff6a5a';
-    return null;
-  }
-  // 画一个可能正在受击的精灵：染色版画完再叠一层原图，保留一点本来的明暗层次
-  drawHit(ctx, img, x, y, tint) {
-    drawArt(ctx, img, x, y);
-    if (tint) { ctx.globalAlpha = tint === '#ffffff' ? 0.85 : 0.6; drawArt(ctx, tintedSprite(img, tint), x, y); ctx.globalAlpha = 1; }
-  }
-  // 敌人登场进度 0→1。每只错开 0.08 秒依次现身：整队一起冒出来没有层次，也看不清有几只。
-  enterP(e) {
-    if (this.phase !== 'intro') return 1;
-    return Math.max(0, Math.min(1, (INTRO_T - this.timer - this.enemies.indexOf(e) * 0.07) / 0.48));
-  }
-  // 溶解：把精灵按 2 逻辑像素一条横切开，每条的显隐阈值由行号定死（不掷骰——渲染消耗随机数
-  // 会让同一场战斗每次画得不一样）。vis=1 全在、vis=0 全没；死亡 1→0，登场 0→1，一进一出同一套语汇。
-  drawDissolve(ctx, img, x, y, vis) {
-    const step = 2 * ART, rows = Math.ceil(img.height / step);
-    for (let r = 0; r < rows; r++) {
-      const k = Math.abs(Math.sin(r * 12.9898 + 1.7) * 43758.5453) % 1;  // 打散的阈值：像碎掉，不像拉幕
-      if (vis <= k * 0.9) continue;
-      const sh = Math.min(step, img.height - r * step);
-      ctx.drawImage(img, 0, r * step, img.width, sh, x, y + r * 2, artW(img), sh / ART);
-    }
-  }
-
-  // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
-  // 只有 ±1 逻辑像素、周期 2.6–3.0 秒，并按队列序号错开相位与周期——
-  // 一起同步上下会立刻变成「在抖」，这里宁可含蓄到几乎看不出来。
-  // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
-  idleBob(e) {
-    if (!e.alive || e.flash > 0) return 0;
-    const i = this.enemies.indexOf(e);
-    return Math.round(Math.sin(this.time * (Math.PI * 2) / (2.6 + (i % 3) * 0.2) + i * 0.9));
-  }
-  // 濒死：HP 不到四分之一。FF6 会换成喘息的濒死姿势，我们只有站立帧，
-  // 就用 1–2 像素的缓慢下沉（2 秒一个来回）来表示「站不太住了」，配合面板的告警色。
-  // 胜利雀跃时不下沉：两个位移叠在一起会互相抵消，看起来只像跳得不齐。
-  faintSink(p) {
-    if (!p.alive || this.won || p.hp * 4 > p.maxHp) return 0;
-    const i = this.party.indexOf(p);
-    return 1 + Math.round(0.5 + 0.5 * Math.sin(this.time * Math.PI + i * 1.3));
-  }
-  // 胜利雀跃：原本是 `Math.floor(time*3)%2 ? 2 : 0`——每 1/3 秒硬切一次的 2px 方波，
-  // 一个来回只要 0.67 秒，是全项目最快的一个周期，而这个项目被抱怨最多的就是画面在闪。
-  // 改成 2.6 秒一个来回的正弦（和敌人待机呼吸同一个量级），振幅收到 1px，
-  // 并按队列序号错开相位，四个人依次起落像一道波——
-  // 同时跳等于整块画面在上下抖，错开之后才读得出「四个人各自在高兴」。
-  cheerHop(p) {
-    if (!this.won || !p.alive) return 0;
-    const i = this.party.indexOf(p);
-    return Math.round(Math.max(0, Math.sin(this.time * (Math.PI * 2) / CHEER_T - i * (Math.PI / 2))));
-  }
-
-  render(ctx) {
-    const { W } = this.game;
-    const [sx, sy] = this.fx.offset();
-    ctx.save(); ctx.translate(sx, sy);
-    drawBackground(ctx, W, this.backdrop, this.time);
-    for (const e of this.enemies) {
-      if (!e.alive && !(e.dying > 0)) continue;
-      const [x, y] = this.actorRect(e);
-      const spr = this.game.sprites['enemy_' + e.sprite];
-      // 倒下：逐条溶解 + 略微下沉，最后剩的几条整体淡掉。从前是整张图淡出，读起来像「贴纸被撕走」
-      if (!e.alive) {
-        const k = Math.max(0, e.dying / DYING_T);
-        ctx.globalAlpha = Math.min(1, k * 2.2);
-        this.drawDissolve(ctx, spr, x, y + Math.round((1 - k) * 4), k);
-        ctx.globalAlpha = 1; continue;
-      }
-      const p = this.enterP(e);
-      if (p <= 0) continue;                    // 还没轮到这只现身
-      if (p < 1) {                             // 登场：从画面外侧滑进来，同时逐条聚拢成形
-        ctx.globalAlpha = Math.min(1, p * 1.6);
-        this.drawDissolve(ctx, spr, x - Math.round(14 * (1 - p) ** 2), y, p);
-        ctx.globalAlpha = 1; continue;
-      }
-      this.drawHit(ctx, spr, x + this.lungeOffset(e), y + this.idleBob(e), this.hitTint(e));
-    }
-    for (const p of this.party) {
-      const [x, y] = this.actorRect(p);
-      // 轮到谁行动，actorRect 已经把他往前挪了 6px，不必再换帧。
-      // 原本每秒换 4 次走路帧：站着打架却在原地踏步，而且有几个职业的站立帧与迈步帧朝向
-      // 根本不一致（拳头师、符仔仙的「侧面」其实画成了正面），切起来像换了个人在闪。
-      // 胜利时的雀跃改成整体上下跳，同样不换帧。
-      const cheer = this.cheerHop(p);
-      const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
-      const dx = x - this.lungeOffset(p), dy = y - cheer + this.faintSink(p);
-      const tint = this.hitTint(p);
-      this.drawHit(ctx, this.game.sprites[key], dx, dy, tint);
-      if (p.alive) for (const g of layersFor(p.member, 'left')) this.drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
-    }
-    this.fx.render(ctx);
-    if (this.phase === 'input' && this.sub === 'target') {
-      const t = this.target.list[this.target.idx];
-      const [x, y, w, h] = this.actorRect(t);
-      drawCursor(ctx, x - 9, y + h / 2 - 3);
-      // 目标名字压一块暗底再写：光标会指到草地、岩壁、星空上，加阴影的字在浅色地面上还是会糊。
-      // 底下那道暗金线和光标、选中底同色，说的是同一件事：「现在指的是这个」
-      const nx = Math.round(x + w / 2), ny = y - 13, hw = Math.round(measure(ctx, t.name) / 2) + 3;
-      ctx.fillStyle = 'rgba(8,16,12,0.82)'; ctx.fillRect(nx - hw, ny - 1, hw * 2, 13);
-      ctx.fillStyle = 'rgba(230,196,106,0.5)'; ctx.fillRect(nx - hw, ny + 12, hw * 2, 1);
-      drawText(ctx, t.name, nx, ny, { align: 'center', color: UI.accent });
-    }
-    for (const p of this.popups) {
-      const q = 1 - p.t / 0.9, dy = q < 0.35 ? -18 * Math.sin(q / 0.35 * Math.PI / 2) : -18 + (q - 0.35) * 12;
-      const py = p.y + Math.round(dy);
-      // 会心的数字加一圈暗金描边，比普通伤害「重」一点。只是描边，没有任何闪烁
-      if (p.big) for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) drawText(ctx, p.text, p.x + ox, py + oy, { align: 'center', color: '#8a5a12', shadow: false });
-      drawText(ctx, p.text, p.x, py, { color: p.big ? '#ffe9a8' : p.color, align: 'center' });
-    }
-    ctx.restore();
-    drawPanels(ctx, W);
-    if (this.phase === 'input' && this.menu) {
-      this.menu.render(ctx, { window: false });
-      // 指令窗行高 12，比菜单的 13 矮，图标按 10px 画才不会和上下行贴死。
-      // 魔法用属性图标（和打出去的特效同色），道具用和村里菜单同一套道具图标——
-      // 战斗中最需要「扫一眼就知道这是什么」的地方，反而一直只有光秃秃的文字。
-      const data = this.game.data;
-      if (this.sub === 'magic') drawMenuIcons(ctx, this.menu, it => it.value ? spellIcon(data.spells[it.value]) : null, 10);
-      else if (this.sub === 'item') drawMenuIcons(ctx, this.menu, it => it.value ? itemIcon(it.value, data.items[it.value]) : null, 10);
-    }
-    else if (this.msg) wrapMsg(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));
-    else drawEnemyList(ctx, this);
-    drawPartyStatus(ctx, this);
-    // 选目标时把指令窗压暗：注意力该在战场上的光标，不在刚才那张菜单。只压内容区、留着窗框，
-    // 看起来是「退到后面」而不是「被盖住」。胜利结算屏则铺满整个画面，连面板一起盖掉
-    if (this.phase === 'input' && this.sub === 'target') { ctx.fillStyle = 'rgba(6,14,10,0.45)'; ctx.fillRect(5, PANEL_Y + 5, LEFT_W - 10, PANEL_H - 10); }
-    if (this.result) renderResult(ctx, this.game, this.result, this.time - this.resultAt, !this.card && !this.loot);
-    if (this.loot) renderLootCard(ctx, this.loot);
-    if (this.card) renderLevelCard(ctx, this.card);
-  }
+  // 整屏怎么画全在 render.js（见那个文件的头注）。这里只留一个入口：
+  // 把 scene 交出去，render 依旧只读状态。
+  render(ctx) { renderBattle(this, ctx); }
   debugInfo() { return `战斗 ${this.mode} ${this.phase}/${this.sub || ''}`; }
 }
