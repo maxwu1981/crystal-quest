@@ -11,17 +11,22 @@ import { decideEnemyAction } from '../src/battle/ai.js';
 
 // 各等级默认装备（模拟玩家按金币逐步换装：出村青铜、洞窟前铁、深处钢）
 const TIERS = [
-  { upto: 3, gear: { warrior: ['bronze_sword', 'leather_armor'], thief: ['knife', 'leather_armor'],
-                     whitemage: ['wood_staff', 'cloth_robe'], blackmage: ['wood_staff', 'cloth_robe'],
-                     monk: [null, 'cloth_robe'], redmage: ['bronze_sword', 'cloth_robe'] } },
-  { upto: 6, gear: { warrior: ['iron_sword', 'bronze_armor'], thief: ['bronze_dagger', 'leather_armor'],
-                     whitemage: ['oak_staff', 'linen_robe'], blackmage: ['oak_staff', 'linen_robe'],
-                     monk: ['leather_knuckle', 'linen_robe'], redmage: ['iron_sword', 'linen_robe'] } },
-  { upto: 99, gear: { warrior: ['steel_sword', 'iron_armor'], thief: ['iron_dagger', 'bronze_armor'],
-                      whitemage: ['iron_staff', 'silk_robe'], blackmage: ['iron_staff', 'silk_robe'],
-                      monk: ['iron_knuckle', 'silk_robe'], redmage: ['steel_sword', 'silk_robe'] } },
+  { upto: 3, gear: { boxer: ['bronze_sword', 'leather_armor'], hunter: ['knife', 'leather_armor'],
+                     herbwife: ['wood_staff', 'cloth_robe'], talisman: ['wood_staff', 'cloth_robe'],
+                     general: [null, 'cloth_robe'], peddler: ['bronze_sword', 'cloth_robe'] } },
+  { upto: 6, gear: { boxer: ['iron_sword', 'bronze_armor'], hunter: ['bronze_dagger', 'leather_armor'],
+                     herbwife: ['oak_staff', 'linen_robe'], talisman: ['oak_staff', 'linen_robe'],
+                     general: ['leather_knuckle', 'linen_robe'], peddler: ['iron_sword', 'linen_robe'] } },
+  { upto: 99, gear: { boxer: ['steel_sword', 'iron_armor'], hunter: ['iron_dagger', 'bronze_armor'],
+                      herbwife: ['iron_staff', 'silk_robe'], talisman: ['iron_staff', 'silk_robe'],
+                      general: ['iron_knuckle', 'silk_robe'], peddler: ['steel_sword', 'silk_robe'] } },
 ];
 const GEAR = level => TIERS.find(t => level <= t.upto).gear;
+// 职业改名后最容易忘了同步这张表，缺一个就当场报错，别默默算错
+export function checkGear(data) {
+  for (const t of TIERS) for (const id of Object.keys(data.jobs))
+    if (!t.gear[id]) throw new Error(`balance.js 的装备表缺少职业 ${id}（等级 ≤ ${t.upto}）`);
+}
 
 function scene(data, level, enemyIds, seed) {
   const st = newGameState(data);
@@ -65,6 +70,7 @@ function fight(data, level, enemyIds, seed) {
 
 export async function run(data = null, n = 30) {
   data ||= await loadData(location.pathname.includes('/tests/') ? '../data/' : './data/');
+  checkGear(data);
   const rows = [];
   const zones = { ...data.encounters, boss: { groups: [{ enemies: ['knight'], weight: 1 }] } };
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8], boss: [6, 7, 8, 9, 10, 12] };

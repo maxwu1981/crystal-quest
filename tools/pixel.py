@@ -80,6 +80,42 @@ def alpha_bbox(w, h, px):
                 if y > y1: y1 = y
     return (x0, y0, x1 + 1, y1 + 1) if x1 >= 0 else (0, 0, w, h)
 
+def largest_blob(w, h, px, step=2):
+    """只保留面积最大的连通区域。
+
+    Gemini 有时会在一张图里画两个姿势并排，若直接取整体包围盒，
+    缩放后两个角色都会被压成细条。先挑出最大的那一块，其余抹成透明。
+    为了速度先在 1/step 分辨率上做连通分析，再把结果映射回原图。
+    """
+    sw, sh = (w + step - 1) // step, (h + step - 1) // step
+    solid = bytearray(sw * sh)
+    for y in range(sh):
+        for x in range(sw):
+            if px[((y * step) * w + x * step) * 4 + 3]: solid[y * sw + x] = 1
+    label = [0] * (sw * sh); cur = 0; best = (0, 0)
+    from collections import deque
+    for i in range(sw * sh):
+        if not solid[i] or label[i]: continue
+        cur += 1; n = 0; q = deque([i])
+        label[i] = cur
+        while q:
+            j = q.popleft(); n += 1
+            jx, jy = j % sw, j // sw
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = jx + dx, jy + dy
+                if 0 <= nx < sw and 0 <= ny < sh:
+                    k = ny * sw + nx
+                    if solid[k] and not label[k]: label[k] = cur; q.append(k)
+        if n > best[0]: best = (n, cur)
+    if best[1] == 0: return px
+    keep = best[1]
+    for y in range(h):
+        for x in range(w):
+            i = (y * w + x) * 4
+            if px[i + 3] and label[(y // step) * sw + (x // step)] != keep: px[i + 3] = 0
+    return px
+
+
 def fit_box(bbox, aspect, margin=0.04, anchor='bottom', fit='contain'):
     """把包围盒扩成指定宽高比（w/h = aspect）的框，返回浮点 (x0,y0,x1,y1)。
 
@@ -143,8 +179,10 @@ def outline(w, h, px, color=(27, 27, 47)):
                     px[i:i + 4] = bytes((r, g, b, 255)); break
     return px
 
-def process_sprite(w, h, px, tw, th, anchor='bottom', key=True, add_outline=True, fit='contain'):
+def process_sprite(w, h, px, tw, th, anchor='bottom', key=True, add_outline=True, fit='contain', single=True):
     if key: chroma_key(w, h, px)
+    # 一张图里若混进了第二个角色/装饰，只留最大的一块，否则包围盒会把它们一起框住
+    if key and single: largest_blob(w, h, px)
     box = fit_box(alpha_bbox(w, h, px), tw / th, anchor=anchor, fit=fit) if key else (0, 0, w, h)
     out = downscale(w, h, px, box, tw, th)
     posterize(out); threshold_alpha(out)
