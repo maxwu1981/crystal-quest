@@ -13,7 +13,7 @@ src/field/          地图行走（网格移动、遇敌、门传送）、NPC、
 src/ui/DialogueScene.js 对话框
 src/battle/         战斗场景（流程/UI）、actions.js（行动协程）、纯函数公式、敌人 AI、角色构造
 src/game/status.js  状态异常定义（中毒/睡眠/黑暗/防护）
-src/ui/             FF 蓝色窗口、光标菜单
+src/ui/             褪色墨绿+暗铜的窗口、光标菜单（刻意避开经典 JRPG 的亮蓝玻璃框）
 src/menu/           主菜单 / 道具 / 装备 / 状态 / 转职 / 设置（透明场景，叠在地图上）
 src/title/          标题画面（新游戏 / 继续）
 src/game/           全局状态（可序列化）、队伍属性计算、升级
@@ -62,11 +62,15 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
 - `items.json` `{ id: { name, type:'consumable'|'weapon'|'armor'|'accessory', cat?, tier?, myth?, icon?, lore?,
   effect?:{hp|mp|revive|camp|cure}, atk?, def?, acc?, eva?, mdef?, crit?, spd?, hits?, element?, status?,
   hpBonus?, mpBonus?, atkBonus?, defBonus?, intBonus?, immuneAll?, price, jobs?:[], battle?, field?, desc? } }`
-  材质线按 `tier` 递增（硬度排序）；`myth:true` 的是神话装备，价格 0、只能靠宝箱与掉落取得，
+  材质线按 `tier` 递增（硬度排序）；`myth:true` 的是神话装备，价格 0、商店永不出售，
+  靠宝箱 / Boss 掉落 / NPC 赠予取得（有测试强制每一件都必须有出处），
   且在 `src/assets/equip.js` 里有专属造型
+- 地图事件 `chest` 支持可选的 `text`（字符串或数组）：开箱时先讲这东西的来历，再报「拾到了 X」
+- Boss NPC 的 `script.reward:[{id, qty}]` 打赢后直接进背包；NPC 对话变体的 `give:{gold?, items?:[{id,qty}]}` 同理
+- NPC 的 `if` / `unless` 控制是否出现（例如北口「守庄门的」`unless: questStarted`，接了任务就让路）
 - `party.json` `[{ name, jobId, level, equipment:{weapon, armor, accessory} }]`
 - `config.json` `startInventory:[{id, qty}]`、`battleMode:'turn'|'atb'`（玩家可在设置里覆盖，存 state.settings）、`expSplit`
-- `state.party[i].status` 持久状态（目前只有 poison）；`state.settings` 设置；`state.flags.jobUnlocked` 转职解锁（村长给碎片）
+- `state.party[i].status` 持久状态（目前只有 poison）；`state.settings` 设置；`state.flags.jobUnlocked` 转职解锁（昌黎祠的庙祝给六堆令旗）
 
 ## 美术管线
 - 逻辑分辨率仍是 256×224，但画布是它的 `ART` 倍（`src/core/draw.js`，现在 ART=2 → 512×448）。
@@ -107,6 +111,6 @@ Boss 是「乌火」——它说自己不是妖不是鬼，是这块地欠的债
 - [x] 6a 音效 BGM 战斗特效 像素字体
 - [x] 6b 数值平衡（tests/?balance）、打包（tools/build.py）
 - [x] 美术精度翻倍（ART=2）、角色三视角与迈步帧、装备穿戴外观、23 件神话装备造型
-- [ ] 补齐缺的角色帧（山猎人 down/up_walk、家将与符仔仙的 left_walk/up_walk、走贩四帧）
-- [ ] 怪物与瓦片换成 Gemini 正式美术（目前是程序化占位）
+- [x] 补齐角色帧：6 职业 × 6 帧全齐，朝向与身高都体检过（`fit='height'`，实心高度一律 46）
+- [x] 怪物与瓦片换成 Gemini 正式美术（10 只怪 + 25 张瓦片；`tiles.js` 里仍留程序化 fallback）
 - [ ] 第二个村庄 / 更多迷宫 / 真正的音乐文件 / 手柄与触屏

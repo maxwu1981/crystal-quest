@@ -1,573 +1,592 @@
 {
-  "name": "内埔庄",
-  "encounterZone": "village_field",
-  "spawn": {
-    "x": 15,
-    "y": 17
+ "name": "内埔庄",
+ "encounterZone": "village_field",
+ "spawn": {
+  "x": 15,
+  "y": 17
+ },
+ "legend": {
+  "g": {
+   "tile": "grass",
+   "encounter": true
   },
-  "legend": {
-    "g": {
-      "tile": "grass",
-      "encounter": true
-    },
-    ",": {
-      "tile": "grass"
-    },
-    "p": {
-      "tile": "path"
-    },
-    "s": {
-      "tile": "sand"
-    },
-    "b": {
-      "tile": "bridge"
-    },
-    "T": {
-      "tile": "tree",
-      "solid": true
-    },
-    "F": {
-      "tile": "forest",
-      "solid": true
-    },
-    "w": {
-      "tile": "water",
-      "solid": true
-    },
-    "W": {
-      "tile": "wall",
-      "solid": true
-    },
-    "R": {
-      "tile": "roof",
-      "solid": true
-    },
-    "D": {
-      "tile": "door"
-    },
-    "c": {
-      "tile": "counter",
-      "solid": true,
-      "counter": true
-    },
-    "E": {
-      "tile": "path"
-    }
+  ",": {
+   "tile": "grass"
   },
-  "rows": [
-    "TTTTTTTTTTTTTTTETTTTTTTTTTTTTTTTTTTT",
-    "TggggggggggggggppggggggggggggggggggT",
-    "TgggTggggggggggppgggggggggggggTggggT",
-    "TggggggggggggggppgggggTggggggggggggT",
-    "TggggggggggggggppggggggggggggggggTgT",
-    "TggTgggggggTgggppggggggggggggggggggT",
-    "TggggggggggggggppggTggggggggTggggggT",
-    "TggggggTgggggggppggggggggggggggggggT",
-    "TggggggggggggggppggggggggTgggggggggT",
-    "TFFFFFFFFFFFFFFppFFFFFFFFFFFFFFFFFFT",
-    "F,T,,,,,,,RRR,,pp,,sssssssss,,,,,,,F",
-    "F,,,,,,,T,RRR,Tpp,Tsssssssss,,,,,T,F",
-    "F,,,,,,,,,WDW,,pp,,sssssssss,,,,,,,F",
-    "F,RRRRRRRRR,,,,pp,,sssssssss,,,,,,,F",
-    "F,RRRRRRRRR,T,,pp,,,RRRRRRR,,,,,,,,F",
-    "F,RRRRRRRRR,,,,pp,,,RRRRRRR,,,,,,,,F",
-    "F,WWWWDWWWW,,,,pp,,,WWWDWWW,,,,,,,,F",
-    "F,ppppppppp,,,,pp,,,ppppppp,,,,,,,,F",
-    "FppppppppppppppppppppppppppppppppppF",
-    "F,,,,,,,,,,c,c,pp,,,,,,,,,,,,,RRR,,F",
-    "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
-    "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
-    "F,WWWDWWW,,,,,,pp,,,WWWDWWW,,,WWW,,F",
-    "F,ssssssss,,,,,pp,,,,,,,,,,,,,,,,,,F",
-    "F,ssssssss,,,T,pp,,T,,,,,,,,,,,,,,,F",
-    "F,,,,,,,,,,,,,,pp,,,,,,,,,,,T,,,,T,F",
-    "FwwwwbwwwwwwwwwbbwwwwwwwwbwwwwwwwwwF",
-    "F,T,,,,,,,,,,,,pp,,,,,,,,,,,,,T,,,,F",
-    "F,,,,,,,,,,,,,,pp,,,,,,,,,,,,,,,,,,F",
-    "TFFFFFFFFFFFFFFppFFFFFFFFFFFFFFFFFFT",
-    "TgggggggTggggggppgggggggggggTggggggT",
-    "TggggTggggggggggggggggggTggggggggggT",
-    "TgggggggggTgggggggggTgggggggggTggggT",
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-  ],
-  "events": [
+  "p": {
+   "tile": "path"
+  },
+  "s": {
+   "tile": "sand"
+  },
+  "b": {
+   "tile": "bridge"
+  },
+  "T": {
+   "tile": "tree",
+   "solid": true
+  },
+  "F": {
+   "tile": "forest",
+   "solid": true
+  },
+  "w": {
+   "tile": "water",
+   "solid": true
+  },
+  "W": {
+   "tile": "wall",
+   "solid": true
+  },
+  "R": {
+   "tile": "roof",
+   "solid": true
+  },
+  "D": {
+   "tile": "door"
+  },
+  "c": {
+   "tile": "counter",
+   "solid": true,
+   "counter": true
+  },
+  "E": {
+   "tile": "path"
+  }
+ },
+ "rows": [
+  "TTTTTTTTTTTTTTTETTTTTTTTTTTTTTTTTTTT",
+  "TggggggggggggggppggggggggggggggggggT",
+  "TgggTggggggggggppgggggggggggggTggggT",
+  "TggggggggggggggppgggggTggggggggggggT",
+  "TggggggggggggggppggggggggggggggggTgT",
+  "TggTgggggggTgggppggggggggggggggggggT",
+  "TggggggggggggggppggTggggggggTggggggT",
+  "TggggggTgggggggppggggggggggggggggggT",
+  "TggggggggggggggppggggggggTgggggggggT",
+  "TFFFFFFFFFFFFFFppFFFFFFFFFFFFFFFFFFT",
+  "F,T,,,,,,,RRR,,pp,,sssssssss,,,,,,,F",
+  "F,,,,,,,T,RRR,Tpp,Tsssssssss,,,,,T,F",
+  "F,,,,,,,,,WDW,,pp,,sssssssss,,,,,,,F",
+  "F,RRRRRRRRR,,,,pp,,sssssssss,,,,,,,F",
+  "F,RRRRRRRRR,T,,pp,,,RRRRRRR,,,,,,,,F",
+  "F,RRRRRRRRR,,,,pp,,,RRRRRRR,,,,,,,,F",
+  "F,WWWWDWWWW,,,,pp,,,WWWDWWW,,,,,,,,F",
+  "F,ppppppppp,,,,pp,,,ppppppp,,,,,,,,F",
+  "FppppppppppppppppppppppppppppppppppF",
+  "F,,,,,,,,,,c,c,pp,,,,,,,,,,,,,RRR,,F",
+  "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
+  "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
+  "F,WWWDWWW,,,,,,pp,,,WWWDWWW,,,WWW,,F",
+  "F,ssssssss,,,,,pp,,,,,,,,,,,,,,,,,,F",
+  "F,ssssssss,,,T,pp,,T,,,,,,,,,,,,,,,F",
+  "F,,,,,,,,,,,,,,pp,,,,,,,,,,,T,,,,T,F",
+  "FwwwwbwwwwwwwwwbbwwwwwwwwbwwwwwwwwwF",
+  "F,T,,,,,,,,,,,,pp,,,,,,,,,,,,,T,,,,F",
+  "F,,,,,,,,,,,,,,pp,,,,,,,,,,,,,,,,,,F",
+  "TFFFFFFFFFFFFFFppFFFFFFFFFFFFFFFFFFT",
+  "TgggggggTggggggppgggggggggggTggggggT",
+  "TggggTggggggggggggggggggTggggggggggT",
+  "TgggggggggTgggggggggTgggggggggTggggT",
+  "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+ ],
+ "events": [
+  {
+   "x": 6,
+   "y": 16,
+   "type": "warp",
+   "to": {
+    "map": "house_elder",
+    "x": 6,
+    "y": 9,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 23,
+   "y": 16,
+   "type": "warp",
+   "to": {
+    "map": "inn",
+    "x": 6,
+    "y": 8,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 23,
+   "y": 22,
+   "type": "warp",
+   "to": {
+    "map": "shop",
+    "x": 6,
+    "y": 8,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 5,
+   "y": 22,
+   "type": "warp",
+   "to": {
+    "map": "house_hakka",
+    "x": 7,
+    "y": 9,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 11,
+   "y": 12,
+   "type": "warp",
+   "to": {
+    "map": "bogong",
+    "x": 4,
+    "y": 6,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 15,
+   "y": 0,
+   "type": "warp",
+   "to": {
+    "map": "overworld",
+    "x": 20,
+    "y": 28,
+    "facing": "up"
+   }
+  }
+ ],
+ "npcs": [
+  {
+   "id": "guard",
+   "name": "巡更的",
+   "sprite": "guard",
+   "x": 13,
+   "y": 10,
+   "dir": "down",
+   "dialogue": [
     {
-      "x": 6,
-      "y": 16,
-      "type": "warp",
-      "to": {
-        "map": "house_elder",
-        "x": 6,
-        "y": 9,
-        "facing": "up"
-      }
+     "if": "gameCleared",
+     "lines": [
+      "出火又着起来了！我昨暗看到的，烧得比以前还旺。",
+      "这几暗庄里总算睡得着觉，锣我也少敲两轮。",
+      "倒係阿伯讲，更北的美浓、高树，土也在裂。恁远个事，𠊎就管毋着咧。"
+     ]
     },
     {
-      "x": 23,
-      "y": 16,
-      "type": "warp",
-      "to": {
-        "map": "inn",
-        "x": 6,
-        "y": 8,
-        "facing": "up"
-      }
+     "if": "questStarted",
+     "lines": [
+      "罗经圈就在庄北，过了东港溪那条圳沟就是。",
+      "那一带路弯来弯去，像罗盘一样绕，进去很容易迷路。",
+      "天暗以前一定要出来，听到没有。"
+     ]
     },
     {
-      "x": 23,
-      "y": 22,
-      "type": "warp",
-      "to": {
-        "map": "shop",
-        "x": 6,
-        "y": 8,
-        "facing": "up"
-      }
-    },
-    {
-      "x": 5,
-      "y": 22,
-      "type": "warp",
-      "to": {
-        "map": "house_hakka",
-        "x": 7,
-        "y": 9,
-        "facing": "up"
-      }
-    },
-    {
-      "x": 11,
-      "y": 12,
-      "type": "warp",
-      "to": {
-        "map": "bogong",
-        "x": 4,
-        "y": 6,
-        "facing": "up"
-      }
-    },
-    {
-      "x": 15,
-      "y": 0,
-      "type": "warp",
-      "to": {
-        "map": "overworld",
-        "x": 20,
-        "y": 28,
-        "facing": "up"
-      }
+     "lines": [
+      "这几暗都有人讲，山脚那边有声音在叫他的名。",
+      "要出庄的话，先去昌黎祠问阿伯，他知道的比我多。"
+     ]
     }
-  ],
-  "npcs": [
+   ]
+  },
+  {
+   "id": "gate_guard",
+   "name": "守庄门的",
+   "sprite": "guard",
+   "x": 15,
+   "y": 1,
+   "dir": "down",
+   "unless": "questStarted",
+   "dialogue": [
     {
-      "id": "guard",
-      "name": "巡更的",
-      "sprite": "guard",
-      "x": 13,
-      "y": 10,
-      "dir": "down",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "出火又着起来了！我昨暗看到的，烧得比以前还旺。",
-            "这几暗庄里总算睡得着觉，锣我也少敲两轮。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "罗经圈就在庄北，过了东港溪那条圳沟就是。",
-            "那一带路弯来弯去，像罗盘一样绕，进去很容易迷路。",
-            "天暗以前一定要出来，听到没有。"
-          ]
-        },
-        {
-          "lines": [
-            "这几暗都有人讲，山脚那边有声音在叫他的名。",
-            "要出庄的话，先去昌黎祠问阿伯，他知道的比我多。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "girl",
-      "name": "阿妹",
-      "sprite": "woman",
-      "x": 9,
-      "y": 17,
-      "dir": "down",
-      "wander": true,
-      "radius": 1,
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "我阿爸昨天自己走回来了。",
-            "他讲不记得这几日去哪，只记得一路有人在唱歌。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "你们真的要上大武山？……早点转来。",
-            "我在庙口等你们。"
-          ]
-        },
-        {
-          "lines": [
-            "我阿爸前天晚上出去就没转来了。",
-            "庄里的人说，是被魔神仔牵走的……"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "oldman",
-      "name": "老庄民",
-      "sprite": "man",
-      "x": 18,
-      "y": 18,
-      "dir": "left",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "火转来了，我这条老命也算看过两次。",
-            "细人仔问我出火是什么，我讲：是我们欠山的那笔。"
-          ]
-        },
-        {
-          "lines": [
-            "恒春那个「出火」，几百年没熄过。上个月熄了。",
-            "老一辈讲，那把火是压着山内的东西的。火熄了，东西就出来了。",
-            "你们进罗经圈，记得手上带火。不管什么火都好。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "kid",
-      "name": "庄内囝仔",
-      "sprite": "kid",
-      "x": 22,
-      "y": 12,
-      "dir": "down",
-      "wander": true,
-      "radius": 2,
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "你们真的上山了喔！我阿姆说你们是骗人的。",
-            "我要跟她讲，是她骗人。"
-          ]
-        },
-        {
-          "lines": [
-            "我阿公讲，被魔神仔牵去的人，回来嘴里都是牛屎和草。",
-            "……阿公说这是真的，不是骗我的。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "dryer",
-      "name": "晒谷的阿伯",
-      "sprite": "man",
-      "x": 25,
-      "y": 11,
-      "dir": "down",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "剩的那一半，我今日全摊出来晒。",
-            "日头够，两日就干。",
-            "你们莫踩。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "谷我先收一半，剩的看天。",
-            "你们上山，脚步也要看天。莫硬撑。"
-          ]
-        },
-        {
-          "lines": [
-            "日头这么好，谷子不翻会闷坏。",
-            "你莫踩我的谷，绕禾埕边边行。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "washer",
-      "name": "洗衫的阿婶",
-      "sprite": "woman",
-      "x": 6,
-      "y": 25,
-      "dir": "down",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "水暖转来了。今早我摸到的时候还愣了一下。"
-          ]
-        },
-        {
-          "lines": [
-            "这条圳沟的水，这几日变冷了，洗衫洗到手会疼。",
-            "阿婆讲，水变冷是山内在换气。",
-            "山换一口气，庄里就少一个人。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "oxboy",
-      "name": "牵牛的后生",
-      "sprite": "man",
-      "x": 18,
-      "y": 21,
-      "dir": "up",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "牛这几暗不叫了，绳也松松的。",
-            "它朝山那边看很久，才低头食草。",
-            "我讲过它看得到。你这下信了吧。"
-          ]
-        },
-        {
-          "lines": [
-            "我这只牛昨暗一直朝山那边叫，绳都快扯断。",
-            "牛看得到我们看不到的物件。你信不信随你。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "bangirl",
-      "name": "卖粄的阿姆",
-      "sprite": "woman",
-      "x": 11,
-      "y": 20,
-      "dir": "up",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "今日的粄给你们留了。免钱，站着吃完再走。"
-          ]
-        },
-        {
-          "unless": "gotBan",
-          "set": [
-            "gotBan"
-          ],
-          "give": {
-            "items": [
-              {
-                "id": "potion",
-                "qty": 2
-              }
-            ]
-          },
-          "lines": [
-            "艾粄、菜包，刚起锅的，还烫手。",
-            "这两个你们拿去，钱免了。冷掉也咬得动。",
-            "上山的人，肚子不能空。"
-          ]
-        },
-        {
-          "lines": [
-            "我这摊子在庙口摆了三十年，起风落水都没歇过。",
-            "人心慌的时候，更要有人在卖热的东西。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "herbstall",
-      "name": "青草摊的阿婆",
-      "sprite": "elder",
-      "x": 13,
-      "y": 20,
-      "dir": "up",
-      "script": {
-        "type": "shop",
-        "items": [
-          "potion",
-          "hipotion",
-          "ether",
-          "antidote",
-          "eyedrop",
-          "bell",
-          "tent"
-        ]
-      },
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "这几日抹草采不赢。转来的人都要净身。",
-            "一人一把，我不收钱。",
-            "药是拿来用的。我讲过了。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "上山的四个后生仔。青草我算你们便宜些。",
-            "药是拿来用的，不是拿来揣的。该吃就吃。"
-          ]
-        },
-        {
-          "lines": [
-            "咸丰草、鱼腥草、桑叶，我天光去圳沟边采的。",
-            "内埔的青草比药房的有力，不骗你。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "shoushen",
-      "name": "收惊的婆婆",
-      "sprite": "elder",
-      "x": 13,
-      "y": 13,
-      "dir": "left",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "米聚转来了。这几日我收了十几个。",
-            "上个月我收不转来的，这次收得转来。",
-            "只是他们收完，都在哼同一条曲。"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "来，我替你们收个惊。……好，碗里的米是聚的。",
-            "你们四个，魂都还在身上。去吧。"
-          ]
-        },
-        {
-          "lines": [
-            "细人仔受惊，我用一碗米、一件衫就收得转来。",
-            "大人受惊，我也收得转来。",
-            "但这次这些人，我收不转来。米是散的。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "tobacco",
-      "name": "菸楼的头家",
-      "sprite": "merchant",
-      "x": 29,
-      "y": 20,
-      "dir": "right",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "菸楼的火我昨日重新起了。",
-            "烘一炉要七日七暗，火不能断。",
-            "这七日我睡楼下，顾火。"
-          ]
-        },
-        {
-          "lines": [
-            "这栋高的是菸楼，烘菸叶用的，我阿公那辈起的。",
-            "现在没在烘了。火一熄，什么都跟着凉去。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "traveler",
-      "name": "外庄来的镖客",
-      "sprite": "guard",
-      "x": 28,
-      "y": 17,
-      "dir": "left",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "路我又敢走了。这趟货晚了一个月，头家会骂。",
-            "骂就骂，人在就好。"
-          ]
-        },
-        {
-          "lines": [
-            "我从万峦一路走过来，整条路没看到半个人。",
-            "半路有一双鞋，摆得整整齐齐，鞋主人不见了。",
-            "我不敢捡，也不敢回头看。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "duckkid",
-      "name": "顾鸭的细人仔",
-      "sprite": "kid",
-      "x": 10,
-      "y": 27,
-      "dir": "up",
-      "wander": true,
-      "radius": 2,
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "我的鸭自己走回来了，三只都在。",
-            "它们身上有火的味。"
-          ]
-        },
-        {
-          "lines": [
-            "我的鸭少了三只。它们自己排队走去圳沟那头。",
-            "我阿姆讲不要去追，追了会跟着走掉。"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "weaver",
-      "name": "编笼的阿伯",
-      "sprite": "elder",
-      "x": 4,
-      "y": 19,
-      "dir": "right",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "庄里这下不急了，我编笼也编得慢。",
-            "竹泡够了才软，人歇够了才回神。",
-            "那只笼还在吧？没摔破吧？"
-          ]
-        },
-        {
-          "if": "questStarted",
-          "lines": [
-            "这只笼你们带去装物件。竹子软，摔不破。",
-            "急着上山我知，急也要吃饱再走。"
-          ]
-        },
-        {
-          "lines": [
-            "竹要先泡水才软得下来，急不得。人也是。",
-            "庄里现在人人都急，急到忘记要吃饭。"
-          ]
-        }
-      ]
+     "lines": [
+      "等下。这几暗庄外毋净，无缘无故毋好出去。",
+      "庙祝阿伯今朝在昌黎祠等人，讲有事爱交代。",
+      "你先去听佢讲，转来𠊎就让路。"
+     ]
     }
-  ]
+   ]
+  },
+  {
+   "id": "girl",
+   "name": "阿妹",
+   "sprite": "woman",
+   "x": 9,
+   "y": 17,
+   "dir": "down",
+   "wander": true,
+   "radius": 1,
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "我阿爸昨天自己走回来了。",
+      "他讲不记得这几日去哪，只记得一路有人在唱歌。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "你们真的要上大武山？……早点转来。",
+      "我在庙口等你们。"
+     ]
+    },
+    {
+     "lines": [
+      "我阿爸前天晚上出去就没转来了。",
+      "庄里的人说，是被魔神仔牵走的……"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "oldman",
+   "name": "老庄民",
+   "sprite": "man",
+   "x": 18,
+   "y": 18,
+   "dir": "left",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "火转来了，我这条老命也算看过两次。",
+      "细人仔问我出火是什么，我讲：是我们欠山的那笔。"
+     ]
+    },
+    {
+     "lines": [
+      "恒春那个「出火」，几百年没熄过。上个月熄了。",
+      "老一辈讲，那把火是压着山内的东西的。火熄了，东西就出来了。",
+      "你们进罗经圈，记得手上带火。不管什么火都好。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kid",
+   "name": "庄内囝仔",
+   "sprite": "kid",
+   "x": 22,
+   "y": 12,
+   "dir": "down",
+   "wander": true,
+   "radius": 2,
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "你们真的上山了喔！我阿姆说你们是骗人的。",
+      "我要跟她讲，是她骗人。"
+     ]
+    },
+    {
+     "lines": [
+      "我阿公讲，被魔神仔牵去的人，回来嘴里都是牛屎和草。",
+      "……阿公说这是真的，不是骗我的。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dryer",
+   "name": "晒谷的阿伯",
+   "sprite": "man",
+   "x": 25,
+   "y": 11,
+   "dir": "down",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "剩的那一半，我今日全摊出来晒。",
+      "日头够，两日就干。",
+      "你们莫踩。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "谷我先收一半，剩的看天。",
+      "你们上山，脚步也要看天。莫硬撑。"
+     ]
+    },
+    {
+     "lines": [
+      "日头这么好，谷子不翻会闷坏。",
+      "你莫踩我的谷，绕禾埕边边行。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "washer",
+   "name": "洗衫的阿婶",
+   "sprite": "woman",
+   "x": 6,
+   "y": 25,
+   "dir": "down",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "水暖转来了。今早我摸到的时候还愣了一下。"
+     ]
+    },
+    {
+     "lines": [
+      "这条圳沟的水，这几日变冷了，洗衫洗到手会疼。",
+      "阿婆讲，水变冷是山内在换气。",
+      "山换一口气，庄里就少一个人。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "oxboy",
+   "name": "牵牛的后生",
+   "sprite": "man",
+   "x": 18,
+   "y": 21,
+   "dir": "up",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "牛这几暗不叫了，绳也松松的。",
+      "它朝山那边看很久，才低头食草。",
+      "我讲过它看得到。你这下信了吧。"
+     ]
+    },
+    {
+     "lines": [
+      "我这只牛昨暗一直朝山那边叫，绳都快扯断。",
+      "牛看得到我们看不到的物件。你信不信随你。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bangirl",
+   "name": "卖粄的阿姆",
+   "sprite": "woman",
+   "x": 11,
+   "y": 20,
+   "dir": "up",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "今日的粄给你们留了。免钱，站着吃完再走。"
+     ]
+    },
+    {
+     "unless": "gotBan",
+     "set": [
+      "gotBan"
+     ],
+     "give": {
+      "items": [
+       {
+        "id": "potion",
+        "qty": 2
+       }
+      ]
+     },
+     "lines": [
+      "艾粄、菜包，刚起锅的，还烫手。",
+      "这两个你们拿去，钱免了。冷掉也咬得动。",
+      "上山的人，肚子不能空。"
+     ]
+    },
+    {
+     "lines": [
+      "我这摊子在庙口摆了三十年，起风落水都没歇过。",
+      "人心慌的时候，更要有人在卖热的东西。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "herbstall",
+   "name": "青草摊的阿婆",
+   "sprite": "elder",
+   "x": 13,
+   "y": 20,
+   "dir": "up",
+   "script": {
+    "type": "shop",
+    "items": [
+     "potion",
+     "hipotion",
+     "ether",
+     "antidote",
+     "eyedrop",
+     "bell",
+     "tent"
+    ]
+   },
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "这几日抹草采不赢。转来的人都要净身。",
+      "一人一把，我不收钱。",
+      "药是拿来用的。我讲过了。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "上山的四个后生仔。青草我算你们便宜些。",
+      "药是拿来用的，不是拿来揣的。该吃就吃。"
+     ]
+    },
+    {
+     "lines": [
+      "咸丰草、鱼腥草、桑叶，我天光去圳沟边采的。",
+      "内埔的青草比药房的有力，不骗你。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "shoushen",
+   "name": "收惊的婆婆",
+   "sprite": "elder",
+   "x": 13,
+   "y": 13,
+   "dir": "left",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "米聚转来了。这几日我收了十几个。",
+      "上个月我收不转来的，这次收得转来。",
+      "只是他们收完，都在哼同一条曲。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "来，我替你们收个惊。……好，碗里的米是聚的。",
+      "你们四个，魂都还在身上。去吧。"
+     ]
+    },
+    {
+     "lines": [
+      "细人仔受惊，我用一碗米、一件衫就收得转来。",
+      "大人受惊，我也收得转来。",
+      "但这次这些人，我收不转来。米是散的。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tobacco",
+   "name": "菸楼的头家",
+   "sprite": "merchant",
+   "x": 29,
+   "y": 20,
+   "dir": "right",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "菸楼的火我昨日重新起了。",
+      "烘一炉要七日七暗，火不能断。",
+      "这七日我睡楼下，顾火。"
+     ]
+    },
+    {
+     "lines": [
+      "这栋高的是菸楼，烘菸叶用的，我阿公那辈起的。",
+      "现在没在烘了。火一熄，什么都跟着凉去。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "traveler",
+   "name": "外庄来的镖客",
+   "sprite": "guard",
+   "x": 28,
+   "y": 17,
+   "dir": "left",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "路我又敢走了。这趟货晚了一个月，头家会骂。",
+      "骂就骂，人在就好。"
+     ]
+    },
+    {
+     "lines": [
+      "我从万峦一路走过来，整条路没看到半个人。",
+      "半路有一双鞋，摆得整整齐齐，鞋主人不见了。",
+      "我不敢捡，也不敢回头看。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "duckkid",
+   "name": "顾鸭的细人仔",
+   "sprite": "kid",
+   "x": 10,
+   "y": 27,
+   "dir": "up",
+   "wander": true,
+   "radius": 2,
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "我的鸭自己走回来了，三只都在。",
+      "它们身上有火的味。"
+     ]
+    },
+    {
+     "lines": [
+      "我的鸭少了三只。它们自己排队走去圳沟那头。",
+      "我阿姆讲不要去追，追了会跟着走掉。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weaver",
+   "name": "编笼的阿伯",
+   "sprite": "elder",
+   "x": 4,
+   "y": 19,
+   "dir": "right",
+   "dialogue": [
+    {
+     "if": "gameCleared",
+     "lines": [
+      "庄里这下不急了，我编笼也编得慢。",
+      "竹泡够了才软，人歇够了才回神。",
+      "那只笼还在吧？没摔破吧？"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "lines": [
+      "这只笼你们带去装物件。竹子软，摔不破。",
+      "急着上山我知，急也要吃饱再走。"
+     ]
+    },
+    {
+     "lines": [
+      "竹要先泡水才软得下来，急不得。人也是。",
+      "庄里现在人人都急，急到忘记要吃饭。"
+     ]
+    }
+   ]
+  }
+ ]
 }
