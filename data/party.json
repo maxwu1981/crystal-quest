@@ -1,7 +1,7 @@
 [
  {
-  "name": "砚",
-  "jobId": "oath",
+  "name": "阿勇",
+  "jobId": "boxer",
   "level": 1,
   "equipment": {
    "weapon": "bronze_sword",
@@ -10,8 +10,8 @@
   }
  },
  {
-  "name": "芦",
-  "jobId": "gleaner",
+  "name": "巴冷",
+  "jobId": "hunter",
   "level": 1,
   "equipment": {
    "weapon": "knife",
@@ -20,8 +20,8 @@
   }
  },
  {
-  "name": "桑",
-  "jobId": "mender",
+  "name": "秀琴",
+  "jobId": "herbwife",
   "level": 1,
   "equipment": {
    "weapon": "wood_staff",
@@ -30,8 +30,8 @@
   }
  },
  {
-  "name": "烬",
-  "jobId": "ashtongue",
+  "name": "文彬",
+  "jobId": "talisman",
   "level": 1,
   "equipment": {
    "weapon": "wood_staff",

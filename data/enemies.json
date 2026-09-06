@@ -1,6 +1,6 @@
 {
  "goblin": {
-  "name": "拾骨者",
+  "name": "魔神仔",
   "sprite": "goblin",
   "hp": 29,
   "mp": 0,
@@ -20,7 +20,7 @@
   "ai": "basic"
  },
  "wolf": {
-  "name": "褪色狼",
+  "name": "山猪",
   "sprite": "wolf",
   "hp": 45,
   "mp": 0,
@@ -42,7 +42,7 @@
   "ai": "basic"
  },
  "slime": {
-  "name": "淤响",
+  "name": "海漂",
   "sprite": "slime",
   "hp": 34,
   "mp": 0,
@@ -66,7 +66,7 @@
   "ai": "basic"
  },
  "bat": {
-  "name": "窃声蝠",
+  "name": "食果蝠",
   "sprite": "bat",
   "hp": 39,
   "mp": 0,
@@ -92,7 +92,7 @@
   }
  },
  "darkslime": {
-  "name": "浊响",
+  "name": "乌泥",
   "sprite": "darkslime",
   "hp": 60,
   "mp": 0,
@@ -120,7 +120,7 @@
   }
  },
  "skeleton": {
-  "name": "无名骸",
+  "name": "好兄弟",
   "sprite": "skeleton",
   "hp": 82,
   "mp": 0,
@@ -145,7 +145,7 @@
   "ai": "basic"
  },
  "knight": {
-  "name": "缄",
+  "name": "乌火",
   "sprite": "knight",
   "hp": 400,
   "mp": 60,
@@ -174,7 +174,7 @@
   "ai": "basic"
  },
  "bee": {
-  "name": "蚀翅",
+  "name": "虎头蜂",
   "sprite": "bee",
   "hp": 31,
   "mp": 0,
@@ -201,7 +201,7 @@
   }
  },
  "mandrake": {
-  "name": "哀嚎根",
+  "name": "芒神",
   "sprite": "mandrake",
   "hp": 69,
   "mp": 12,
@@ -230,7 +230,7 @@
   "ai": "basic"
  },
  "ghost": {
-  "name": "未散者",
+  "name": "水鬼",
   "sprite": "ghost",
   "hp": 51,
   "mp": 18,

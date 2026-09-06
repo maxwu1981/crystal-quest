@@ -44,7 +44,7 @@ function decide(s, p) {
   const heals = usable.filter(id => sp[id].heal).sort((a, b) => sp[b].power - sp[a].power);
   if (hurt && heals.length) return { type: 'magic', spellId: heals[0], target: hurt };
   const attacks = usable.filter(id => sp[id].power > 0 && sp[id].target === 'enemy').sort((a, b) => sp[b].power * (sp[b].scope === 'all' ? enemies.length : 1) - sp[a].power * (sp[a].scope === 'all' ? enemies.length : 1));
-  if (attacks.length && (p.jobId === 'ashtongue' || p.jobId === 'wayfarer')) { const id = attacks[0]; return { type: 'magic', spellId: id, target: sp[id].scope === 'all' ? 'all' : weakest }; }
+  if (attacks.length && (p.jobId === 'talisman' || p.jobId === 'peddler')) { const id = attacks[0]; return { type: 'magic', spellId: id, target: sp[id].scope === 'all' ? 'all' : weakest }; }
   return { type: 'attack', target: weakest };
 }
 function fight(data, level, enemyIds, seed) {

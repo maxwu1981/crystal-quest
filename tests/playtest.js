@@ -206,7 +206,7 @@ export function playSettings(g) {
 // 装备：把神话武器装到 1 号身上，确认属性变化与特效带进战斗
 export function playEquip(g) {
   const drv = makeDriver(g); toField(g);
-  g.state.party[0].jobId = 'oath';
+  g.state.party[0].jobId = 'boxer';
   g.state.inventory.unshift({ id: 'excalibur', qty: 1 }, { id: 'dragon_heart', qty: 1 });
   drv.key('cancel'); drv.key('down'); drv.key('confirm');   // 菜单 → 装备
   const opened = g.scenes.top.constructor.name;

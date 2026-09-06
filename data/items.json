@@ -141,8 +141,8 @@
   "acc": 0,
   "price": 55,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "bronze_sword": {
@@ -154,8 +154,8 @@
   "acc": 0,
   "price": 208,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "iron_sword": {
@@ -167,8 +167,8 @@
   "acc": 0,
   "price": 405,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "steel_sword": {
@@ -180,8 +180,8 @@
   "acc": 2,
   "price": 789,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "silver_sword": {
@@ -193,8 +193,8 @@
   "acc": 2,
   "price": 1539,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "mythril_sword": {
@@ -206,8 +206,8 @@
   "acc": 4,
   "price": 3002,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "adamant_sword": {
@@ -219,8 +219,8 @@
   "acc": 4,
   "price": 5854,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "meteor_sword": {
@@ -232,8 +232,8 @@
   "acc": 6,
   "price": 11415,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "dragon_sword": {
@@ -245,8 +245,8 @@
   "acc": 6,
   "price": 22259,
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ]
  },
  "knife": {
@@ -258,11 +258,11 @@
   "acc": 6,
   "price": 55,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "bronze_dagger": {
@@ -274,11 +274,11 @@
   "acc": 6,
   "price": 208,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "iron_dagger": {
@@ -290,11 +290,11 @@
   "acc": 8,
   "price": 405,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "steel_dagger": {
@@ -306,11 +306,11 @@
   "acc": 8,
   "price": 789,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "silver_dagger": {
@@ -322,11 +322,11 @@
   "acc": 10,
   "price": 1539,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "mythril_dagger": {
@@ -338,11 +338,11 @@
   "acc": 10,
   "price": 3002,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "adamant_dagger": {
@@ -354,11 +354,11 @@
   "acc": 12,
   "price": 5854,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "meteor_dagger": {
@@ -370,11 +370,11 @@
   "acc": 12,
   "price": 11415,
   "jobs": [
-   "oath",
-   "gleaner",
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "wrap": {
@@ -386,7 +386,7 @@
   "acc": 10,
   "price": 55,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "leather_knuckle": {
@@ -398,7 +398,7 @@
   "acc": 10,
   "price": 106,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "iron_knuckle": {
@@ -410,7 +410,7 @@
   "acc": 12,
   "price": 405,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "steel_knuckle": {
@@ -422,7 +422,7 @@
   "acc": 12,
   "price": 789,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "silver_knuckle": {
@@ -434,7 +434,7 @@
   "acc": 14,
   "price": 1539,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "mythril_knuckle": {
@@ -446,7 +446,7 @@
   "acc": 14,
   "price": 3002,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "adamant_claw": {
@@ -458,7 +458,7 @@
   "acc": 16,
   "price": 5854,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "dragon_claw": {
@@ -470,7 +470,7 @@
   "acc": 18,
   "price": 22259,
   "jobs": [
-   "resonant"
+   "general"
   ]
  },
  "wood_staff": {
@@ -482,9 +482,9 @@
   "acc": 2,
   "price": 55,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ]
  },
  "oak_staff": {
@@ -496,9 +496,9 @@
   "acc": 2,
   "price": 208,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 2
  },
@@ -511,9 +511,9 @@
   "acc": 4,
   "price": 405,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 3
  },
@@ -526,9 +526,9 @@
   "acc": 4,
   "price": 789,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 4
  },
@@ -541,9 +541,9 @@
   "acc": 6,
   "price": 1539,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 6
  },
@@ -556,9 +556,9 @@
   "acc": 6,
   "price": 3002,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 9
  },
@@ -571,9 +571,9 @@
   "acc": 8,
   "price": 11415,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer"
+   "herbwife",
+   "talisman",
+   "peddler"
   ],
   "intBonus": 13
  },
@@ -584,10 +584,10 @@
   "tier": 2,
   "price": 114,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 5
  },
@@ -598,10 +598,10 @@
   "tier": 3,
   "price": 222,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 8
  },
@@ -612,10 +612,10 @@
   "tier": 4,
   "price": 434,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 12
  },
@@ -626,10 +626,10 @@
   "tier": 5,
   "price": 846,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 17
  },
@@ -640,10 +640,10 @@
   "tier": 6,
   "price": 1649,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 23,
   "mdef": 4
@@ -655,10 +655,10 @@
   "tier": 7,
   "price": 3216,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 30,
   "mdef": 6
@@ -670,10 +670,10 @@
   "tier": 8,
   "price": 6272,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 38,
   "mdef": 8
@@ -685,10 +685,10 @@
   "tier": 9,
   "price": 12230,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 47,
   "mdef": 10
@@ -700,10 +700,10 @@
   "tier": 10,
   "price": 23849,
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer",
-   "resonant"
+   "boxer",
+   "hunter",
+   "peddler",
+   "general"
   ],
   "def": 57,
   "mdef": 14
@@ -715,11 +715,11 @@
   "tier": 1,
   "price": 51,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 2,
   "mdef": 2
@@ -731,11 +731,11 @@
   "tier": 2,
   "price": 99,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 4,
   "mdef": 4
@@ -747,11 +747,11 @@
   "tier": 3,
   "price": 193,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 6,
   "mdef": 7
@@ -763,11 +763,11 @@
   "tier": 5,
   "price": 733,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 10,
   "mdef": 12
@@ -779,11 +779,11 @@
   "tier": 7,
   "price": 2788,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 16,
   "mdef": 18
@@ -795,11 +795,11 @@
   "tier": 9,
   "price": 10599,
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner",
-   "resonant"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter",
+   "general"
   ],
   "def": 24,
   "mdef": 26
@@ -865,8 +865,8 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ],
   "atk": 78,
   "acc": 20,
@@ -884,9 +884,9 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "peddler"
   ],
   "atk": 72,
   "acc": 16,
@@ -904,7 +904,7 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath"
+   "boxer"
   ],
   "atk": 74,
   "acc": 14,
@@ -922,8 +922,8 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ],
   "atk": 76,
   "acc": 18,
@@ -941,9 +941,9 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "peddler"
   ],
   "atk": 70,
   "acc": 22,
@@ -960,7 +960,7 @@
   "price": 0,
   "cat": "sword",
   "jobs": [
-   "oath"
+   "boxer"
   ],
   "atk": 68,
   "acc": 90,
@@ -977,8 +977,8 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "gleaner",
-   "oath"
+   "hunter",
+   "boxer"
   ],
   "atk": 52,
   "acc": 24,
@@ -996,7 +996,7 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "gleaner"
+   "hunter"
   ],
   "atk": 48,
   "acc": 20,
@@ -1013,8 +1013,8 @@
   "price": 0,
   "cat": "dagger",
   "jobs": [
-   "gleaner",
-   "oath"
+   "hunter",
+   "boxer"
   ],
   "atk": 44,
   "acc": 18,
@@ -1032,7 +1032,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
-   "resonant"
+   "general"
   ],
   "atk": 46,
   "acc": 26,
@@ -1050,7 +1050,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
-   "resonant"
+   "general"
   ],
   "atk": 42,
   "acc": 22,
@@ -1068,8 +1068,8 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "ashtongue",
-   "wayfarer"
+   "talisman",
+   "peddler"
   ],
   "atk": 30,
   "acc": 10,
@@ -1087,8 +1087,8 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "mender",
-   "wayfarer"
+   "herbwife",
+   "peddler"
   ],
   "atk": 34,
   "acc": 12,
@@ -1106,7 +1106,7 @@
   "price": 0,
   "cat": "staff",
   "jobs": [
-   "ashtongue"
+   "talisman"
   ],
   "atk": 28,
   "acc": 10,
@@ -1124,8 +1124,8 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "oath",
-   "wayfarer"
+   "boxer",
+   "peddler"
   ],
   "def": 62,
   "mdef": 18,
@@ -1142,9 +1142,9 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "oath",
-   "gleaner",
-   "wayfarer"
+   "boxer",
+   "hunter",
+   "peddler"
   ],
   "def": 58,
   "mdef": 22
@@ -1160,8 +1160,8 @@
   "price": 0,
   "cat": "armor",
   "jobs": [
-   "oath",
-   "resonant"
+   "boxer",
+   "general"
   ],
   "def": 60,
   "mdef": 14,
@@ -1178,10 +1178,10 @@
   "price": 0,
   "cat": "robe",
   "jobs": [
-   "mender",
-   "ashtongue",
-   "wayfarer",
-   "gleaner"
+   "herbwife",
+   "talisman",
+   "peddler",
+   "hunter"
   ],
   "def": 36,
   "mdef": 30,
@@ -1198,9 +1198,9 @@
   "price": 0,
   "cat": "robe",
   "jobs": [
-   "resonant",
-   "gleaner",
-   "oath"
+   "general",
+   "hunter",
+   "boxer"
   ],
   "def": 46,
   "mdef": 12,

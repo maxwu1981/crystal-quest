@@ -1,132 +1,133 @@
 {
- "name": "铃兰平原",
- "encounterZone": "plains",
- "spawn": {
-  "x": 20,
-  "y": 28
- },
- "legend": {
-  "g": {
-   "tile": "grass",
-   "encounter": true
+  "name": "六堆平原",
+  "encounterZone": "plains",
+  "spawn": {
+    "x": 20,
+    "y": 28
   },
-  ",": {
-   "tile": "grass"
+  "legend": {
+    "g": {
+      "tile": "grass",
+      "encounter": true
+    },
+    ",": {
+      "tile": "grass"
+    },
+    "p": {
+      "tile": "path",
+      "encounter": true
+    },
+    "b": {
+      "tile": "bridge"
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    },
+    "F": {
+      "tile": "forest",
+      "encounter": true
+    },
+    "M": {
+      "tile": "mountain",
+      "solid": true
+    },
+    "w": {
+      "tile": "water",
+      "solid": true
+    },
+    "S": {
+      "tile": "sand",
+      "encounter": true
+    },
+    "V": {
+      "tile": "town"
+    },
+    "E": {
+      "tile": "cave_entrance"
+    }
   },
-  "p": {
-   "tile": "path",
-   "encounter": true
-  },
-  "b": {
-   "tile": "bridge"
-  },
-  "T": {
-   "tile": "tree",
-   "solid": true
-  },
-  "F": {
-   "tile": "forest",
-   "encounter": true
-  },
-  "M": {
-   "tile": "mountain",
-   "solid": true
-  },
-  "w": {
-   "tile": "water",
-   "solid": true
-  },
-  "S": {
-   "tile": "sand",
-   "encounter": true
-  },
-  "V": {
-   "tile": "town"
-  },
-  "E": {
-   "tile": "cave_entrance"
-  }
- },
- "rows": [
-  "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-  "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
-  "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
-  "TMMgMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
-  "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
-  "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
-  "TgMMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
-  "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
-  "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
-  "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
-  "TggggTgFFFFFFFggggggpggggFFFFFFFFFFFgggT",
-  "TgggggggggFgggggggggpTggggFFFFFFFFFggggT",
-  "TggggggTggggggggggggpggggggFFFFFFFgggTgT",
-  "TSSSSSSSSSSSSSSSSSSSpSSSSSSSSSFSSSSSSSST",
-  "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
-  "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
-  "TSSSSSSSSSSSpppppppppSSSSSSSSSSSSSSSSSST",
-  "TgggggggFgTgpggggggggggggggggggggTTggggT",
-  "TggggFFFFFFFpgggggggggTggggggggggggggggT",
-  "TgggFFFFFFFFpggggggggggggggTggggSSSggggT",
-  "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
-  "TgggFFFFFFFFpggggggggggggggggSSwwwwwSSgT",
-  "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
-  "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
-  "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
-  "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
-  "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
-  "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
-  "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
-  "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
-  "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
-  "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
- ],
- "events": [
-  {
-   "x": 20,
-   "y": 29,
-   "type": "warp",
-   "to": {
-    "map": "village",
-    "x": 15,
-    "y": 1,
-    "facing": "down"
-   }
-  },
-  {
-   "x": 20,
-   "y": 3,
-   "type": "warp",
-   "to": {
-    "map": "cave_1",
-    "x": 1,
-    "y": 17,
-    "facing": "right"
-   }
-  }
- ],
- "npcs": [
-  {
-   "id": "traveler",
-   "name": "旅人",
-   "sprite": "man",
-   "x": 19,
-   "y": 24,
-   "dir": "down",
-   "dialogue": [
+  "rows": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
+    "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
+    "TMMgMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
+    "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
+    "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
+    "TgMMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
+    "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
+    "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
+    "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
+    "TggggTgFFFFFFFggggggpggggFFFFFFFFFFFgggT",
+    "TgggggggggFgggggggggpTggggFFFFFFFFFggggT",
+    "TggggggTggggggggggggpggggggFFFFFFFgggTgT",
+    "TSSSSSSSSSSSSSSSSSSSpSSSSSSSSSFSSSSSSSST",
+    "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
+    "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
+    "TSSSSSSSSSSSpppppppppSSSSSSSSSSSSSSSSSST",
+    "TgggggggFgTgpggggggggggggggggggggTTggggT",
+    "TggggFFFFFFFpgggggggggTggggggggggggggggT",
+    "TgggFFFFFFFFpggggggggggggggTggggSSSggggT",
+    "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
+    "TgggFFFFFFFFpggggggggggggggggSSwwwwwSSgT",
+    "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
+    "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
+    "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
+    "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
+    "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
+    "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
+    "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
+    "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
+    "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "events": [
     {
-     "if": "gameCleared",
-     "lines": [
-      "平原上的怪物少了很多，谢谢你们。"
-     ]
+      "x": 20,
+      "y": 29,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 15,
+        "y": 1,
+        "facing": "down"
+      }
     },
     {
-     "lines": [
-      "往北过了桥，沿着路走到山脚就是回音洞窟。",
-      "路上会遇到毒蜂，记得带解毒药。"
-     ]
+      "x": 20,
+      "y": 3,
+      "type": "warp",
+      "to": {
+        "map": "cave_1",
+        "x": 1,
+        "y": 17,
+        "facing": "right"
+      }
     }
-   ]
-  }
- ]
+  ],
+  "npcs": [
+    {
+      "id": "traveler",
+      "name": "赶路人",
+      "sprite": "man",
+      "x": 19,
+      "y": 24,
+      "dir": "down",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "平原上安静多了。虎头蜂还是要小心。"
+          ]
+        },
+        {
+          "lines": [
+            "过了这条圳沟往北，就是罗经圈。",
+            "路会绕，你们跟着水声走就不会错。",
+            "还有——遇到虎头蜂就跑，不要打。"
+          ]
+        }
+      ]
+    }
+  ]
 }
