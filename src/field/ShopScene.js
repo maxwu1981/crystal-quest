@@ -27,19 +27,27 @@ export class ShopScene {
     const data = this.game.data, inv = this.game.state.inventory;
     // 金额单独上暗金（Menu 的 rightColor）：一排商品里只有价钱是要玩家做决定的数字，
     // 和菜单信息栏的「金币」、右上角的持有金币同色，一眼就能把三处的钱串起来看。
+    // 买不起的直接灰掉。原本三十几件商品的价钱一律同色，
+    // 玩家得逐行心算才知道哪些够得着——滚到底下、选中、才被告知「钱不够」。
+    // 灰掉之后一眼就能看出「买得起的到哪一行为止」。
+    // Menu 的光标不跳过 disabled，所以照样能停上去读说明，只是按下去买不成。
     const items = this.mode === 'buy'
       // 标签前留出图标位，跟道具列表、装备页同一套排版——
       // 一排商品全是文字的话，玩家得逐行读名字才知道哪个是药哪个是剑
-      ? this.ids.map(id => ({ label: iconGap() + data.items[id].name, value: id, right: `${data.items[id].price}G`, rightColor: UI.accent }))
+      ? this.ids.map(id => ({ label: iconGap() + data.items[id].name, value: id, right: `${data.items[id].price}G`, rightColor: UI.accent, disabled: data.items[id].price > this.game.state.gold }))
       : inv.map(s => ({ label: iconGap() + data.items[s.id].name, value: s.id, right: `${sellPrice(data.items[s.id])}G`, rightColor: UI.accent }));
     if (!items.length) items.push({ label: this.mode === 'buy' ? '（没有商品）' : '（没有可卖的东西）', disabled: true });
-    this.list = new Menu({ items, x: 0, y: 32, w: 176, h: 192, onSelect: it => this.trade(it.value), onCancel: () => { this.mode = 'root'; this.msg = GREETING; } });
+    this.list = new Menu({ items, x: 0, y: 32, w: 176, h: 192, onSelect: it => this.trade(it.value),
+      // 按到买不起的那一件时还是要给一句话，否则只有一声 buzz，玩家不知道是「不能买」还是「按错了」
+      onDisabled: () => { this.msg = '钱毋罅。'; },
+      onCancel: () => { this.mode = 'root'; this.msg = GREETING; } });
     this.list.cursor = Math.min(keep, items.length - 1); this.lastCursor = this.list.cursor;
   }
   trade(id) {
     const r = this.mode === 'buy' ? buyItem(this.game.state, id, this.game.data) : sellItem(this.game.state, id, this.game.data);
     this.msg = r.msg; audio.sfx(r.ok ? 'coin' : 'buzz');
-    if (r.ok && this.mode === 'sell') this.buildList(this.list.cursor);
+    // 买卖都要重建：金币变了，「买不起」的那条线跟着挪
+    if (r.ok) this.buildList(this.list.cursor);
   }
   update() {
     const input = this.game.input;

@@ -1,0 +1,29 @@
+{
+  "id": "./",
+  "name": "去屏東打怪",
+  "short_name": "去屏東打怪",
+  "description": "屏东六堆客家庄的 2D 回合制 RPG：上大武山打倒乌火，把火种带回来。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#08100d",
+  "theme_color": "#1a2d25",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

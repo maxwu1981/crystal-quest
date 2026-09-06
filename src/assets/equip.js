@@ -36,81 +36,176 @@ const matOf = (id, fallback = MAT.iron) => {
 };
 
 function canvas() { const c = document.createElement('canvas'); c.width = 16 * ART; c.height = 24 * ART; return c; }
-// 回调里用 16×24 逻辑坐标绘制
+
+// 装备挂件画在 16×24 的逻辑框里，但**不能**用 ctx.scale(ART,ART) 然后整数取格——
+// 那样每一笔最细就是一整个逻辑像素，ART=6 时是 6×6 的大方块。
+// 角色本身已经是 96×144 的精细图，挂件却只有 16×24 格的表现力，
+// 结果就是「精细的人身上贴了几个方块」：剑是一根实心条，甲是肩上两个方块。
+//
+// 改成直接在物理像素空间画，坐标仍用逻辑单位但**可以带小数**：
+// R(ctx, 13, 12, 0.5, 9) 就是半个逻辑像素宽的刀刃，ART=6 下是 3 物理像素。
+// 这样才画得出刃/脊/护手/柄这些一根条上分不出来的层次。
+const U = () => ART;
+function R(ctx, x, y, w, h) {
+  const u = U();
+  ctx.fillRect(Math.round(x * u), Math.round(y * u), Math.max(1, Math.round(w * u)), Math.max(1, Math.round(h * u)));
+}
+// 一条斜线（刀刃收尖、杖身微斜用）：从 (x0,y0) 到 (x1,y1)，粗细 w 逻辑像素
+function RL(ctx, x0, y0, x1, y1, w) {
+  const u = U(), n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) * u));
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    ctx.fillRect(Math.round((x0 + (x1 - x0) * t) * u), Math.round((y0 + (y1 - y0) * t) * u),
+      Math.max(1, Math.round(w * u)), 1);
+  }
+}
 function layer(fn) {
   const c = canvas(), ctx = c.getContext('2d');
-  ctx.imageSmoothingEnabled = false; ctx.scale(ART, ART);
+  ctx.imageSmoothingEnabled = false;
   fn(ctx);
   return c;
 }
 
 // ---------- 武器形状（逻辑坐标，角色约 16 宽 24 高，脚在底部）----------
 // dir: down 正面（武器垂在身侧）/ left 侧面（武器伸向前方）/ up 背面（武器背在身后）
+// ---------- 武器形状 ----------
+// 坐标是 16×24 逻辑空间（角色约 16 宽 24 高，脚在底部，肩在 y≈10-12，手在 y≈15-17），
+// 但**可以带小数**——见上面 R()。有小数才画得出「刃比柄细」「刃身有一道脊」这种层次；
+// 整数格的年代这些全被压成一根实心条，挂在精细角色身上像贴了块木板。
+//
+// 摆位原则：正/背面挂在角色右侧并**压住一点身体**（纯画在轮廓外会读成「浮在旁边」），
+// 侧面伸向左前方（面朝的那一侧）。
 const WEAPON = {
-  // 一律画在角色轮廓「外侧」，不要压到身上：正/背面挂在右侧，侧面伸向左前方
   sword(ctx, [o, m, h], dir) {
-    if (dir === 'left') {
-      ctx.fillStyle = o; ctx.fillRect(0, 14, 8, 3);
-      ctx.fillStyle = m; ctx.fillRect(0, 15, 7, 1);
-      ctx.fillStyle = h; ctx.fillRect(1, 15, 3, 1);
-      ctx.fillStyle = o; ctx.fillRect(7, 13, 2, 5);            // 护手
-      ctx.fillStyle = '#5a4028'; ctx.fillRect(9, 15, 2, 2);    // 握柄
-    } else if (dir === 'up') {
-      ctx.fillStyle = o; ctx.fillRect(13, 8, 3, 11);           // 背在身后
-      ctx.fillStyle = m; ctx.fillRect(14, 9, 1, 9);
-      ctx.fillStyle = '#5a4028'; ctx.fillRect(13, 17, 3, 3);
-    } else {
-      ctx.fillStyle = o; ctx.fillRect(13, 12, 3, 10);
-      ctx.fillStyle = m; ctx.fillRect(14, 13, 1, 8);
-      ctx.fillStyle = h; ctx.fillRect(14, 14, 1, 3);
-      ctx.fillStyle = '#5a4028'; ctx.fillRect(13, 10, 3, 2);
+    if (dir === 'left') {                                    // 侧面：握在手里、伸向前
+      ctx.fillStyle = '#4a3520'; R(ctx, 8.4, 14.6, 1.7, 0.9);   // 柄
+      ctx.fillStyle = o;         R(ctx, 10.0, 14.4, 0.7, 1.3);  // 柄头
+      ctx.fillStyle = o;         R(ctx, 7.7, 13.3, 0.7, 3.4);   // 护手（竖着一条）
+      ctx.fillStyle = o;         R(ctx, 3.2, 14.5, 4.5, 1.1);   // 刃身
+      ctx.fillStyle = o;         R(ctx, 1.3, 14.7, 1.9, 0.8);   // 收窄
+      ctx.fillStyle = o;         R(ctx, 0.5, 14.9, 0.8, 0.5);   // 尖
+      ctx.fillStyle = m;         R(ctx, 1.5, 14.8, 6.0, 0.35);  // 中脊
+      ctx.fillStyle = h;         R(ctx, 3.0, 14.8, 3.0, 0.2);   // 高光
+    } else if (dir === 'up') {                               // 背面：斜背在背上
+      ctx.fillStyle = o;  RL(ctx, 13.5, 9.6, 10.4, 18.2, 0.9);
+      ctx.fillStyle = m;  RL(ctx, 13.4, 10.2, 10.6, 17.6, 0.35);
+      ctx.fillStyle = o;  R(ctx, 12.9, 9.2, 2.3, 0.6);         // 护手
+      ctx.fillStyle = '#4a3520'; R(ctx, 13.6, 7.6, 0.9, 1.7);  // 柄
+      ctx.fillStyle = o;  R(ctx, 13.4, 7.0, 1.3, 0.7);         // 柄头
+    } else {                                                 // 正面：挂在右腰
+      ctx.fillStyle = o;         R(ctx, 12.8, 9.7, 1.3, 0.6);  // 柄头
+      ctx.fillStyle = '#4a3520'; R(ctx, 13.1, 10.3, 0.8, 2.2); // 柄
+      ctx.fillStyle = o;         R(ctx, 11.8, 12.5, 3.3, 0.7); // 护手
+      ctx.fillStyle = o;         R(ctx, 12.9, 13.2, 1.2, 3.3); // 刃（上段）
+      ctx.fillStyle = o;         R(ctx, 13.0, 16.5, 1.0, 2.9); // 刃（中段，收窄）
+      ctx.fillStyle = o;         R(ctx, 13.2, 19.4, 0.6, 1.5); // 刃（下段）
+      ctx.fillStyle = o;         R(ctx, 13.35, 20.9, 0.3, 0.6);// 尖
+      ctx.fillStyle = m;         R(ctx, 13.3, 13.3, 0.35, 7.2);// 中脊
+      ctx.fillStyle = h;         R(ctx, 13.3, 13.5, 0.2, 3.0); // 高光
     }
   },
   dagger(ctx, [o, m, h], dir) {
     if (dir === 'left') {
-      ctx.fillStyle = o; ctx.fillRect(1, 15, 6, 2);
-      ctx.fillStyle = m; ctx.fillRect(1, 15, 5, 1);
-      ctx.fillStyle = '#5a4028'; ctx.fillRect(7, 15, 2, 2);
+      ctx.fillStyle = '#4a3520'; R(ctx, 7.6, 14.9, 1.5, 0.8);
+      ctx.fillStyle = o;         R(ctx, 6.9, 14.2, 0.6, 2.2);  // 小护手
+      ctx.fillStyle = o;         R(ctx, 3.6, 15.0, 3.3, 0.9);
+      ctx.fillStyle = o;         R(ctx, 2.6, 15.2, 1.0, 0.5);  // 尖
+      ctx.fillStyle = m;         R(ctx, 3.8, 15.25, 2.9, 0.3);
+      ctx.fillStyle = h;         R(ctx, 4.2, 15.25, 1.6, 0.18);
     } else if (dir === 'up') {
-      ctx.fillStyle = o; ctx.fillRect(14, 13, 2, 6); ctx.fillStyle = m; ctx.fillRect(14, 14, 1, 4);
+      ctx.fillStyle = '#4a3520'; R(ctx, 13.9, 12.4, 0.8, 1.5);
+      ctx.fillStyle = o;         R(ctx, 13.4, 13.8, 1.8, 0.5);
+      ctx.fillStyle = o;         R(ctx, 13.9, 14.3, 0.8, 3.0);
+      ctx.fillStyle = o;         R(ctx, 14.05, 17.3, 0.5, 0.6);
+      ctx.fillStyle = m;         R(ctx, 14.15, 14.4, 0.3, 2.8);
     } else {
-      ctx.fillStyle = o; ctx.fillRect(14, 14, 2, 6);
-      ctx.fillStyle = m; ctx.fillRect(14, 15, 1, 4);
-      ctx.fillStyle = '#5a4028'; ctx.fillRect(14, 12, 2, 2);
+      ctx.fillStyle = o;         R(ctx, 13.7, 11.9, 1.1, 0.5); // 柄头
+      ctx.fillStyle = '#4a3520'; R(ctx, 13.9, 12.4, 0.8, 1.5); // 柄
+      ctx.fillStyle = o;         R(ctx, 13.3, 13.8, 2.0, 0.5); // 护手
+      ctx.fillStyle = o;         R(ctx, 13.9, 14.3, 0.9, 3.1); // 刃
+      ctx.fillStyle = o;         R(ctx, 14.1, 17.4, 0.5, 0.7); // 尖
+      ctx.fillStyle = m;         R(ctx, 14.2, 14.4, 0.3, 2.9);
+      ctx.fillStyle = h;         R(ctx, 14.2, 14.6, 0.18, 1.3);
     }
   },
+  // 拳套：**包住拳头本身**，位置从角色图量出来——阿勇垂着的拳头在
+  // x 2.0–3.6（左）与 12.2–13.8（右）、y 15–18。上一版画到 x0.7，整块伸在手臂外面。
   knuckle(ctx, [o, m, h], dir) {
-    const put = x => { ctx.fillStyle = o; ctx.fillRect(x, 14, 3, 3); ctx.fillStyle = m; ctx.fillRect(x, 14, 2, 2); ctx.fillStyle = h; ctx.fillRect(x, 14, 1, 1); };
-    if (dir === 'left') put(1); else { put(0); put(13); }
+    const fist = x => {
+      ctx.fillStyle = o; R(ctx, x, 15.0, 1.8, 1.9);            // 护手本体（正好盖住拳头）
+      ctx.fillStyle = m; R(ctx, x + 0.15, 15.2, 1.5, 1.0);     // 受光面
+      ctx.fillStyle = o; R(ctx, x + 0.05, 16.9, 1.7, 0.6);     // 腕带
+      ctx.fillStyle = h; for (let k = 0; k < 3; k++) R(ctx, x + 0.25 + k * 0.55, 15.35, 0.3, 0.3); // 指节铆钉
+    };
+    if (dir === 'left') fist(2.2); else { fist(2.0); fist(12.2); }
   },
+  // 杖：画在角色**自己那根杖的位置上**（青草婆/符仔仙的美术里本来就握着一根，
+  // 画在另一侧就成了第二根杖）。量出来她的杖在 x 2.2–3.4、y 8–22，就压在这里，
+  // 于是「换了根更好的杖」；没有自带杖的职业看起来就是左手握着一根，也说得通。
   staff(ctx, [o, m, h], dir) {
-    const x = dir === 'left' ? 2 : 14;
-    ctx.fillStyle = '#5a4028'; ctx.fillRect(x, 9, 2, 13);      // 杖身
-    ctx.fillStyle = o; ctx.fillRect(x - 1, 6, 4, 4);           // 顶端宝石
-    ctx.fillStyle = m; ctx.fillRect(x, 7, 2, 2);
-    ctx.fillStyle = h; ctx.fillRect(x, 7, 1, 1);
+    const x = 2.3;
+    ctx.fillStyle = '#4a3520'; R(ctx, x, 10.8, 1.0, 11.4);      // 杖身
+    ctx.fillStyle = '#6b4d2e'; R(ctx, x + 0.3, 10.8, 0.3, 11.4); // 木纹受光
+    ctx.fillStyle = '#3a2a18'; R(ctx, x - 0.1, 14.4, 1.2, 1.7); // 缠绳握把
+    // 宝石头压在角色自带杖头（青草婆的木疙瘩在 y9–11）的位置上，不能更高——
+    // 高出去就成了一块悬在杖顶上方的方块。
+    ctx.fillStyle = o; R(ctx, x - 0.5, 9.2, 2.0, 2.0);
+    ctx.fillStyle = m; R(ctx, x - 0.2, 9.5, 1.4, 1.4);
+    ctx.fillStyle = h; R(ctx, x, 9.7, 0.6, 0.6);                // 高光
   },
 };
 
-// ---------- 防具：只勾肩甲与下摆边缘，不盖住角色本身的造型 ----------
+// ---------- 防具 ----------
+// **位置是从角色图上量出来的，不是估的**：把 boxer_down_0 逐行扫非透明像素，
+// 得到 y10 是最窄的一行（x 4–12.2，脖子），y11–13 是肩（x 3–13），
+// y13–18 两侧是垂着的手臂（x 2.2–3.5 / 12.5–13.8），y19 以下是腿。
+// 上一版凭印象把肩甲画到 x1.9–5.7，比肩膀还宽出去一大截，
+// 结果两块横板伸在身体外面，像挑着扁担。
+//
+// 另一条：**角色美术本身已经画了腰带**，叠加层再加一条就是两条。
+// 这里只做「多穿了一层护具」这一个信号——肩甲，其余交给角色图自己。
 const ARMOR = {
   armor(ctx, [o, m, h], dir) {
-    if (dir === 'left') {                                 // 侧面只看得到一侧肩甲
-      ctx.fillStyle = o; ctx.fillRect(4, 11, 4, 4);
-      ctx.fillStyle = m; ctx.fillRect(4, 11, 3, 3);
-      ctx.fillStyle = h; ctx.fillRect(5, 12, 1, 1);
+    // 肩甲：上缘贴着肩线、往下收窄，形成一个圆肩的弧。宽度不超过肩宽。
+    const pauldron = (x0, x1) => {
+      const w = x1 - x0;
+      ctx.fillStyle = o; R(ctx, x0,             11.0, w,            0.9);   // 上缘（最宽）
+      ctx.fillStyle = o; R(ctx, x0 + w * 0.14,  11.9, w * 0.72,     0.8);   // 中段
+      ctx.fillStyle = o; R(ctx, x0 + w * 0.32,  12.7, w * 0.40,     0.5);   // 下缘（最窄）
+      ctx.fillStyle = m; R(ctx, x0 + w * 0.12,  11.15, w * 0.6,     0.5);   // 受光
+      ctx.fillStyle = h; R(ctx, x0 + w * 0.22,  11.2,  w * 0.28,    0.25);  // 高光一点
+    };
+    if (dir === 'left') { pauldron(4.6, 7.4); return; }   // 侧面只看得到近身这一侧
+    pauldron(3.0, 5.6); pauldron(10.4, 13.0);
+    // 锁骨那道护片，只在正面画（背面看不到）
+    if (dir === 'down') { ctx.fillStyle = o; R(ctx, 6.6, 11.3, 2.8, 0.5); ctx.fillStyle = m; R(ctx, 6.8, 11.35, 2.4, 0.25); }
+  },
+  // 长袍：加一条**腰带**，不要动袍子本身。
+  //
+  // 前后试错两版才想通：先画下摆滚边和前襟——在符仔仙的炭袍上刷出一道亮紫、
+  // 把青草婆那圈乳黄扇形裙边盖成灰杠；改成披肩——两块灰褐色块挂在肩上像草编的补丁。
+  // 问题不在形状，在**材质色**：袍类的配色（亚麻偏褐、丝绸偏紫）是给图标定的，
+  // 盖在已经画好的衣服上，颜色近了看不见、颜色远了像脏。
+  //
+  // 肩甲之所以成立，是因为金属灰压在红衣上**本来就该是异色**。腰带同理：
+  // 它天生就是对比色，而袍类角色腰部（y16–18）恰好是一片素面，不盖任何细节。
+  robe(ctx, [o, m, h], dir) {
+    const y = 16.1;
+    if (dir === 'left') {
+      ctx.fillStyle = o; R(ctx, 4.6, y, 4.4, 0.9);
+      ctx.fillStyle = m; R(ctx, 4.6, y + 0.15, 4.4, 0.35);
+      ctx.fillStyle = o; R(ctx, 5.2, y + 0.9, 0.7, 2.0);          // 侧面：垂下的带尾
       return;
     }
-    ctx.fillStyle = o; ctx.fillRect(2, 11, 4, 4);         // 左肩甲
-    ctx.fillStyle = m; ctx.fillRect(2, 11, 3, 3);
-    ctx.fillStyle = o; ctx.fillRect(10, 11, 4, 4);        // 右肩甲
-    ctx.fillStyle = m; ctx.fillRect(11, 11, 3, 3);
-    ctx.fillStyle = h; ctx.fillRect(3, 12, 1, 1); ctx.fillRect(12, 12, 1, 1);
-  },
-  robe(ctx, [o, m, h], dir) {
-    ctx.fillStyle = m; ctx.fillRect(3, 19, 10, 2);        // 只加一圈下摆
-    ctx.fillStyle = o; ctx.fillRect(3, 21, 10, 1);
-    if (dir !== 'up') { ctx.fillStyle = h; ctx.fillRect(4, 19, 2, 1); ctx.fillRect(10, 19, 2, 1); }
+    ctx.fillStyle = o; R(ctx, 4.3, y, 7.4, 0.9);                  // 带身
+    ctx.fillStyle = m; R(ctx, 4.3, y + 0.15, 7.4, 0.35);          // 受光
+    if (dir === 'down') {
+      ctx.fillStyle = h; R(ctx, 7.2, y - 0.15, 1.6, 1.2);         // 正面：带扣
+      ctx.fillStyle = o; R(ctx, 7.6, y - 0.05, 0.8, 1.0);
+      ctx.fillStyle = o; R(ctx, 5.6, y + 0.9, 0.7, 2.2);          // 垂下的带尾
+    } else {
+      ctx.fillStyle = o; R(ctx, 7.4, y + 0.9, 1.2, 1.4);          // 背面：结
+    }
   },
 };
 
