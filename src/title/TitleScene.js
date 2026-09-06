@@ -1,5 +1,6 @@
 // 标题画面：新游戏 / 继续
 import { Menu } from '../ui/Menu.js';
+import { UI } from '../ui/Window.js';
 import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
 import { loadGame } from '../game/state.js';
 import { RNG } from '../core/RNG.js';
@@ -36,10 +37,10 @@ export class TitleScene {
     }
     ctx.font = PIXEL ? `24px ${FONT_FAMILY}` : `bold 26px ${FONT_FAMILY}`; ctx.textBaseline = 'top'; ctx.textAlign = 'center';
     ctx.fillStyle = '#000'; ctx.fillText(this.game.data.config.title, W / 2 + 2, 62);
-    ctx.fillStyle = '#d8cfa8'; ctx.fillText(this.game.data.config.title, W / 2, 60);
+    ctx.fillStyle = UI.paper; ctx.fillText(this.game.data.config.title, W / 2, 60);
     ctx.textAlign = 'left';
-    drawText(ctx, this.game.data.config.subtitle || '', W / 2, 96, { align: 'center', color: '#8a8468' });
+    drawText(ctx, this.game.data.config.subtitle || '', W / 2, 96, { align: 'center', color: UI.dim });
     this.menu.render(ctx);
-    drawText(ctx, 'Z / Enter 确认', W / 2, 206, { align: 'center', color: '#6b6858' });
+    drawText(ctx, 'Z / Enter 确认', W / 2, 206, { align: 'center', color: UI.gray }); // 操作提示：最不该抢戏的一行
   }
 }

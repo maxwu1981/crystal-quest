@@ -2,6 +2,7 @@
 // 滚完之后走 onDone（通关流程会把玩家送回内埔庄，让 29 个 NPC 的通关后台词有机会被听到）；
 // 没给 onDone 就退回标题。
 import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
+import { UI } from '../ui/Window.js';
 import { RNG } from '../core/RNG.js';
 import { TitleScene } from './TitleScene.js';
 
@@ -31,8 +32,9 @@ export class EndingScene {
       const y = Math.round(H + i * 16 - this.scroll);
       if (y < -16 || y > H) return;
       const big = line.startsWith('# ');
-      if (big) { ctx.font = PIXEL ? `24px ${FONT_FAMILY}` : `bold 22px ${FONT_FAMILY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#000'; ctx.fillText(line.slice(2), W / 2 + 2, y + 2); ctx.fillStyle = '#d8cfa8'; ctx.fillText(line.slice(2), W / 2, y); ctx.textAlign = 'left'; }
-      else drawText(ctx, line, W / 2, y, { align: 'center', color: line.startsWith('·') ? '#8a8468' : '#fff' });
+      if (big) { ctx.font = PIXEL ? `24px ${FONT_FAMILY}` : `bold 22px ${FONT_FAMILY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#000'; ctx.fillText(line.slice(2), W / 2 + 2, y + 2); ctx.fillStyle = UI.paper; ctx.fillText(line.slice(2), W / 2, y); ctx.textAlign = 'left'; }
+      // 「·」开头的是制作名单的条目，压暗一档；正文用主色。两者的差别就是这一层
+      else drawText(ctx, line, W / 2, y, { align: 'center', color: line.startsWith('·') ? UI.dim : UI.text });
     });
   }
 }

@@ -1,6 +1,7 @@
 // 战斗画面的静态部分：背景、敌人名单、队伍状态栏
-import { drawText, LINE_H } from '../core/text.js';
-import { drawWindow } from '../ui/Window.js';
+import { drawText, measure, LINE_H } from '../core/text.js';
+import { drawWindow, drawGauge, drawHighlight, UI } from '../ui/Window.js';
+import { drawRatio } from '../menu/common.js';
 import { statusTags } from '../game/status.js';
 import { RNG } from '../core/RNG.js';
 
@@ -122,15 +123,18 @@ function drawPlains(ctx, W, bg) {
 // ---- 洞窟外围：罗经圈外圈，湿岩壁、积水湖与那座断桥 ----
 function drawCave(ctx, W, bg, t) {
   const hz = HZ.cave;
-  // 岩壁：洞顶没光所以最黑，越靠地面越亮——亮的是积水反上来的那点光
+  // 岩壁：洞顶没光所以最黑，越靠地面越亮——亮的是积水反上来的那点光。
+  // 岩石本身几乎不带彩（和地图里的 cave_wall #221d1d / cave_floor #4a4242 同一个思路：
+  // 底色接近中性灰，冷是上面那层区域色调给的）。原本这里是饱和的暖褐，
+  // 光靠 multiply 压不成冷灰——正片叠底只能压暗，压不掉红。
   const wall = ctx.createLinearGradient(0, 0, 0, hz);
-  wall.addColorStop(0, '#100d0d'); wall.addColorStop(0.6, '#241d1b'); wall.addColorStop(1, '#3b302b');
+  wall.addColorStop(0, '#121213'); wall.addColorStop(0.6, '#252628'); wall.addColorStop(1, '#3d3e41');
   fillAll(ctx, W, 0, hz, wall);
   ctx.fillStyle = 'rgba(0,0,0,0.25)'; // 岩层：几条起伏的横带，暗示层积岩
   for (const s of bg.strata) for (let x = -4; x < W + 4; x += 4) ctx.fillRect(x, s.y + Math.round(Math.sin((x + s.p) * 0.05) * 2), 4, s.h);
   ctx.fillStyle = 'rgba(120,140,140,0.06)'; // 壁上一道道渗水痕
   for (const s of bg.seep) ctx.fillRect(s.x, s.y, 1, s.h);
-  ctx.fillStyle = '#171212'; // 钟乳石：从洞顶垂下来，越往下越尖
+  ctx.fillStyle = '#161719'; // 钟乳石：从洞顶垂下来，越往下越尖
   for (const d of bg.drips) for (let k = 0; k < d.h; k++) {
     const w = Math.max(1, d.w - Math.round(k * d.w / d.h));
     ctx.fillRect(d.x - (w >> 1), k, w, 1);
@@ -150,12 +154,12 @@ function drawCave(ctx, W, bg, t) {
   ctx.fillRect(126, 94, 30, 1); ctx.fillRect(178, 94, 30, 1);   // 桥面朝上的一道亮边
   // 近处地面：湿石头。比岩壁亮一点，敌人脚下才有一条清楚的地平线
   const floor = ctx.createLinearGradient(0, hz, 0, PANEL_Y);
-  floor.addColorStop(0, '#3a302c'); floor.addColorStop(1, '#241d1b');
+  floor.addColorStop(0, '#3c3d40'); floor.addColorStop(1, '#252628');
   ctx.fillStyle = floor; ctx.fillRect(-4, hz, W + 8, PANEL_Y - hz + 6);
   ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(-4, hz, W + 8, 2); // 岸边的暗线
-  ctx.fillStyle = '#453a35';
+  ctx.fillStyle = '#474a4e';
   for (const r of bg.rocks) { ctx.fillRect(r.x, r.y, r.w, 2); ctx.fillRect(r.x + 1, r.y - 1, r.w - 2, 1); }
-  ctx.fillStyle = '#191412'; // 两侧的落石：把画面框住，也遮掉空荡荡的角落
+  ctx.fillStyle = '#191a1c'; // 两侧的落石：把画面框住，也遮掉空荡荡的角落
   ctx.fillRect(-4, PANEL_Y - 16, 18, 22); ctx.fillRect(6, PANEL_Y - 22, 10, 28);
   ctx.fillRect(W - 16, PANEL_Y - 20, 20, 26); ctx.fillRect(W - 26, PANEL_Y - 12, 12, 18);
   // 地上的积水：形状不动，只有反光在极慢地横移（约 11 秒一个来回，最多 6px）——
@@ -178,7 +182,7 @@ function drawCave(ctx, W, bg, t) {
 function drawDeep(ctx, W, bg, t) {
   const hz = HZ.deep;
   const wall = ctx.createLinearGradient(0, 0, 0, PANEL_Y);
-  wall.addColorStop(0, '#04070a'); wall.addColorStop(0.55, '#0a1315'); wall.addColorStop(1, '#101c1d');
+  wall.addColorStop(0, '#0a0a0b'); wall.addColorStop(0.55, '#1a1b1c'); wall.addColorStop(1, '#2d2e2f');
   fillAll(ctx, W, 0, PANEL_Y, wall);
   // 罗盘花：后墙上一圈圈同心刻痕加放射线，罗经圈就是这么得名的。
   // 对比压到几乎看不见，只当墙的质地——真画清楚了会跟敌人抢视线。
@@ -190,14 +194,14 @@ function drawDeep(ctx, W, bg, t) {
     ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 22, cy + Math.sin(a) * 22);
     ctx.lineTo(cx + Math.cos(a) * 108, cy + Math.sin(a) * 108); ctx.stroke();
   }
-  ctx.fillStyle = '#080f10'; // 两侧的石柱：把画面框住，也提醒这里是人工凿出来的
+  ctx.fillStyle = '#0b0b0c'; // 两侧的石柱：把画面框住，也提醒这里是人工凿出来的
   ctx.fillRect(-4, 0, 16, PANEL_Y); ctx.fillRect(W - 14, 0, 18, PANEL_Y);
   ctx.fillStyle = 'rgba(110,180,170,0.05)';
   ctx.fillRect(12, 0, 1, PANEL_Y); ctx.fillRect(W - 15, 0, 1, PANEL_Y);
   for (const g of bg.grit) { ctx.fillStyle = `rgba(150,200,190,${g.a})`; ctx.fillRect(g.x, g.y, 1, 1); }
   // 地面：这一层的地是铺过石板的（地图里就是 flagstone），画几道接缝把「人工凿出来」讲清楚
   const fl = ctx.createLinearGradient(0, hz, 0, PANEL_Y);
-  fl.addColorStop(0, '#14201f'); fl.addColorStop(1, '#0a1213');
+  fl.addColorStop(0, '#232425'); fl.addColorStop(1, '#111112');
   ctx.fillStyle = fl; ctx.fillRect(-4, hz, W + 8, PANEL_Y - hz + 6);
   ctx.fillStyle = 'rgba(120,200,186,0.07)'; ctx.fillRect(-4, hz, W + 8, 1);
   ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -224,7 +228,7 @@ function drawDeep(ctx, W, bg, t) {
 function drawShrine(ctx, W, bg, t) {
   const hz = HZ.shrine;
   const sky = ctx.createLinearGradient(0, 0, 0, hz);
-  sky.addColorStop(0, '#05060f'); sky.addColorStop(0.6, '#0d1122'); sky.addColorStop(1, '#1e2237');
+  sky.addColorStop(0, '#070610'); sky.addColorStop(0.6, '#100f24'); sky.addColorStop(1, '#241f3b');
   fillAll(ctx, W, 0, hz, sky);
   // 星：每颗自己的周期（2.2–4.8 秒）与相位，明暗差只有 0.16–0.22，慢到像在呼吸而不是在闪
   for (const s of bg.stars) {
@@ -246,14 +250,14 @@ function drawShrine(ctx, W, bg, t) {
   for (let k = -6; k <= 6; k++) { const w = Math.round(Math.sqrt(Math.max(0, 36 - k * k))); ctx.fillRect(MX - w, MY + k, w * 2, 1); }
   ctx.fillStyle = 'rgba(120,134,168,0.5)';
   for (let k = -6; k <= 2; k++) { const w = Math.round(Math.sqrt(Math.max(0, 36 - k * k))); ctx.fillRect(MX - w + 1, MY + k, 3, 1); } // 月面的暗部
-  ridge(ctx, W, hz, RIDGE_TAIWU, '#0a0d18', 2); // 大武山的稜线
-  ctx.fillStyle = 'rgba(120,140,190,0.055)'; // 山脚下压一层夜雾，把立石和稜线分开
+  ridge(ctx, W, hz, RIDGE_TAIWU, '#0c0b18', 2); // 大武山的稜线
+  ctx.fillStyle = 'rgba(150,132,196,0.055)'; // 山脚下压一层夜雾，把立石和稜线分开
   for (let i = 0; i < 5; i++) ctx.fillRect(-4, hz - 7 + i, W + 8, 1);
   fillGround(ctx, W, hz, '#161425'); // 夯实的土地：先铺地，立石才好站在上头（而不是被地面切掉脚）
   // 立石：围成一圈的石柱。朝月亮那一侧留一条窄边光，其余全是剪影
   for (const m of bg.stones) {
-    ctx.fillStyle = '#151a28'; ctx.fillRect(m.x, hz - m.h, m.w, m.h + 10);
-    ctx.fillStyle = '#333b55';
+    ctx.fillStyle = '#191828'; ctx.fillRect(m.x, hz - m.h, m.w, m.h + 10);
+    ctx.fillStyle = '#3a3757';
     ctx.fillRect(m.x + m.w / 2 < MX ? m.x + m.w - 1 : m.x, hz - m.h, 1, m.h + 10);
     ctx.fillRect(m.x, hz - m.h, m.w, 1);
   }
@@ -282,8 +286,24 @@ function drawFallback(ctx, W) {
   for (let i = 0; i < 5; i++) ctx.fillRect(0, PANEL_Y - 36 + i * 7, W, 1);
 }
 
+// ---- 区域色调：和地图那边对上 ----
+// FieldScene 给每张地图蒙了一层 multiply 色调（村庄暖黄、洞窟冷蓝、祭场夜紫），
+// 战斗背景却是自成一套的配色，于是「在冷蓝的洞里走着走着遇敌」会切进一片暖褐色，色温跳一下。
+// 这里用同一种做法、同一组颜色，让两边落在同一个色系里：
+//   plains ← village / overworld，cave ← cave_1，deep ← cave_2，shrine ← cave_3
+// 用 multiply（正片叠底）而不是蒙一层半透明色：蒙色会把暗部提亮成灰，洞窟会糊成一片雾。
+// 色调是常数、不含时间项 —— 结构上就不可能闪。
+// 强度比地图那边低一档：地图有暗角托底，战斗画面没有，照抄 0.28 / 0.34 会把背景压得发闷。
+const TONE = {
+  plains: { c: '#ffdfad', a: 0.14 }, // village(#ffd9a2 .16) 与 overworld(#ffe6bb .11) 的折中：两张地图共用这一套背景
+  cave:   { c: '#7d9ec2', a: 0.26 }, // cave_1：这套原本是暖褐色，色温跳得最凶，要的就是这一层
+  deep:   { c: '#6f92c0', a: 0.22 }, // cave_2：本来就是冷色，点到为止，压太狠会吃掉磷光石
+  shrine: { c: '#8d7fc6', a: 0.20 }, // cave_3：夜色本就暗，只把蓝夜往紫里推一点
+};
+
 // bg 由 makeBackdrop 生成（缺省时退回通用背景），t 是战斗经过的秒数。
-// save/restore 包起来：背景改了 fillStyle / strokeStyle / lineWidth，不能漏给后面画敌人的代码。
+// save/restore 包起来：背景改了 fillStyle / strokeStyle / lineWidth / 合成模式，
+// 不能漏给后面画敌人的代码（restore 会把 globalAlpha 与 globalCompositeOperation 一起还原）。
 export function drawBackground(ctx, W, bg = null, t = 0) {
   ctx.save();
   if (bg?.kind === 'plains') drawPlains(ctx, W, bg, t);
@@ -291,6 +311,13 @@ export function drawBackground(ctx, W, bg = null, t = 0) {
   else if (bg?.kind === 'deep') drawDeep(ctx, W, bg, t);
   else if (bg?.kind === 'shrine') drawShrine(ctx, W, bg, t);
   else drawFallback(ctx, W);
+  const tone = TONE[bg?.kind];
+  if (tone) {
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.globalAlpha = tone.a;
+    ctx.fillStyle = tone.c;
+    ctx.fillRect(-4, -4, W + 8, PANEL_Y + 8); // 和 fillAll 一样往外多铺：震屏会把画面推开 ±2px
+  }
   ctx.restore();
 }
 
@@ -305,29 +332,77 @@ export function drawEnemyList(ctx, scene) {
   let i = 0;
   for (const [n, c] of groups) {
     const y = PANEL_Y + 8 + i++ * LINE_H;
-    drawText(ctx, n, 8, y);
-    if (c > 1) drawText(ctx, `×${c}`, LEFT_W - 8, y, { align: 'right' });
+    drawText(ctx, n, 8, y, { color: UI.text });
+    if (c > 1) drawText(ctx, `×${c}`, LEFT_W - 8, y, { align: 'right', color: UI.dim }); // 只数几只，是补充信息，别和名字抢
   }
 }
 
+// ============ 队伍状态栏 ============
+// 和菜单里的队伍面板同一套语汇：数字右对齐到固定竖线、下面压 HP/MP 横条、选中整行铺底。
+// 但这块面板只有 144×72，菜单那边光一个人就占 176×52，所以是重新量过的，不是照抄：
+//   · 去掉 "HP" / "MP" 字样。两个标签要 28px，而一整组 "188/188" 也才 42px——
+//     标签换不来信息量。哪一栏是什么改由颜色和位置说：左边绿条是 HP、右边青条是 MP，
+//     顺序与配色都跟菜单一致（UI.good / UI.cool），玩家在菜单里已经学过一次了。
+//   · 「轮到谁」从「名字变金」改成菜单那种整行铺底（drawHighlight）。
+//     名字的颜色就腾出来专讲濒死，不用再和「轮到谁」抢同一个位置。
+//   · 人与人之间不画 drawDivider：一行 14px，再插 2px 分隔线就摆不下四个人；
+//     每条横条自带的 1px 暗下沿已经在行与行之间划了一道，够用了。
+const ROW_H = 14;   // 12px 字 + 3px 横条 = 15px，压到 14px 才塞得进 72px 的面板。
+                    // 少掉的那 1px 是横条的暗下沿与下一行字顶相接，正好当行分隔线用
+const BAR_DY = 11;  // 横条相对该行文字的偏移：字的墨迹到 y+10 为止，紧接着起条
+const COL_GAP = 6;  // HP 与 MP 两栏之间的留白
+// 摆不下所有状态标签时的取舍顺序：先保住「最影响这一回合该怎么下令」的那个。
+// （眠＝这回合根本动不了 > 毒＝在掉血 > 盲＝会打空 > 护＝好事，晚一步知道也不亏）
+const TAG_PRIO = { 眠: 0, 毒: 1, 盲: 2, 护: 3 };
+
 export function drawPartyStatus(ctx, scene) {
-  const x0 = LEFT_W;
-  scene.party.forEach((p, i) => {
-    const y = PANEL_Y + 8 + i * LINE_H;
-    const tags = statusTags(p.status);
-    const col = !p.alive ? '#6b6858' : scene.current === p ? '#e6c46a' : '#fff';
-    // 濒死：HP 不到四分之一。名字与 HP 一起转告警色——只有数字变红太容易被漏看。
-    // 正在下令的人保留暗金高亮（那是「轮到谁」的唯一提示），红色让给 HP 那一栏说。
-    const low = p.alive && p.hp * 4 <= p.maxHp;
-    drawText(ctx, p.name, x0 + 8, y, { color: low && scene.current !== p ? '#c8705a' : col });
-    tags.slice(0, 2).forEach((t, k) => drawText(ctx, t.short, x0 + 42 + k * 8, y, { color: t.color })); // 状态标签：毒 眠 盲 护
-    drawText(ctx, 'HP', x0 + 60, y, { color: low ? '#c8705a' : '#8a8468' });
-    drawText(ctx, String(p.hp), x0 + 98, y, { align: 'right', color: low ? '#c8705a' : col });
-    drawText(ctx, 'MP', x0 + 104, y, { color: '#8a8468' });
-    drawText(ctx, String(p.mp), x0 + 136, y, { align: 'right', color: col });
-    if (scene.mode === 'atb') {
-      ctx.fillStyle = '#2a2a4a'; ctx.fillRect(x0 + 8, y + 11, 40, 1);
-      ctx.fillStyle = p.atb >= 100 ? '#e6c46a' : '#8fb9a8'; ctx.fillRect(x0 + 8, y + 11, Math.round(40 * p.atb / 100), 1);
+  const W = scene.game?.W || 256;
+  const x0 = LEFT_W, left = x0 + 8, right = W - 8;
+  const party = scene.party;
+  // 四个人共用同一组右对齐竖线——这正是 drawRatio 的用意：数字落在同一条线上，
+  // 扫一眼就能比谁血少，而不是像从前那样每行各排各的。
+  // 竖线的位置按「全队最宽的那组数字」算出来，所以有人升到三位数 MP 也只是整体左移，
+  // 不会某一行突然把别人挤歪（写死 x 就会：一到三位数就串栏）。
+  const hpTexts = party.map(p => `${p.hp}/${p.maxHp}`);
+  const mpTexts = party.map(p => (p.maxMp > 0 ? `${p.mp}/${p.maxMp}` : '—'));
+  const hpW = Math.max(...hpTexts.map(s => measure(ctx, s)));
+  const mpW = Math.max(...mpTexts.map(s => measure(ctx, s)));
+  const mpR = right, hpR = mpR - mpW - COL_GAP;
+  const hpX = hpR - hpW, mpX = mpR - mpW;   // 两栏的左缘 = 两条横条的起点
+  const nameEnd = hpX - 4;                  // 名字 + 状态标签的右界
+  party.forEach((p, i) => {
+    const y = PANEL_Y + 8 + i * ROW_H;
+    const dead = !p.alive;
+    const low = !dead && p.hp * 4 <= p.maxHp; // 濒死：HP 不到四分之一
+    const col = dead ? UI.gray : UI.text;
+    const warn = dead ? UI.gray : low ? UI.danger : UI.text;
+    // 轮到谁下令：铺整行底色（和菜单选中同一个视觉）。比「名字变金」好认——
+    // 名字变金和濒死变红会争同一个像素，铺底则是另一个图层，两件事可以同时说。
+    if (scene.current === p) drawHighlight(ctx, x0 + 5, y - 2, W - x0 - 10, 13);
+    // 名字：濒死时和 HP 一起转告警色，只有数字变红太容易被漏看
+    drawText(ctx, p.name, left, y, { color: warn });
+    // 状态标签：按实际量得的宽度往后排，排不下就不排。
+    // 从前是固定 8px 步进，而标签是 12px 宽的汉字——两个标签必定互相咬字，还会咬到 HP 那一栏。
+    // 名字与标签之间留 3px、标签彼此留 1px：正好够二十级左右的常见宽度塞下两个标签
+    // （标签是 12px 的汉字，留 4px 就只剩一个位置了）。标签本来就各有各的颜色，挨紧也分得开。
+    let tx = left + measure(ctx, p.name) + 3;
+    if (!dead) for (const t of [...statusTags(p.status)].sort((a, b) => (TAG_PRIO[a.short] ?? 9) - (TAG_PRIO[b.short] ?? 9))) {
+      const w = measure(ctx, t.short);
+      if (tx + w > nameEnd) break;
+      drawText(ctx, t.short, tx, y, { color: t.color });
+      tx += w + 1;
     }
+    // HP / MP：数字右对齐到竖线，横条压在数字正下方、宽度就是那一栏的宽度，
+    // 于是「条的长度」和「数字的位置」讲的是同一件事。
+    drawRatio(ctx, p.hp, p.maxHp, hpR, y, warn);
+    drawGauge(ctx, hpX, y + BAR_DY, hpW, p.hp / p.maxHp, low ? UI.danger : UI.good);
+    if (p.maxMp > 0) {
+      drawRatio(ctx, p.mp, p.maxMp, mpR, y, col);
+      drawGauge(ctx, mpX, y + BAR_DY, mpW, p.mp / p.maxMp, UI.cool);
+    } else drawText(ctx, '—', mpR, y, { align: 'right', color: UI.gray }); // 拳头师/山猎人本来就没 MP，画个空槽会被当成 bug
+    // ATB 槽：原本是裸的 1px 线，和菜单那边的横条完全是两种东西。换成同一个 drawGauge，
+    // 位置就在名字底下、和 HP/MP 条同一条基线。攒满转暗金（＝可以下令了），
+    // 和光标、选中底同色，「该我了」全画面用的是同一个颜色。
+    if (scene.mode === 'atb' && !dead) drawGauge(ctx, left, y + BAR_DY, nameEnd - left, p.atb / 100, p.atb >= 100 ? UI.accent : UI.cool);
   });
 }

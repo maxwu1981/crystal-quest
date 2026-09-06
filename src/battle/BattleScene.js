@@ -2,6 +2,7 @@
 // 调度器同时支持 'turn'（回合制）和 'atb'（FF5 式时间槽），由 config.json 的 battleMode 或 state.settings.battleMode 切换。
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { Menu, drawCursor } from '../ui/Menu.js';
+import { UI } from '../ui/Window.js';
 import { audio } from '../core/audio.js';
 import { makePartyActors, makeEnemyActors } from './actors.js';
 import { decideEnemyAction } from './ai.js';
@@ -16,6 +17,7 @@ import { layersFor } from '../assets/equip.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
+const CHEER_T = 2.6; // 胜利雀跃一个来回的秒数。全项目的规矩是动效周期 ≥1.5 秒
 
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
@@ -274,6 +276,16 @@ export class BattleScene {
     const i = this.party.indexOf(p);
     return 1 + Math.round(0.5 + 0.5 * Math.sin(this.time * Math.PI + i * 1.3));
   }
+  // 胜利雀跃：原本是 `Math.floor(time*3)%2 ? 2 : 0`——每 1/3 秒硬切一次的 2px 方波，
+  // 一个来回只要 0.67 秒，是全项目最快的一个周期，而这个项目被抱怨最多的就是画面在闪。
+  // 改成 2.6 秒一个来回的正弦（和敌人待机呼吸同一个量级），振幅收到 1px，
+  // 并按队列序号错开相位，四个人依次起落像一道波——
+  // 同时跳等于整块画面在上下抖，错开之后才读得出「四个人各自在高兴」。
+  cheerHop(p) {
+    if (!this.won || !p.alive) return 0;
+    const i = this.party.indexOf(p);
+    return Math.round(Math.max(0, Math.sin(this.time * (Math.PI * 2) / CHEER_T - i * (Math.PI / 2))));
+  }
 
   render(ctx) {
     const { W } = this.game;
@@ -293,7 +305,7 @@ export class BattleScene {
       // 原本每秒换 4 次走路帧：站着打架却在原地踏步，而且有几个职业的站立帧与迈步帧朝向
       // 根本不一致（拳头师、符仔仙的「侧面」其实画成了正面），切起来像换了个人在闪。
       // 胜利时的雀跃改成整体上下跳，同样不换帧。
-      const cheer = this.won && p.alive && Math.floor(this.time * 3) % 2 ? 2 : 0;
+      const cheer = this.cheerHop(p);
       const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
       const dx = x - this.lungeOffset(p), dy = y - cheer + this.faintSink(p);
       const tint = this.hitTint(p);
@@ -305,7 +317,7 @@ export class BattleScene {
       const t = this.target.list[this.target.idx];
       const [x, y, w, h] = this.actorRect(t);
       drawCursor(ctx, x - 9, y + h / 2 - 3);
-      drawText(ctx, t.name, x + w / 2, y - 12, { align: 'center', color: '#e6c46a' });
+      drawText(ctx, t.name, x + w / 2, y - 12, { align: 'center', color: UI.accent });
     }
     for (const p of this.popups) {
       const q = 1 - p.t / 0.9, dy = q < 0.35 ? -18 * Math.sin(q / 0.35 * Math.PI / 2) : -18 + (q - 0.35) * 12;
@@ -314,7 +326,7 @@ export class BattleScene {
     ctx.restore();
     drawPanels(ctx, W);
     if (this.phase === 'input' && this.menu) this.menu.render(ctx, { window: false });
-    else if (this.msg) wrapText(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H));
+    else if (this.msg) wrapText(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));
     else drawEnemyList(ctx, this);
     drawPartyStatus(ctx, this);
   }

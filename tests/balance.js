@@ -44,7 +44,8 @@ function scene(data, level, enemyIds, seed, endgame) {
   const st = newGameState(data);
   for (const m of st.party) { m.level = level; const [w, a] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: null }; healFull(m, data); }
   const s = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: false,
-    fx: { add() {} }, popup() {}, center() { return [0, 0]; },
+    // 桩要跟 Effects 的接口一致：少一个 shake，一出会心就抛「不是函数」
+    fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; },
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
     alive: l => l.filter(a => a.alive),
     retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },
