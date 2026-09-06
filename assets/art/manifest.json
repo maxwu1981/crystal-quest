@@ -1,114 +1,116 @@
 {
- "characters": {
-  "talisman": {
-   "down": "char_talisman_down.png",
-   "down_walk": "char_talisman_down_walk.png",
-   "left": "char_talisman_left.png",
-   "up": "char_talisman_up.png",
-   "left_walk": "char_talisman_left_walk.png",
-   "up_walk": "char_talisman_up_walk.png"
+  "characters": {
+    "talisman": {
+      "down": "char_talisman_down.png",
+      "down_walk": "char_talisman_down_walk.png",
+      "left": "char_talisman_left.png",
+      "up": "char_talisman_up.png",
+      "left_walk": "char_talisman_left_walk.png",
+      "up_walk": "char_talisman_up_walk.png"
+    },
+    "general": {
+      "down": "char_general_down.png",
+      "down_walk": "char_general_down_walk.png",
+      "left": "char_general_left.png",
+      "up": "char_general_up.png",
+      "left_walk": "char_general_left_walk.png",
+      "up_walk": "char_general_up_walk.png"
+    },
+    "peddler": {
+      "left": "char_peddler_left.png",
+      "up": "char_peddler_up.png",
+      "down": "char_peddler_down.png",
+      "down_walk": "char_peddler_down_walk.png",
+      "left_walk": "char_peddler_left_walk.png",
+      "up_walk": "char_peddler_up_walk.png"
+    },
+    "hunter": {
+      "down_walk": "char_hunter_down_walk.png",
+      "left": "char_hunter_left.png",
+      "left_walk": "char_hunter_left_walk.png",
+      "up": "char_hunter_up.png",
+      "down": "char_hunter_down.png",
+      "up_walk": "char_hunter_up_walk.png"
+    },
+    "boxer": {
+      "down": "char_boxer_down.png",
+      "down_walk": "char_boxer_down_walk.png",
+      "left": "char_boxer_left.png",
+      "left_walk": "char_boxer_left_walk.png",
+      "up": "char_boxer_up.png",
+      "up_walk": "char_boxer_up_walk.png"
+    },
+    "herbwife": {
+      "down": "char_herbwife_down.png",
+      "down_walk": "char_herbwife_down_walk.png",
+      "left": "char_herbwife_left.png",
+      "left_walk": "char_herbwife_left_walk.png",
+      "up": "char_herbwife_up.png",
+      "up_walk": "char_herbwife_up_walk.png"
+    },
+    "man": {
+      "down": "char_man_down.png"
+    },
+    "woman": {
+      "down": "char_woman_down.png"
+    },
+    "elder": {
+      "down": "char_elder_down.png"
+    },
+    "kid": {
+      "down": "char_kid_down.png"
+    },
+    "merchant": {
+      "down": "char_merchant_down.png"
+    },
+    "innkeeper": {
+      "down": "char_innkeeper_down.png"
+    },
+    "guard": {
+      "down": "char_guard_down.png"
+    }
   },
-  "general": {
-   "down": "char_general_down.png",
-   "down_walk": "char_general_down_walk.png",
-   "left": "char_general_left.png",
-   "up": "char_general_up.png",
-   "left_walk": "char_general_left_walk.png",
-   "up_walk": "char_general_up_walk.png"
+  "enemies": {
+    "bee": "enemy_bee.png",
+    "goblin": "enemy_goblin.png",
+    "mandrake": "enemy_mandrake.png",
+    "slime": "enemy_slime.png",
+    "wolf": "enemy_wolf.png",
+    "bat": "enemy_bat.png",
+    "darkslime": "enemy_darkslime.png",
+    "ghost": "enemy_ghost.png",
+    "knight": "enemy_knight.png",
+    "skeleton": "enemy_skeleton.png",
+    "tigergran": "enemy_tigergran.png",
+    "stinkbug": "enemy_stinkbug.png",
+    "muntjac": "enemy_muntjac.png"
   },
-  "peddler": {
-   "left": "char_peddler_left.png",
-   "up": "char_peddler_up.png",
-   "down": "char_peddler_down.png",
-   "down_walk": "char_peddler_down_walk.png",
-   "left_walk": "char_peddler_left_walk.png",
-   "up_walk": "char_peddler_up_walk.png"
+  "tiles": {
+    "cave_floor": "tile_cave_floor.png",
+    "cave_wall": "tile_cave_wall.png",
+    "grass": "tile_grass.png",
+    "path": "tile_path.png",
+    "water": "tile_water.png",
+    "forest": "tile_forest.png",
+    "mountain": "tile_mountain.png",
+    "tree": "tile_tree.png",
+    "roof": "tile_roof.png",
+    "wall": "tile_wall.png",
+    "door": "tile_door.png",
+    "floor": "tile_floor.png",
+    "sand": "tile_sand.png",
+    "chest": "tile_chest.png",
+    "chest_open": "tile_chest_open.png",
+    "crystal": "tile_crystal.png",
+    "stairs_down": "tile_stairs_down.png",
+    "stairs_up": "tile_stairs_up.png",
+    "bed": "tile_bed.png",
+    "bridge": "tile_bridge.png",
+    "cave_entrance": "tile_cave_entrance.png",
+    "counter": "tile_counter.png",
+    "town": "tile_town.png",
+    "glowstone": "tile_glowstone.png",
+    "flagstone": "tile_flagstone.png"
   },
-  "hunter": {
-   "down_walk": "char_hunter_down_walk.png",
-   "left": "char_hunter_left.png",
-   "left_walk": "char_hunter_left_walk.png",
-   "up": "char_hunter_up.png",
-   "down": "char_hunter_down.png",
-   "up_walk": "char_hunter_up_walk.png"
-  },
-  "boxer": {
-   "down": "char_boxer_down.png",
-   "down_walk": "char_boxer_down_walk.png",
-   "left": "char_boxer_left.png",
-   "left_walk": "char_boxer_left_walk.png",
-   "up": "char_boxer_up.png",
-   "up_walk": "char_boxer_up_walk.png"
-  },
-  "herbwife": {
-   "down": "char_herbwife_down.png",
-   "down_walk": "char_herbwife_down_walk.png",
-   "left": "char_herbwife_left.png",
-   "left_walk": "char_herbwife_left_walk.png",
-   "up": "char_herbwife_up.png",
-   "up_walk": "char_herbwife_up_walk.png"
-  },
-  "man": {
-   "down": "char_man_down.png"
-  },
-  "woman": {
-   "down": "char_woman_down.png"
-  },
-  "elder": {
-   "down": "char_elder_down.png"
-  },
-  "kid": {
-   "down": "char_kid_down.png"
-  },
-  "merchant": {
-   "down": "char_merchant_down.png"
-  },
-  "innkeeper": {
-   "down": "char_innkeeper_down.png"
-  },
-  "guard": {
-   "down": "char_guard_down.png"
-  }
- },
- "enemies": {
-  "bee": "enemy_bee.png",
-  "goblin": "enemy_goblin.png",
-  "mandrake": "enemy_mandrake.png",
-  "slime": "enemy_slime.png",
-  "wolf": "enemy_wolf.png",
-  "bat": "enemy_bat.png",
-  "darkslime": "enemy_darkslime.png",
-  "ghost": "enemy_ghost.png",
-  "knight": "enemy_knight.png",
-  "skeleton": "enemy_skeleton.png",
-  "tigergran": "enemy_tigergran.png"
- },
- "tiles": {
-  "cave_floor": "tile_cave_floor.png",
-  "cave_wall": "tile_cave_wall.png",
-  "grass": "tile_grass.png",
-  "path": "tile_path.png",
-  "water": "tile_water.png",
-  "forest": "tile_forest.png",
-  "mountain": "tile_mountain.png",
-  "tree": "tile_tree.png",
-  "roof": "tile_roof.png",
-  "wall": "tile_wall.png",
-  "door": "tile_door.png",
-  "floor": "tile_floor.png",
-  "sand": "tile_sand.png",
-  "chest": "tile_chest.png",
-  "chest_open": "tile_chest_open.png",
-  "crystal": "tile_crystal.png",
-  "stairs_down": "tile_stairs_down.png",
-  "stairs_up": "tile_stairs_up.png",
-  "bed": "tile_bed.png",
-  "bridge": "tile_bridge.png",
-  "cave_entrance": "tile_cave_entrance.png",
-  "counter": "tile_counter.png",
-  "town": "tile_town.png",
-  "glowstone": "tile_glowstone.png",
-  "flagstone": "tile_flagstone.png"
- },
- "icons": {}
+  "icons": {}
 }

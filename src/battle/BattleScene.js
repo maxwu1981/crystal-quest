@@ -14,7 +14,8 @@ import { settleVictory, renderResult, renderLootCard, renderLevelCard } from './
 import { canUseOn } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { drawArt, artW, artH, tintedSprite, ART } from '../core/draw.js';
-import { layersFor } from '../assets/equip.js';
+import { layersFor, itemIcon } from '../assets/equip.js';
+import { drawMenuIcons, spellIcon, iconGap } from '../menu/icons.js';
 
 const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
 const MSG_LINES = 4;
@@ -162,7 +163,8 @@ export class BattleScene {
   }
   openMagic() {
     const a = this.current, sp = this.game.data.spells;
-    const items = a.spells.map(id => ({ label: sp[id].name, value: id, right: sp[id].mp, disabled: a.mp < sp[id].mp }));
+    const gap = iconGap();
+    const items = a.spells.map(id => ({ label: gap + sp[id].name, value: id, right: sp[id].mp, disabled: a.mp < sp[id].mp }));
     if (!items.length) items.push({ label: '（没有魔法）', disabled: true });
     this.sub = 'magic'; this.target = null;
     this.menu = this.menuAt(items, it => {
@@ -175,7 +177,8 @@ export class BattleScene {
   battleItems() { return this.game.state.inventory.filter(s => this.game.data.items[s.id]?.battle); }
   openItems() {
     const data = this.game.data;
-    const items = this.battleItems().map(s => ({ label: data.items[s.id].name, value: s.id, right: `×${s.qty}` }));
+    const gap = iconGap();
+    const items = this.battleItems().map(s => ({ label: gap + data.items[s.id].name, value: s.id, right: `×${s.qty}` }));
     this.sub = 'item'; this.target = null;
     this.menu = this.menuAt(items, it => {
       const item = data.items[it.value], list = this.party.filter(p => canUseOn(item, p));
@@ -405,7 +408,15 @@ export class BattleScene {
     }
     ctx.restore();
     drawPanels(ctx, W);
-    if (this.phase === 'input' && this.menu) this.menu.render(ctx, { window: false });
+    if (this.phase === 'input' && this.menu) {
+      this.menu.render(ctx, { window: false });
+      // 指令窗行高 12，比菜单的 13 矮，图标按 10px 画才不会和上下行贴死。
+      // 魔法用属性图标（和打出去的特效同色），道具用和村里菜单同一套道具图标——
+      // 战斗中最需要「扫一眼就知道这是什么」的地方，反而一直只有光秃秃的文字。
+      const data = this.game.data;
+      if (this.sub === 'magic') drawMenuIcons(ctx, this.menu, it => it.value ? spellIcon(data.spells[it.value]) : null, 10);
+      else if (this.sub === 'item') drawMenuIcons(ctx, this.menu, it => it.value ? itemIcon(it.value, data.items[it.value]) : null, 10);
+    }
     else if (this.msg) wrapMsg(ctx, this.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));
     else drawEnemyList(ctx, this);
     drawPartyStatus(ctx, this);

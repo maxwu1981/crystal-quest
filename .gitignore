@@ -4,3 +4,4 @@ node_modules/
 .gemini_key
 assets/art/raw/
 dist/
+tools/_cap/

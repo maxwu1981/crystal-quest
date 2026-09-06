@@ -42,15 +42,49 @@ def is_char(name):
     return name.startswith('char_')
 
 
-def target_size(name, art):
-    lw, lh = LOGICAL_CHAR if is_char(name) else LOGICAL_TILE
+def is_enemy(name):
+    return name.startswith('enemy_')
+
+
+# 怪物没有统一尺寸：山猪 44 逻辑像素宽、乌火 64、椿象 36，各是各的。
+# 而战斗画面用 `artW = img.width / ART` 反推逻辑宽度，所以怪物图的像素尺寸
+# 必须是「该怪的逻辑尺寸 × ART」。早先这里把所有非角色资源一律当瓦片（16×16）算，
+# 真跑起来会把每只怪压成三分之一大，且全程不报错——切 ART 之前必须先修掉。
+#
+# 每只怪的逻辑尺寸没有单独记在哪，但**现有的游戏美术**就是权威：
+# 拿 assets/art/ 里那张的像素尺寸除以当前 ART 就是逻辑尺寸。
+# 这要求在改写 draw.js 之前读，所以 current_art() 在 main 开头就取好了。
+def enemy_logical(name, cur_art):
+    cur = os.path.join(ART_DIR, name)
+    if cur_art and os.path.exists(cur):
+        w, h, _ = pixel.decode_png(open(cur, 'rb').read())
+        if w % cur_art == 0 and h % cur_art == 0:
+            return w // cur_art, h // cur_art
+    return None
+
+
+def target_size(name, art, cur_art=None):
+    if is_char(name):
+        lw, lh = LOGICAL_CHAR
+    elif is_enemy(name):
+        lg = enemy_logical(name, cur_art)
+        if lg is None:
+            # 没有现成的游戏图可参照（全新的怪，母版刚出）——按母版的长边折算成
+            # 一只中等体型的怪（44 逻辑像素，山猪那一档），保持母版的长宽比。
+            src = os.path.join(MASTER, name)
+            w, h, _ = pixel.decode_png(open(src, 'rb').read())
+            k = 44 / max(w, h)
+            lg = (max(1, round(w * k)), max(1, round(h * k)))
+        lw, lh = lg
+    else:
+        lw, lh = LOGICAL_TILE
     return lw * art, lh * art
 
 
-def derive(name, art, dry=False):
+def derive(name, art, dry=False, cur_art=None):
     src = os.path.join(MASTER, name)
     w, h, px = pixel.decode_png(open(src, 'rb').read())
-    tw, th = target_size(name, art)
+    tw, th = target_size(name, art, cur_art)
     if (w, h) == (tw, th):
         return 'already'
     # 母版已经抠好底、裁好框，这里只做等比缩小，不再走一遍抠底/描边
@@ -140,7 +174,7 @@ def main():
         if f not in used: continue
         if f in stale_names and not a.force:
             skipped += 1; continue        # 过期母版一律不派生，宁可保持旧精度也不能退回旧设计
-        r = derive(f, a.art, a.dry)
+        r = derive(f, a.art, a.dry, cur)
         if r != 'already': n += 1
     print(f'{"（试跑）" if a.dry else ""}从母版派生了 {n} 张' + (f'，跳过 {skipped} 张过期母版' if skipped else ''))
     if not a.dry:

@@ -15,6 +15,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 ART = os.path.join(ROOT, 'assets', 'art')
 MASTER = os.path.join(ART, 'master')
+CAP = os.path.join(ROOT, 'tools', '_cap')   # 画面截图落脚处（不进版本库）
 MANIFEST = os.path.join(ART, 'manifest.json')
 SAFE = re.compile(r'^[A-Za-z0-9_]+\.png$')  # 只允许简单文件名，杜绝路径穿越
 
@@ -33,6 +34,30 @@ def register(m, kind, cid, view, fname):
 
 
 class Handler(BaseHTTPRequestHandler):
+    # 图片是以 base64 塞在 URL 里传进来的（见 /px），而 http.server 把请求行长度
+    # 死写成 65536——512×512 的怪物母版编码出来有 100KB，直接被判 414。
+    # 标准库没留调节的口子，只能把 handle_one_request 抄一份、把读取上限放大。
+    # 这里只改这一个数字，其余行为与基类完全一致。
+    MAX_REQUEST_LINE = 8 << 20   # 8MB，够 1024×1024 的母版
+
+    def handle_one_request(self):
+        try:
+            self.raw_requestline = self.rfile.readline(self.MAX_REQUEST_LINE + 1)
+            if len(self.raw_requestline) > self.MAX_REQUEST_LINE:
+                self.requestline = ''; self.request_version = ''; self.command = ''
+                self.send_error(414); return
+            if not self.raw_requestline:
+                self.close_connection = True; return
+            if not self.parse_request(): return
+            mname = 'do_' + self.command
+            if not hasattr(self, mname):
+                self.send_error(501, 'Unsupported method (%r)' % self.command); return
+            getattr(self, mname)()
+            self.wfile.flush()
+        except TimeoutError as e:
+            self.log_error('Request timed out: %r', e)
+            self.close_connection = True
+
     def cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
@@ -52,6 +77,25 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # /px?f=<文件名>&d=<base64 PNG>：给浏览器用 <img> 发数据用的（img 请求不受 CORS 限制，
         # 而 fetch 会被 Chrome 的 Private Network Access 挡掉）。收到就写盘，回一张 1x1 GIF。
+        # /cap?f=<名字>&d=<base64 PNG>：把游戏画面的截图落到 tools/_cap/。
+        # 和 /px 走同一条通道，但写到临时目录、不进 assets——它是给「肉眼复核」用的：
+        # 改完 UI 在浏览器里截一块画布传过来看一眼，比反复描述靠谱。
+        if self.path.startswith('/cap?'):
+            from urllib.parse import urlparse, parse_qs, unquote
+            q = parse_qs(urlparse(self.path).query)
+            fname = unquote(q.get('f', [''])[0]); data = unquote(q.get('d', [''])[0])
+            try:
+                if not SAFE.match(fname): raise ValueError('bad name ' + fname)
+                raw = base64.b64decode(data.split(',')[-1])
+                os.makedirs(CAP, exist_ok=True)
+                open(os.path.join(CAP, fname), 'wb').write(raw)
+                print(f'  <- _cap/{fname}  {len(raw)} bytes')
+            except Exception as e:
+                print('  !! cap', e)
+            self.send_response(200); self.cors()
+            self.send_header('Content-Type', 'image/gif'); self.end_headers()
+            self.wfile.write(base64.b64decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'))
+            return
         if self.path.startswith('/px?'):
             from urllib.parse import urlparse, parse_qs, unquote
             q = parse_qs(urlparse(self.path).query)

@@ -1,435 +1,433 @@
 {
- "goblin": {
-  "name": "魔神仔",
-  "sprite": "goblin",
-  "hp": 29,
-  "mp": 0,
-  "atk": 9,
-  "def": 2,
-  "acc": 20,
-  "eva": 6,
-  "spd": 5,
-  "mdef": 4,
-  "crit": 3,
-  "exp": 12,
-  "gold": 8,
-  "weak": [],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic"
- },
- "wolf": {
-  "name": "山猪",
-  "sprite": "wolf",
-  "hp": 45,
-  "mp": 0,
-  "atk": 12,
-  "def": 3,
-  "acc": 28,
-  "eva": 14,
-  "spd": 10,
-  "mdef": 4,
-  "crit": 6,
-  "exp": 22,
-  "gold": 12,
-  "weak": [
-   "fire",
-   "dark"
-  ],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic"
- },
- "slime": {
-  "name": "海漂",
-  "sprite": "slime",
-  "hp": 34,
-  "mp": 0,
-  "atk": 7,
-  "def": 7,
-  "acc": 14,
-  "eva": 2,
-  "spd": 3,
-  "mdef": 10,
-  "crit": 0,
-  "exp": 10,
-  "gold": 6,
-  "weak": [
-   "thunder"
-  ],
-  "resist": [
-   "fire"
-  ],
-  "immune": [],
-  "spells": [],
-  "ai": "basic"
- },
- "bat": {
-  "name": "食果蝠",
-  "sprite": "bat",
-  "hp": 39,
-  "mp": 0,
-  "atk": 13,
-  "def": 3,
-  "acc": 30,
-  "eva": 22,
-  "spd": 14,
-  "mdef": 4,
-  "crit": 5,
-  "exp": 25,
-  "gold": 14,
-  "weak": [
-   "thunder"
-  ],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic",
-  "onHit": {
-   "status": "blind",
-   "chance": 0.25
+  "goblin": {
+    "name": "魔神仔",
+    "sprite": "goblin",
+    "hp": 29,
+    "mp": 0,
+    "atk": 9,
+    "def": 2,
+    "acc": 20,
+    "eva": 6,
+    "spd": 5,
+    "mdef": 4,
+    "crit": 3,
+    "exp": 12,
+    "gold": 8,
+    "weak": [],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "wolf": {
+    "name": "山猪",
+    "sprite": "wolf",
+    "hp": 45,
+    "mp": 0,
+    "atk": 12,
+    "def": 3,
+    "acc": 28,
+    "eva": 14,
+    "spd": 10,
+    "mdef": 4,
+    "crit": 6,
+    "exp": 22,
+    "gold": 12,
+    "weak": [
+      "fire",
+      "dark"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "slime": {
+    "name": "海漂",
+    "sprite": "slime",
+    "hp": 34,
+    "mp": 0,
+    "atk": 7,
+    "def": 7,
+    "acc": 14,
+    "eva": 2,
+    "spd": 3,
+    "mdef": 10,
+    "crit": 0,
+    "exp": 10,
+    "gold": 6,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [
+      "fire"
+    ],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "bat": {
+    "name": "食果蝠",
+    "sprite": "bat",
+    "hp": 39,
+    "mp": 0,
+    "atk": 13,
+    "def": 3,
+    "acc": 30,
+    "eva": 22,
+    "spd": 14,
+    "mdef": 4,
+    "crit": 5,
+    "exp": 25,
+    "gold": 14,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "blind",
+      "chance": 0.25
+    }
+  },
+  "darkslime": {
+    "name": "乌泥",
+    "sprite": "darkslime",
+    "hp": 60,
+    "mp": 0,
+    "atk": 11,
+    "def": 10,
+    "acc": 16,
+    "eva": 2,
+    "spd": 4,
+    "mdef": 16,
+    "crit": 0,
+    "exp": 35,
+    "gold": 20,
+    "weak": [
+      "thunder",
+      "light"
+    ],
+    "resist": [
+      "fire"
+    ],
+    "immune": [],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "poison",
+      "chance": 0.3
+    }
+  },
+  "skeleton": {
+    "name": "好兄弟",
+    "sprite": "skeleton",
+    "hp": 82,
+    "mp": 0,
+    "atk": 16,
+    "def": 8,
+    "acc": 34,
+    "eva": 6,
+    "spd": 6,
+    "mdef": 6,
+    "crit": 6,
+    "exp": 45,
+    "gold": 30,
+    "weak": [
+      "fire",
+      "light"
+    ],
+    "resist": [],
+    "immune": [
+      "poison",
+      "sleep"
+    ],
+    "spells": [],
+    "ai": "basic"
+  },
+  "knight": {
+    "name": "乌火",
+    "sprite": "knight",
+    "hp": 1250,
+    "mp": 200,
+    "atk": 30,
+    "def": 16,
+    "acc": 60,
+    "eva": 10,
+    "spd": 12,
+    "mdef": 14,
+    "int": 14,
+    "crit": 10,
+    "exp": 900,
+    "gold": 1200,
+    "weak": [
+      "light"
+    ],
+    "resist": [
+      "dark"
+    ],
+    "immune": [
+      "sleep",
+      "poison",
+      "blind"
+    ],
+    "spells": [
+      "emberfall",
+      "dark",
+      "sleep"
+    ],
+    "ai": "basic"
+  },
+  "bee": {
+    "name": "虎头蜂",
+    "sprite": "bee",
+    "hp": 31,
+    "mp": 0,
+    "atk": 11,
+    "def": 2,
+    "acc": 30,
+    "eva": 24,
+    "spd": 13,
+    "mdef": 2,
+    "crit": 6,
+    "exp": 18,
+    "gold": 10,
+    "weak": [
+      "fire",
+      "ice"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "poison",
+      "chance": 0.35
+    }
+  },
+  "mandrake": {
+    "name": "芒神",
+    "sprite": "mandrake",
+    "hp": 69,
+    "mp": 12,
+    "atk": 12,
+    "def": 6,
+    "acc": 22,
+    "eva": 4,
+    "spd": 4,
+    "mdef": 8,
+    "int": 6,
+    "crit": 2,
+    "exp": 32,
+    "gold": 18,
+    "weak": [
+      "fire",
+      "dark"
+    ],
+    "resist": [
+      "thunder"
+    ],
+    "immune": [
+      "poison"
+    ],
+    "spells": [
+      "sleep"
+    ],
+    "ai": "basic"
+  },
+  "ghost": {
+    "name": "水鬼",
+    "sprite": "ghost",
+    "hp": 51,
+    "mp": 18,
+    "atk": 12,
+    "def": 4,
+    "acc": 28,
+    "eva": 30,
+    "spd": 9,
+    "mdef": 12,
+    "int": 9,
+    "crit": 4,
+    "exp": 40,
+    "gold": 26,
+    "weak": [
+      "fire",
+      "light"
+    ],
+    "resist": [
+      "ice",
+      "dark"
+    ],
+    "immune": [
+      "poison",
+      "sleep"
+    ],
+    "spells": [
+      "dark"
+    ],
+    "ai": "basic"
+  },
+  "stinkbug": {
+    "name": "荔枝椿象",
+    "hp": 20,
+    "mp": 0,
+    "atk": 8,
+    "def": 3,
+    "acc": 22,
+    "eva": 8,
+    "spd": 7,
+    "mdef": 2,
+    "crit": 2,
+    "exp": 8,
+    "gold": 5,
+    "weak": [
+      "fire",
+      "ice"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "blind",
+      "chance": 0.3
+    }
+  },
+  "muntjac": {
+    "name": "山羌",
+    "hp": 26,
+    "mp": 0,
+    "atk": 10,
+    "def": 2,
+    "acc": 26,
+    "eva": 38,
+    "spd": 16,
+    "mdef": 3,
+    "crit": 4,
+    "exp": 16,
+    "gold": 4,
+    "weak": [
+      "dark"
+    ],
+    "resist": [],
+    "immune": [],
+    "spells": [],
+    "ai": "basic"
+  },
+  "viper": {
+    "name": "龟壳花",
+    "sprite": "wolf",
+    "hp": 33,
+    "mp": 0,
+    "atk": 14,
+    "def": 4,
+    "acc": 34,
+    "eva": 18,
+    "spd": 12,
+    "mdef": 4,
+    "crit": 18,
+    "exp": 26,
+    "gold": 13,
+    "weak": [
+      "ice"
+    ],
+    "resist": [],
+    "immune": [
+      "poison"
+    ],
+    "spells": [],
+    "ai": "basic",
+    "onHit": {
+      "status": "poison",
+      "chance": 0.5
+    }
+  },
+  "tigergran": {
+    "name": "虎姑婆",
+    "hp": 150,
+    "mp": 24,
+    "atk": 21,
+    "def": 10,
+    "acc": 42,
+    "eva": 8,
+    "spd": 7,
+    "mdef": 10,
+    "int": 10,
+    "crit": 8,
+    "exp": 72,
+    "gold": 44,
+    "weak": [
+      "fire",
+      "dark"
+    ],
+    "resist": [],
+    "immune": [
+      "sleep",
+      "blind"
+    ],
+    "spells": [
+      "sleep"
+    ],
+    "ai": "basic"
+  },
+  "paperkid": {
+    "name": "纸糊童子",
+    "sprite": "goblin",
+    "hp": 30,
+    "mp": 20,
+    "atk": 8,
+    "def": 3,
+    "acc": 24,
+    "eva": 10,
+    "spd": 9,
+    "mdef": 6,
+    "int": 8,
+    "crit": 2,
+    "exp": 16,
+    "gold": 10,
+    "weak": [
+      "fire",
+      "light"
+    ],
+    "resist": [],
+    "immune": [
+      "poison",
+      "sleep",
+      "blind"
+    ],
+    "spells": [
+      "cure"
+    ],
+    "ai": "basic"
+  },
+  "earthox": {
+    "name": "地牛",
+    "sprite": "wolf",
+    "hp": 175,
+    "mp": 0,
+    "atk": 23,
+    "def": 24,
+    "acc": 40,
+    "eva": 0,
+    "spd": 3,
+    "mdef": 6,
+    "crit": 2,
+    "exp": 105,
+    "gold": 68,
+    "weak": [
+      "thunder"
+    ],
+    "resist": [
+      "fire",
+      "ice"
+    ],
+    "immune": [
+      "poison",
+      "blind"
+    ],
+    "spells": [],
+    "ai": "basic"
   }
- },
- "darkslime": {
-  "name": "乌泥",
-  "sprite": "darkslime",
-  "hp": 60,
-  "mp": 0,
-  "atk": 11,
-  "def": 10,
-  "acc": 16,
-  "eva": 2,
-  "spd": 4,
-  "mdef": 16,
-  "crit": 0,
-  "exp": 35,
-  "gold": 20,
-  "weak": [
-   "thunder",
-   "light"
-  ],
-  "resist": [
-   "fire"
-  ],
-  "immune": [],
-  "spells": [],
-  "ai": "basic",
-  "onHit": {
-   "status": "poison",
-   "chance": 0.3
-  }
- },
- "skeleton": {
-  "name": "好兄弟",
-  "sprite": "skeleton",
-  "hp": 82,
-  "mp": 0,
-  "atk": 16,
-  "def": 8,
-  "acc": 34,
-  "eva": 6,
-  "spd": 6,
-  "mdef": 6,
-  "crit": 6,
-  "exp": 45,
-  "gold": 30,
-  "weak": [
-   "fire",
-   "light"
-  ],
-  "resist": [],
-  "immune": [
-   "poison",
-   "sleep"
-  ],
-  "spells": [],
-  "ai": "basic"
- },
- "knight": {
-  "name": "乌火",
-  "sprite": "knight",
-  "hp": 1250,
-  "mp": 200,
-  "atk": 30,
-  "def": 16,
-  "acc": 60,
-  "eva": 10,
-  "spd": 12,
-  "mdef": 14,
-  "int": 14,
-  "crit": 10,
-  "exp": 900,
-  "gold": 1200,
-  "weak": [
-   "light"
-  ],
-  "resist": [
-   "dark"
-  ],
-  "immune": [
-   "sleep",
-   "poison",
-   "blind"
-  ],
-  "spells": [
-   "emberfall",
-   "dark",
-   "sleep"
-  ],
-  "ai": "basic"
- },
- "bee": {
-  "name": "虎头蜂",
-  "sprite": "bee",
-  "hp": 31,
-  "mp": 0,
-  "atk": 11,
-  "def": 2,
-  "acc": 30,
-  "eva": 24,
-  "spd": 13,
-  "mdef": 2,
-  "crit": 6,
-  "exp": 18,
-  "gold": 10,
-  "weak": [
-   "fire",
-   "ice"
-  ],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic",
-  "onHit": {
-   "status": "poison",
-   "chance": 0.35
-  }
- },
- "mandrake": {
-  "name": "芒神",
-  "sprite": "mandrake",
-  "hp": 69,
-  "mp": 12,
-  "atk": 12,
-  "def": 6,
-  "acc": 22,
-  "eva": 4,
-  "spd": 4,
-  "mdef": 8,
-  "int": 6,
-  "crit": 2,
-  "exp": 32,
-  "gold": 18,
-  "weak": [
-   "fire",
-   "dark"
-  ],
-  "resist": [
-   "thunder"
-  ],
-  "immune": [
-   "poison"
-  ],
-  "spells": [
-   "sleep"
-  ],
-  "ai": "basic"
- },
- "ghost": {
-  "name": "水鬼",
-  "sprite": "ghost",
-  "hp": 51,
-  "mp": 18,
-  "atk": 12,
-  "def": 4,
-  "acc": 28,
-  "eva": 30,
-  "spd": 9,
-  "mdef": 12,
-  "int": 9,
-  "crit": 4,
-  "exp": 40,
-  "gold": 26,
-  "weak": [
-   "fire",
-   "light"
-  ],
-  "resist": [
-   "ice",
-   "dark"
-  ],
-  "immune": [
-   "poison",
-   "sleep"
-  ],
-  "spells": [
-   "dark"
-  ],
-  "ai": "basic"
- },
- "stinkbug": {
-  "name": "荔枝椿象",
-  "sprite": "bee",
-  "hp": 20,
-  "mp": 0,
-  "atk": 8,
-  "def": 3,
-  "acc": 22,
-  "eva": 8,
-  "spd": 7,
-  "mdef": 2,
-  "crit": 2,
-  "exp": 8,
-  "gold": 5,
-  "weak": [
-   "fire",
-   "ice"
-  ],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic",
-  "onHit": {
-   "status": "blind",
-   "chance": 0.3
-  }
- },
- "muntjac": {
-  "name": "山羌",
-  "sprite": "wolf",
-  "hp": 26,
-  "mp": 0,
-  "atk": 10,
-  "def": 2,
-  "acc": 26,
-  "eva": 38,
-  "spd": 16,
-  "mdef": 3,
-  "crit": 4,
-  "exp": 16,
-  "gold": 4,
-  "weak": [
-   "dark"
-  ],
-  "resist": [],
-  "immune": [],
-  "spells": [],
-  "ai": "basic"
- },
- "viper": {
-  "name": "龟壳花",
-  "sprite": "wolf",
-  "hp": 33,
-  "mp": 0,
-  "atk": 14,
-  "def": 4,
-  "acc": 34,
-  "eva": 18,
-  "spd": 12,
-  "mdef": 4,
-  "crit": 18,
-  "exp": 26,
-  "gold": 13,
-  "weak": [
-   "ice"
-  ],
-  "resist": [],
-  "immune": [
-   "poison"
-  ],
-  "spells": [],
-  "ai": "basic",
-  "onHit": {
-   "status": "poison",
-   "chance": 0.5
-  }
- },
- "tigergran": {
-  "name": "虎姑婆",
-  "hp": 150,
-  "mp": 24,
-  "atk": 21,
-  "def": 10,
-  "acc": 42,
-  "eva": 8,
-  "spd": 7,
-  "mdef": 10,
-  "int": 10,
-  "crit": 8,
-  "exp": 72,
-  "gold": 44,
-  "weak": [
-   "fire",
-   "dark"
-  ],
-  "resist": [],
-  "immune": [
-   "sleep",
-   "blind"
-  ],
-  "spells": [
-   "sleep"
-  ],
-  "ai": "basic"
- },
- "paperkid": {
-  "name": "纸糊童子",
-  "sprite": "goblin",
-  "hp": 30,
-  "mp": 20,
-  "atk": 8,
-  "def": 3,
-  "acc": 24,
-  "eva": 10,
-  "spd": 9,
-  "mdef": 6,
-  "int": 8,
-  "crit": 2,
-  "exp": 16,
-  "gold": 10,
-  "weak": [
-   "fire",
-   "light"
-  ],
-  "resist": [],
-  "immune": [
-   "poison",
-   "sleep",
-   "blind"
-  ],
-  "spells": [
-   "cure"
-  ],
-  "ai": "basic"
- },
- "earthox": {
-  "name": "地牛",
-  "sprite": "wolf",
-  "hp": 175,
-  "mp": 0,
-  "atk": 23,
-  "def": 24,
-  "acc": 40,
-  "eva": 0,
-  "spd": 3,
-  "mdef": 6,
-  "crit": 2,
-  "exp": 105,
-  "gold": 68,
-  "weak": [
-   "thunder"
-  ],
-  "resist": [
-   "fire",
-   "ice"
-  ],
-  "immune": [
-   "poison",
-   "blind"
-  ],
-  "spells": [],
-  "ai": "basic"
- }
 }

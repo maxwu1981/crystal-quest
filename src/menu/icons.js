@@ -46,6 +46,51 @@ const SHAPE = {
   },
 };
 
+// ---------- 魔法图标 ----------
+// 战斗里的魔法列表原本只有名字，玩家得记住「落灰」是暗属性、「收惊」是光属性。
+// FF6 在每个魔法前面放一枚属性色的小图标，扫一眼就知道该不该对这只怪用。
+// 颜色沿用 battle/actions.js 的 ELEMENT_COLOR（施法特效也是这套色），
+// 图标和打出去的效果同色，这层对应关系才立得住。
+const ELEM_COLOR = { fire: '#ffb060', thunder: '#ffe98a', ice: '#a8e4ff', dark: '#b28fd0', light: '#fff3c0', poison: '#a678c8' };
+const ELEM_SHAPE = {
+  // 火：一簇往上收的火苗
+  fire(ctx, c) { p(ctx, c, 5, 2, 2, 2); p(ctx, c, 4, 4, 4, 2); p(ctx, c, 3, 6, 6, 3); p(ctx, c, 4, 9, 4, 1); },
+  // 雷：一道折线闪电
+  thunder(ctx, c) { p(ctx, c, 6, 2, 3, 2); p(ctx, c, 5, 4, 3, 2); p(ctx, c, 3, 6, 5, 1); p(ctx, c, 4, 7, 3, 2); p(ctx, c, 3, 9, 2, 1); },
+  // 冰：一枚六角雪花（十字加两撇）
+  ice(ctx, c) { p(ctx, c, 5, 1, 2, 9); p(ctx, c, 2, 5, 8, 2); p(ctx, c, 3, 3, 2, 2); p(ctx, c, 7, 3, 2, 2); p(ctx, c, 3, 7, 2, 2); p(ctx, c, 7, 7, 2, 2); },
+  // 暗：一弯朝右的月牙
+  dark(ctx, c) { p(ctx, c, 3, 2, 4, 2); p(ctx, c, 2, 4, 3, 4); p(ctx, c, 3, 8, 4, 2); },
+  // 光：一颗四芒星
+  light(ctx, c) { p(ctx, c, 5, 1, 2, 10); p(ctx, c, 1, 5, 10, 2); p(ctx, c, 4, 4, 4, 4); },
+  // 毒：沿用状态图标那三颗气泡，同一个概念不画两种样子
+  poison(ctx, c) { SHAPE.poison(ctx, c); },
+  // 治疗：一枚十字（无属性的辅助魔法都走这个）
+  heal(ctx, c) { p(ctx, c, 4, 2, 4, 8); p(ctx, c, 2, 4, 8, 4); },
+  // 无属性攻击/其它辅助：一颗朴素的菱形宝珠
+  none(ctx, c) { p(ctx, c, 5, 2, 2, 8); p(ctx, c, 4, 3, 4, 6); p(ctx, c, 3, 4, 6, 4); p(ctx, c, 2, 5, 8, 2); },
+};
+
+const spellCache = new Map();
+// 一个魔法该用哪枚图标：有属性就用属性的，没属性的按用途分治疗/辅助
+export function spellIcon(sp) {
+  if (!sp) return null;
+  const kind = sp.element && ELEM_SHAPE[sp.element] ? sp.element
+    : (sp.heal || sp.revive) ? 'heal' : 'none';
+  const key = kind;
+  if (!spellCache.has(key)) {
+    const draw = ELEM_SHAPE[kind];
+    const col = ELEM_COLOR[kind] || (kind === 'heal' ? '#9fe6b0' : '#cfc8a8');
+    spellCache.set(key, artCanvas(ICON, ICON, ctx => {
+      for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+        ctx.save(); ctx.translate(dx, dy); draw(ctx, DARK, DARK); ctx.restore();
+      }
+      draw(ctx, col, DARK);
+    }));
+  }
+  return spellCache.get(key);
+}
+
 const statusCache = new Map();
 export function statusIcon(id) {
   if (!statusCache.has(id)) {
@@ -88,7 +133,7 @@ export function deltaArrow(ctx, x, y, up) {
 // ---------- 把图标画进 Menu 的行首 ----------
 // src/ui/Menu.js 不归我改，没法往里加图标支持，于是在外面把行列位置重算一遍。
 // 必须在 menu.render(ctx) 之后调用：scroll 是在 render 里才更新的。
-export function drawMenuIcons(ctx, menu, iconOf) {
+export function drawMenuIcons(ctx, menu, iconOf, size = ICON) {
   const colW = Math.floor((menu.w - menu.pad * 2) / menu.cols);
   const visible = Math.max(1, Math.floor((menu.h - menu.pad * 2) / menu.rowH));
   menu.items.forEach((it, i) => {
@@ -100,7 +145,7 @@ export function drawMenuIcons(ctx, menu, iconOf) {
     const y = menu.y + menu.pad + row * menu.rowH;
     ctx.save();
     if (it.disabled) ctx.globalAlpha = 0.4;   // 用不了的道具连图标一起压暗，和灰掉的文字一致
-    ctx.drawImage(ic, x, y, ICON, ICON);
+    ctx.drawImage(ic, x, y + Math.floor((menu.rowH - size) / 2), size, size);
     ctx.restore();
   });
 }
