@@ -21,17 +21,43 @@ const TIERS = [
                       herbwife: ['iron_staff', 'silk_robe'], talisman: ['iron_staff', 'silk_robe'],
                       general: ['iron_knuckle', 'silk_robe'], peddler: ['steel_sword', 'silk_robe'] } },
 ];
-// 决战装备：玩家把迷宫宝箱都开了才有的配置。只看商店档会严重低估玩家强度，
-// Boss 平衡必须按这一档来算。
-const ENDGAME = {
-  boxer:    ['steel_sword', 'iron_armor'],
-  hunter:   ['harpe', 'bronze_armor'],
-  general:  ['vajra', 'silk_robe'],
-  herbwife: ['caduceus', 'hagoromo'],
-  talisman: ['laevateinn', 'silk_robe'],
-  peddler:  ['ganjiang', 'silk_robe'],
+// Boss 平衡要按玩家**真实可能的装备**算，而不是一个想当然的「决战档」。
+//
+// 原来只有一档 ENDGAME，而且它内部是矛盾的：拳头师穿商店货（钢剑/铁甲），
+// 另外三个人穿神话装。查下来那一档在经济上也不成立——要买的铁甲 434 ＋
+// 青铜甲 222 ＋ 丝绸袍 193 ＝ 849 金，只能打怪赚，打够就已经 10 级了。
+// 于是「6 级 + 决战装备」这个被拿来当平衡基准的状态，**现实中没有玩家会站在那里**。
+//
+// 改成三档真实路线，各自代表一种玩法：
+const LOADOUTS = {
+  // ① 顺路开箱：cave_1 的草薙剑与盖伯尔加就在去 cave_3 的路上，几乎人人会拿
+  onpath: {
+    boxer:    ['kusanagi', 'iron_armor'],
+    hunter:   ['gaebolg', 'bronze_armor'],
+    general:  ['iron_knuckle', 'silk_robe'],
+    herbwife: ['iron_staff', 'silk_robe'],
+    talisman: ['iron_staff', 'silk_robe'],
+    peddler:  ['steel_sword', 'silk_robe'],
+  },
+  // ② 全开箱：迷宫翻遍。注意四个人**都**换成神装——原来只换三个，
+  //    那种半吊子配置没有任何玩家会是那样
+  full: {
+    boxer:    ['kusanagi', 'aegis'],
+    hunter:   ['harpe', 'bronze_armor'],
+    general:  ['vajra', 'silk_robe'],
+    herbwife: ['caduceus', 'hagoromo'],
+    talisman: ['laevateinn', 'silk_robe'],
+    peddler:  ['ganjiang', 'silk_robe'],
+  },
+  // ③ 一个箱都不开：纯靠商店。这是难度的上限，练级派会落在这一档
+  shop: null,   // null = 走 TIERS，按等级取商店档
 };
-const GEAR = (level, endgame) => endgame ? ENDGAME : TIERS.find(t => level <= t.upto).gear;
+const ENDGAME = LOADOUTS.full;   // 兼容旧调用
+const GEAR = (level, mode) => {
+  if (mode === true) return LOADOUTS.full;          // 旧写法
+  const l = mode && LOADOUTS[mode];
+  return l || TIERS.find(t => level <= t.upto).gear;
+};
 // 职业改名后最容易忘了同步这张表，缺一个就当场报错，别默默算错
 export function checkGear(data) {
   for (const t of TIERS) for (const id of Object.keys(data.jobs))
@@ -86,10 +112,11 @@ export async function run(data = null, n = 30) {
   checkGear(data);
   const rows = [];
   const zones = { ...data.encounters,
-    boss: { groups: [{ enemies: ['knight'], weight: 1 }] },
-    'boss(决战装备)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: true } };
+    'boss(纯商店)':   { groups: [{ enemies: ['knight'], weight: 1 }] },
+    'boss(顺路开箱)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath' },
+    'boss(全开箱)':   { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'full' } };
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
-                   boss: [6, 7, 8, 9], 'boss(决战装备)': [6, 7, 8, 9, 10] };
+                   'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
       const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0 };
