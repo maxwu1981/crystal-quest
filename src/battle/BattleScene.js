@@ -254,9 +254,13 @@ export class BattleScene {
     for (const p of this.party) {
       if (this.blinking(p)) continue;
       const [x, y] = this.actorRect(p);
-      const bob = (this.current === p || (this.won && p.alive)) && Math.floor(this.time * 4) % 2 ? 1 : 0;
-      const key = p.alive ? `${p.jobId}_left_${bob}` : `${p.jobId}_downed`;
-      const dx = x - this.lungeOffset(p), dy = y - (this.won && p.alive ? bob * 2 : 0);
+      // 轮到谁行动，actorRect 已经把他往前挪了 6px，不必再换帧。
+      // 原本每秒换 4 次走路帧：站着打架却在原地踏步，而且有几个职业的站立帧与迈步帧朝向
+      // 根本不一致（拳头师、符仔仙的「侧面」其实画成了正面），切起来像换了个人在闪。
+      // 胜利时的雀跃改成整体上下跳，同样不换帧。
+      const cheer = this.won && p.alive && Math.floor(this.time * 3) % 2 ? 2 : 0;
+      const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
+      const dx = x - this.lungeOffset(p), dy = y - cheer;
       drawArt(ctx, this.game.sprites[key], dx, dy);
       if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, g, dx, dy); // 装备叠加
     }
