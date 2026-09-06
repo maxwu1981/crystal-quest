@@ -1,0 +1,115 @@
+{
+  "name": "伯公庙",
+  "encounterZone": null,
+  "spawn": {
+    "x": 4,
+    "y": 6
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "door"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWW",
+    "WffffffffW",
+    "WfffCCfffW",
+    "WffffffffW",
+    "WffffffffW",
+    "WffffffffW",
+    "WffffffffW",
+    "WWWWDWWWWW"
+  ],
+  "events": [
+    {
+      "x": 4,
+      "y": 7,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 11,
+        "y": 13,
+        "facing": "down"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "bogong_granny",
+      "name": "拜伯公的阿婆",
+      "sprite": "woman",
+      "x": 4,
+      "y": 1,
+      "dir": "down",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "铃还在吧？莫丢。伯公借你们的，要还的。",
+            "……算了，你们留着。伯公不缺铃。"
+          ]
+        },
+        {
+          "unless": "gotBell",
+          "set": [
+            "gotBell"
+          ],
+          "give": {
+            "items": [
+              {
+                "id": "bell",
+                "qty": 1
+              }
+            ]
+          },
+          "lines": [
+            "伯公是这庄的头家，田头田尾都是他在顾。",
+            "这只铃你们带着。",
+            "在山里听到有人叫你的名——先摇铃，再回头。"
+          ]
+        },
+        {
+          "lines": [
+            "魔神仔怕响，不怕人。",
+            "所以我们敲锣、摇铃、放炮。吵一点，它就绕路走。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bogong_keeper",
+      "name": "顾庙的阿伯",
+      "sprite": "elder",
+      "x": 7,
+      "y": 4,
+      "dir": "left",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "那条缝合起来了。红纸我今早撕掉了。",
+            "土是温的，跟以前一样。"
+          ]
+        },
+        {
+          "lines": [
+            "伯公坛前的土，昨暗自己裂了一条缝。",
+            "我用红纸压住了。你们看——纸还在跳。"
+          ]
+        }
+      ]
+    }
+  ]
+}

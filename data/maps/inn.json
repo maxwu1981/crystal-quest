@@ -2,8 +2,8 @@
   "name": "客栈",
   "encounterZone": null,
   "spawn": {
-    "x": 5,
-    "y": 7
+    "x": 6,
+    "y": 8
   },
   "legend": {
     "W": {
@@ -27,25 +27,26 @@
     }
   },
   "rows": [
-    "WWWWWWWWWWWW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WfCCCCfffBBW",
-    "WffffffffBBW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WWWWWDWWWWWW"
+    "WWWWWWWWWWWWWW",
+    "WffffffffBBffW",
+    "WfCCCffffBBffW",
+    "WffffffffffffW",
+    "WffffffffBBffW",
+    "WffffffffBBffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WWWWWWDWWWWWWW"
   ],
   "events": [
     {
-      "x": 5,
-      "y": 8,
+      "x": 6,
+      "y": 9,
       "type": "warp",
       "to": {
         "map": "village",
-        "x": 25,
-        "y": 14,
+        "x": 23,
+        "y": 17,
         "facing": "down"
       }
     }
@@ -56,14 +57,15 @@
       "name": "客栈头家娘",
       "sprite": "innkeeper",
       "x": 3,
-      "y": 2,
+      "y": 1,
       "dir": "down",
       "script": {
         "type": "inn",
         "price": 30,
         "wake": [
           "天光了。昨暗没什么声音，好事。",
-          "外面还是那样，不过至少这间厝内是安静的。"
+          "外面还是那样，不过至少这间厝内是安静的。",
+          "灶下有热水，走以前记得喝一碗。"
         ],
         "poor": [
           "钱不够也没关系……可惜灯油要钱。去平原走一趟再来。"
@@ -71,9 +73,87 @@
       },
       "dialogue": [
         {
+          "if": "gameCleared",
+          "lines": [
+            "入来啊！今暗我把灯全点起来，油钱不算你们的。",
+            "歇一暗还是三十箍，规矩是规矩。"
+          ]
+        },
+        {
+          "if": "questStarted",
+          "lines": [
+            "要上山了？先睡一暗，天光再走。",
+            "歇一暗三十箍。我不赊，但我会记得你们的脸。"
+          ]
+        },
+        {
           "lines": [
             "入来啊，灯还着。",
             "歇一暗三十箍。你们睡的时候，我替你们顾着门。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peddler_guest",
+      "name": "投宿的走贩",
+      "sprite": "merchant",
+      "x": 11,
+      "y": 3,
+      "dir": "left",
+      "dialogue": [
+        {
+          "if": "questStarted",
+          "lines": [
+            "你们要上山？我这担没什么好卖你们了。",
+            "剩下的只有胆，那个我自己也不太够。"
+          ]
+        },
+        {
+          "lines": [
+            "我挑货担走遍六堆，这个月只敢走日头下。",
+            "天一暗，我宁可睡庙口，也不走山路。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wanluan_wife",
+      "name": "万峦来的阿姆",
+      "sprite": "woman",
+      "x": 2,
+      "y": 7,
+      "dir": "right",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "他前日自己行到门口，鞋还穿在脚上。",
+            "我没问他去哪。问了他也不记得。"
+          ]
+        },
+        {
+          "lines": [
+            "我先生上个月出去挑水，就没转来。",
+            "我在这住着，等他记得路。",
+            "头家娘不收我房钱，我替她洗衫。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "old_hunter",
+      "name": "睡不着的老猎人",
+      "sprite": "man",
+      "x": 11,
+      "y": 6,
+      "dir": "left",
+      "dialogue": [
+        {
+          "lines": [
+            "我在山里睡过三十年，头一次不敢闭眼。",
+            "不是有声音。是没有声音。",
+            "你听过山完全没声音吗？"
           ]
         }
       ]

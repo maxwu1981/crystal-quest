@@ -1,0 +1,151 @@
+{
+  "name": "刘家伙房",
+  "encounterZone": null,
+  "spawn": {
+    "x": 7,
+    "y": 9
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "door"
+    },
+    "C": {
+      "tile": "counter",
+      "solid": true,
+      "counter": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    },
+    "p": {
+      "tile": "path"
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWWWWWW",
+    "WBBffffCCffffBBW",
+    "WBBffffffffffBBW",
+    "WffffffffffffffW",
+    "WffTffppppffTffW",
+    "WfffffppppfffffW",
+    "WfffffppppfffffW",
+    "WffCCfffffffCCfW",
+    "WffffffffffffffW",
+    "WffffffffffffffW",
+    "WWWWWWWDWWWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 7,
+      "y": 10,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 5,
+        "y": 23,
+        "facing": "down"
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "granny",
+      "name": "刘家阿婆",
+      "sprite": "elder",
+      "x": 5,
+      "y": 8,
+      "dir": "right",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "我活到九十，看过那把火熄，也看过它着转来。",
+            "这样够了。你们坐，我叫人打粄。"
+          ]
+        },
+        {
+          "unless": "gotHerb",
+          "set": [
+            "gotHerb"
+          ],
+          "give": {
+            "items": [
+              {
+                "id": "antidote",
+                "qty": 2
+              },
+              {
+                "id": "eyedrop",
+                "qty": 1
+              }
+            ]
+          },
+          "lines": [
+            "细人仔的时候，我阿爸带我去恒春看过那把火。",
+            "从石头缝里冒出来，一直烧，落大水也不熄。",
+            "现在熄了。我活到九十，头一次听到这种事。",
+            "这包草药你们揣着。中了毒、目珠花，都用得到。"
+          ]
+        },
+        {
+          "lines": [
+            "这间伙房住过五代人。公厅的牌位，一个也没搬过。",
+            "厝可以旧，火不能熄。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ban_mother",
+      "name": "打粄的阿姆",
+      "sprite": "woman",
+      "x": 11,
+      "y": 8,
+      "dir": "left",
+      "dialogue": [
+        {
+          "if": "questStarted",
+          "lines": [
+            "粄我多打一笼，你们转来的时候还热的。",
+            "记得——四个人去，四个人转来。"
+          ]
+        },
+        {
+          "lines": [
+            "打粄要三个人轮流舂，一个人打不动。",
+            "米、火、力气，缺一样就不成粄。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copy_kid",
+      "name": "抄谱的细人仔",
+      "sprite": "kid",
+      "x": 11,
+      "y": 3,
+      "dir": "down",
+      "dialogue": [
+        {
+          "lines": [
+            "阿公叫我把祖先的名字抄一百遍，说这样才记得住。",
+            "我抄到第七十个的时候，我阿姆哭了。",
+            "她说这本，这个月要添新的名。"
+          ]
+        }
+      ]
+    }
+  ]
+}

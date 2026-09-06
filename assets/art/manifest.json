@@ -61,6 +61,17 @@
   "knight": "enemy_knight.png",
   "skeleton": "enemy_skeleton.png"
  },
- "tiles": {},
+ "tiles": {
+  "cave_floor": "tile_cave_floor.png",
+  "cave_wall": "tile_cave_wall.png",
+  "grass": "tile_grass.png",
+  "path": "tile_path.png",
+  "water": "tile_water.png",
+  "forest": "tile_forest.png",
+  "mountain": "tile_mountain.png",
+  "tree": "tile_tree.png",
+  "roof": "tile_roof.png",
+  "wall": "tile_wall.png"
+ },
  "icons": {}
 }

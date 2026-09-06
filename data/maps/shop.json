@@ -2,8 +2,8 @@
   "name": "杂货铺",
   "encounterZone": null,
   "spawn": {
-    "x": 5,
-    "y": 7
+    "x": 6,
+    "y": 8
   },
   "legend": {
     "W": {
@@ -27,25 +27,26 @@
     }
   },
   "rows": [
-    "WWWWWWWWWWWW",
-    "WffffffffffW",
-    "WfCCCCCCCCfW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WffffffffffW",
-    "WWWWWDWWWWWW"
+    "WWWWWWWWWWWWWW",
+    "WffffffffffffW",
+    "WfCCCCCCCCCCfW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WffffffffffffW",
+    "WWWWWWDWWWWWWW"
   ],
   "events": [
     {
-      "x": 5,
-      "y": 8,
+      "x": 6,
+      "y": 9,
       "type": "warp",
       "to": {
         "map": "village",
-        "x": 26,
-        "y": 20,
+        "x": 23,
+        "y": 23,
         "facing": "down"
       }
     }
@@ -55,7 +56,7 @@
       "id": "merchant",
       "name": "杂货铺头家",
       "sprite": "merchant",
-      "x": 5,
+      "x": 6,
       "y": 1,
       "dir": "down",
       "script": {
@@ -69,12 +70,16 @@
           "eyedrop",
           "bell",
           "tent",
+          "wood_sword",
           "bronze_sword",
           "iron_sword",
+          "knife",
           "bronze_dagger",
           "iron_dagger",
+          "wrap",
           "leather_knuckle",
           "iron_knuckle",
+          "wood_staff",
           "oak_staff",
           "iron_staff",
           "leather_armor",
@@ -84,15 +89,63 @@
           "linen_robe",
           "silk_robe",
           "copper_ring",
+          "silver_ring",
           "power_band",
           "guard_band"
         ]
       },
       "dialogue": [
         {
+          "if": "gameCleared",
+          "lines": [
+            "转来啦！我册子上你们四个的名，今日划掉了。",
+            "要什么自己看，价钱照旧，我不哄人。"
+          ]
+        },
+        {
+          "if": "questStarted",
+          "lines": [
+            "阿伯讲的我听说了。要上山的，药仔多带一点。",
+            "打的物件坏了可以再买，人坏了买不到。"
+          ]
+        },
+        {
           "lines": [
             "入来看看。青草、符仔、家私，我这都有。",
             "要上山的话，药仔多带一点，不骗你。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shop_daughter",
+      "name": "顾店的细妹",
+      "sprite": "woman",
+      "x": 11,
+      "y": 5,
+      "dir": "left",
+      "dialogue": [
+        {
+          "lines": [
+            "我阿爸算钱很慢，你们莫笑他。",
+            "他把每个上山的人都记在册子上，写谁转来了。",
+            "这两页，都还没画勾。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "incense_buyer",
+      "name": "来买香的阿婶",
+      "sprite": "elder",
+      "x": 2,
+      "y": 5,
+      "dir": "right",
+      "dialogue": [
+        {
+          "lines": [
+            "香、金纸、盐米，这几日卖到缺货。",
+            "大家怕，就多买一点。好像买了就安心。"
           ]
         }
       ]
