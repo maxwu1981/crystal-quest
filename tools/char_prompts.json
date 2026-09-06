@@ -13,7 +13,7 @@
   "general": {
     "name": "家将 (转职用)",
     "look": "a bare-armed fighter in a bright orange martial-arts uniform with white cloth wraps on both forearms, brown hair pulled back into a small topknot at the BACK of the head",
-    "build": "CHIBI two-and-a-half-heads-tall: the head is ONE THIRD of the figure. But a big head does NOT mean a fat body — the body stays LEAN, narrow-waisted and athletic, with slim bare arms. Not chubby, not bulky"
+    "build": "LARGE head with the topknot — head including hair is about ONE THIRD of his total height (classic chibi SNES proportion, not realistic). Sturdy compact body: solid shoulders, solid arms and legs, the same chunky build as the rest of the party"
   },
   "herbwife": {
     "name": "青草婆 秀琴",
@@ -30,7 +30,7 @@
     "look": "a travelling pedlar with shoulder-length blond hair under a wide-brimmed olive-green felt hat with a single white feather, an olive-green travelling coat, brown boots, a bulky pack on his back and a short sword at his hip",
     "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
   },
-  "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。",
+  "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。 补一条：家将踩过反向的坑——build 里写了「CHIBI 两个半头高」，后面跟一长串「但大头不等于胖，身体要瘦、手臂要细」，结果后半句把前半句压过去，出来是六头身的写实比例。但改成「可度量」的写法（「头和躯干一样高」「全身三个头高」）也不管用——试过，还是六头身。真正的原因是描述里那串**反例**：「身体要瘦、腰要细、手臂要细、不要壮」，每个词都在往写实解剖学拉，把头身比那句压过去了。这串话当初是为了修「有点胖」的反馈加的，矫枉过正。正确做法是**删掉反例**，照阿勇那条真正管用的写法写正面描述：「头占三分之一」+「身体结实厚重」。另外别去做「头身比」的自动门禁：兜帽和斗笠把头和肩连成一片，「最窄处即脖子」的启发式会失效（青草婆看着明明是 Q 版却量出 0.156）。判据要用「和其他角色并排看协不协调」，见 tools/_cap/party_compare.png 的做法。",
   "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。",
   "man": {
     "name": "男庄民",
