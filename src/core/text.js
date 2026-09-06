@@ -27,13 +27,31 @@ export function drawText(ctx, text, x, y, opts = {}) {
 }
 export function measure(ctx, text) { ctx.font = FONT; return ctx.measureText(text).width; }
 
-// 按字符断行（中文没有空格），支持 \n
-export function wrapText(ctx, text, maxWidth) {
-  const lines = []; let cur = '';
+// 行首禁则用的标点：中文排版里这些不该出现在一行的开头
+const NO_HEAD = '。，、；：！？）」』】·';
+
+// 按字符断行（中文没有空格），支持 \n。
+//
+// hang=true 打开行首禁则（避头尾）：断点正好落在句读前面时，把上一行的最后一个字
+// 也带下来，于是「……去圳沟边采的」+「。」变成「……去圳沟边采」+「的。」，
+// 不会有一行只挂着一个孤零零的句号。全部 273 页台词里有 23 页是这个样子，
+// 对话框一收窄就特别显眼。
+//
+// 为什么不默认打开：这条规则在某些宽度下会多断出一行，而菜单里的道具/职业/设置说明
+// 是 .slice(0, 2) / .slice(0, 3) 截断的，多一行等于把说明吃掉一截。
+// 240px 的对话框逐页验过：273 页一页都不会因此变长，所以只有对话框开这个开关。
+export function wrapText(ctx, text, maxWidth, { hang = false } = {}) {
+  const lines = []; let cur = '', last = '';
   for (const ch of text) {
-    if (ch === '\n') { lines.push(cur); cur = ''; continue; }
-    const t = cur + ch;
-    if (cur && measure(ctx, t) > maxWidth) { lines.push(cur); cur = ch; } else cur = t;
+    if (ch === '\n') { lines.push(cur); cur = ''; last = ''; continue; }
+    if (cur && measure(ctx, cur + ch) > maxWidth) {
+      // 退一个字用 last 的长度、不用 slice(-1)：台词里有「𠊎」这种四字节字，
+      // slice(-1) 会把它劈成半个代理对，画出来是个方块
+      if (hang && NO_HEAD.includes(ch) && cur.length > last.length) {
+        lines.push(cur.slice(0, cur.length - last.length)); cur = last + ch;
+      } else { lines.push(cur); cur = ch; }
+    } else cur += ch;
+    last = ch;
   }
   if (cur) lines.push(cur);
   return lines;

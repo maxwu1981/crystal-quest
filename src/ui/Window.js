@@ -78,6 +78,19 @@ export function drawWindow(ctx, x, y, w, h) {
   ctx.restore();
 }
 
+// 小牌子：一层暗铜边 + 深底 + 上缘一道受光。给「挂在窗口上」的小块用——
+// 对话框的说话人名牌、头像框都是它。
+// 不走 drawWindow：完整窗口光四圈边框就吃掉 11px，16px 高的名牌里根本没有内容区，
+// 压在对话框上就是一块砖。这里一圈边 15px 就够，而且和窗口同一套光源（上亮下暗），
+// 并排摆在一起看得出是同一套界面。
+export function drawPlate(ctx, x, y, w, h) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(10,19,15,0.97)'; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#7a633f'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.fillStyle = 'rgba(216,207,168,0.45)'; ctx.fillRect(x + 1, y + 1, w - 2, 1);
+  ctx.restore();
+}
+
 // 分隔线：一暗一亮两条 1px，看起来像刻进面板里。
 // 分组用它，不要用空行——224px 高度里没有空行可以浪费。
 export function drawDivider(ctx, x, y, w) {

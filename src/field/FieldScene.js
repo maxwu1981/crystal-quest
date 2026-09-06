@@ -1,5 +1,6 @@
 // 地图行走：网格移动、镜头跟随、步数制遇敌、门传送、NPC 对话。
 import { TILE, TILE_FX, tileFrames } from '../assets/tiles.js';
+import { buildTerrainFx } from '../assets/terrain.js';
 import { drawArt, artH } from '../core/draw.js';
 import { RNG } from '../core/RNG.js';
 import { layersFor } from '../assets/equip.js';
@@ -114,7 +115,11 @@ export class FieldScene {
     }
     // 粒子活动范围取「地图」和「屏幕」的较小者：小地图（屋内）不会把粒子撒到屋外的黑边上
     const bw = Math.min(this.game.W, this.map.w * TILE), bh = Math.min(this.game.H, this.map.h * TILE);
-    this.fx = { mood, anim, list, bw, bh, motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
+    // 地形过渡（草咬进路、崖影、水岸浪花、地面装饰）也在这里一次算完，
+    // 结果是两张与 cells 等长的「这一格再叠哪几张图」的表，渲染时零计算。
+    const ter = buildTerrainFx(this.map, this.game.tiles, id);
+    this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, foamN: ter.foamN,
+      motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
   }
 
   // NPC 可见条件：if / unless 标志位（Boss 被打败后消失等）
@@ -126,7 +131,7 @@ export class FieldScene {
   resume() {
     this.refreshNpcs();
     const ab = this.afterBattle; this.afterBattle = null;
-    if (ab && this.game.state.flags[ab.flag]) this.game.scenes.push(new DialogueScene(this.game, { name: ab.name, pages: ab.pages }));
+    if (ab && this.game.state.flags[ab.flag]) this.game.scenes.push(new DialogueScene(this.game, { name: ab.name, face: ab.face, pages: ab.pages }));
   }
   eventAt(x, y) { return this.map.events[`${x},${y}`]; }
   chestOpened(ev) { return !!this.game.state.flags[`chest:${ev.id}`]; }
@@ -216,15 +221,16 @@ export class FieldScene {
     const def = npc.def, g = this.game;
     const pages = applyVariant(pickVariant(def.dialogue, g.state.flags), g.state);
     const script = def.script;
-    if (!script) g.scenes.push(new DialogueScene(g, { name: def.name, pages }));
+    if (!script) g.scenes.push(new DialogueScene(g, { name: def.name, face: def.sprite, pages }));
     else if (script.type === 'inn') this.runInn(def, pages, script);
     else if (script.type === 'boss') {
-      g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => {
-        this.afterBattle = script.after ? { name: def.name, pages: script.after, flag: script.winFlag } : null;
+      g.scenes.push(new DialogueScene(g, { name: def.name, face: def.sprite, pages, onDone: () => {
+        // 存下 sprite：打完 Boss 时它已经从地图上撤了，事后再按名字反查找不回来
+        this.afterBattle = script.after ? { name: def.name, face: def.sprite, pages: script.after, flag: script.winFlag } : null;
         g.startBattle(script.enemies, { canFlee: false, winFlag: script.winFlag, bgm: 'boss', reward: script.reward });
       } }));
     }
-    else if (script.type === 'shop') g.scenes.push(new DialogueScene(g, { name: def.name, pages, onDone: () => g.scenes.push(new ShopScene(g, script, def.name)) }));
+    else if (script.type === 'shop') g.scenes.push(new DialogueScene(g, { name: def.name, face: def.sprite, pages, onDone: () => g.scenes.push(new ShopScene(g, script, def.name)) }));
   }
   openChest(ev) {
     const g = this.game, st = g.state;
@@ -264,12 +270,12 @@ export class FieldScene {
   runInn(def, pages, script) {
     const g = this.game, price = script.price ?? 30;
     g.scenes.push(new DialogueScene(g, {
-      name: def.name, pages, choices: ['住宿', '不了'],
+      name: def.name, face: def.sprite, pages, choices: ['住宿', '不了'],
       onDone: r => {
         if (r !== 0) return;
-        if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.poor || ['金币不太够呢……'] })); return; }
+        if (g.state.gold < price) { g.scenes.push(new DialogueScene(g, { name: def.name, face: def.sprite, pages: script.poor || ['金币不太够呢……'] })); return; }
         g.state.gold -= price;
-        g.fadeTo(() => { campParty(g.state.party, g.data); audio.sfx('heal'); g.scenes.push(new DialogueScene(g, { name: def.name, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
+        g.fadeTo(() => { campParty(g.state.party, g.data); audio.sfx('heal'); g.scenes.push(new DialogueScene(g, { name: def.name, face: def.sprite, pages: script.wake || ['早上好！祝旅途平安。'] })); }, { speed: 1.5 });
       },
     }));
   }
@@ -354,15 +360,38 @@ export class FieldScene {
     // a.ts 把时间换算成「1/16 帧长」的刻度；加上格子自己的错位量再整除回去，
     // 等于让每格在同一个帧长里的不同时刻翻帧 —— 满屏两百多格永远不会在同一瞬间一起跳。
     // 这一步是防「闪」的关键：位移只有 1 像素、亮度完全不变，但只要全屏同时变，人眼就会看成闪。
-    const fx = this.fx, anim = fx.anim, tiles = this.game.tiles;
+    const fx = this.fx, anim = fx.anim, tiles = this.game.tiles, ovr = fx.ovr, shd = fx.shd, base = fx.base;
     for (const a of fx.list) a.ts = this.animT * (16 / a.dur);
+    // 浪花跟水面共用一套节拍（同一个 dur 与帧数、同一个全局相位），整条岸线才会一起涌。
+    const fi = Math.floor(this.animT / TILE_FX.water.dur) % fx.foamN;
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-      const id = map.cells[y * map.w + x].tile, a = anim[id];
-      // (5x+9y)&15：5 和 9 都与 16 互质，同一时刻翻帧的格子在屏幕上是零散的十来个点，
-      // 连不成线也凑不成块，看着就是「草在窸窣」而不是「有一道边扫过去」
-      const img = a ? a.f[Math.floor((a.ts + (a.k ? (x * 5 + y * 9) & 15 : 0)) / 16) % a.f.length] : tiles[id];
-      drawArt(ctx, img, x * TILE - camX, y * TILE - camY);
+      const i = y * map.w + x;
+      const sx = x * TILE - camX, sy = y * TILE - camY;
+      // base[i]：树那种「自带底色」的瓦片换成「真草地 + 抠好的树」的合成图（assets/terrain.js），
+      // 是替换不是叠加。其余格子照旧走动画帧。
+      let img = base[i];
+      if (!img) {
+        const id = map.cells[i].tile, a = anim[id];
+        // (5x+9y)&15：5 和 9 都与 16 互质，同一时刻翻帧的格子在屏幕上是零散的十来个点，
+        // 连不成线也凑不成块，看着就是「草在窸窣」而不是「有一道边扫过去」
+        img = a ? a.f[Math.floor((a.ts + (a.k ? (x * 5 + y * 9) & 15 : 0)) / 16) % a.f.length] : tiles[id];
+      }
+      drawArt(ctx, img, sx, sy);
+      // 过渡边 / 浪花 / 地面装饰：换地图时就按邻居烘好了（assets/terrain.js），
+      // 这里只是「这一格再贴一两张图」，逐帧没有任何计算。数组＝一组帧（浪花），画布＝静态。
+      const ov = ovr[i];
+      if (ov) for (const o of ov) drawArt(ctx, Array.isArray(o) ? o[fi] : o, sx, sy);
     }
+    // 压暗层（崖影 / 湿沙）单独走一遍。两个理由：
+    // 一是必须压在过渡与装饰之上 —— 影子里的花本来就该是暗的；
+    // 二是 multiply 能保住地面的固有色（蒙半透明黑会把饱和的草地蒙成灰），
+    //    而合成模式整趟只切换两次，比每格切一次便宜得多。
+    ctx.globalCompositeOperation = 'multiply';
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const s = shd[y * map.w + x];
+      if (s) for (const o of s) drawArt(ctx, o, x * TILE - camX, y * TILE - camY);
+    }
+    ctx.globalCompositeOperation = 'source-over';
     for (const ev of Object.values(map.events)) {
       if (ev.type !== 'chest') continue;
       const opened = this.chestOpened(ev);
