@@ -14,7 +14,11 @@ export const PX = TILE * ART;      // 一格的物理像素（ART=2 时 32、ART
 // 明暗斑从三分之一格大缩成十分之一格，直接看不见了。
 // U 把它们换算回当初调的那个相对大小。新写的常量也该用 u() 包一下。
 export const U = ART / 2;
+// u() 给**尺寸**用：至少 1 物理像素，不能缩成零宽。
 export const u = v => Math.max(1, Math.round(v * U));
+// us() 给**有符号偏移**用（往左歪一格、第 k 段偏移 k-2 之类）：
+// 不能套 u()——那个的 max(1,…) 会把 -1 变成 +1，裂缝就只会往一边歪、草叶全偏同一侧。
+export const us = v => Math.round(v * U);
 export const N = 1, E = 2, S = 4, W = 8, NE = 16, SE = 32, SW = 64, NW = 128;
 export const SIDES = [[N, 0, -1], [E, 1, 0], [S, 0, 1], [W, -1, 0]];
 export const CORNERS = [[NE, 1, -1, N | E], [SE, 1, 1, S | E], [SW, -1, 1, S | W], [NW, -1, -1, N | W]];
