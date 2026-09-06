@@ -16,6 +16,7 @@ import { drawMenuIcons, drawStatusIcons, deltaArrow, iconGap, textW } from './ic
 import { icons } from '../assets/art.js';
 import { itemIcon } from '../assets/equip.js';
 import { itemStats } from '../game/shop.js';
+import { key } from '../touch.js';
 
 const SLOTS = [['weapon', '武器'], ['armor', '防具'], ['accessory', '饰品']];
 // 属性对照表：六格是部位列表右边这块地方放得下的上限。
@@ -107,7 +108,7 @@ export class EquipScene {
       const it = this.pickMenu.item?.value ? items[this.pickMenu.item.value] : null;
       const txt = it ? (itemStats(it) || it.desc || '') : '把这个部位空出来';
       drawText(ctx, wrapText(ctx, txt, 196)[0] || '', 52, 36, { color: it?.myth ? UI.accent : UI.cool });
-    } else drawText(ctx, 'Z 选部位   X 返回', 248, 36, { align: 'right', color: UI.dim });
+    } else drawText(ctx, `${key('confirm')} 选部位   ${key('cancel')} 返回`, 248, 36, { align: 'right', color: UI.dim });
 
     // ---- 中段：三个部位 + 属性对照 ----
     this.slotMenu.render(ctx);

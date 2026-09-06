@@ -15,6 +15,12 @@ python3 tools/serve.py
 然后打开 <http://localhost:8123>（调试模式：<http://localhost:8123/?debug>）。
 没有 python3 也可以用 `ruby -run -e httpd . -p 8123`，或 VS Code 的 Live Server 插件。
 
+手机上玩：加 `--lan` 让同一个 Wi-Fi 下的手机也能连（`python3 tools/serve.py 8123 --lan`，
+启动时会打印手机该输的地址）。想装到主屏幕离线玩要走 https，见 [docs/手机上玩.md](docs/手机上玩.md)。
+
+改了 `src/` `data/` `assets/` 之后，发布前记得重跑 `python3 tools/gen_sw.py` 刷新离线缓存清单
+（`--check` 只检查不写，可以挂在提交前）。`tools/build.py` 会自动跑一遍。
+
 ## 操作
 | 键 | 作用 |
 |---|---|

@@ -5,6 +5,7 @@ import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, changeJob, spellsFor, equipmentAfterJobChange } from '../game/party.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W, portrait } from './common.js';
 import { audio } from '../core/audio.js';
+import { key } from '../touch.js';
 
 const LEFT_W = 96;
 
@@ -76,6 +77,6 @@ export class JobScene {
       const ls = wrapText(ctx, `卸下 ${removed.map(r => data.items[r.id].name).join('、')}`, 256 - LEFT_W - 24);
       drawText(ctx, ls[0] + (ls.length > 1 ? '…' : ''), LEFT_W + 8, 188, { color: UI.danger });
     }
-    drawText(ctx, 'Z 确认   X 返回', 256 - 8, 204, { align: 'right', color: UI.dim });
+    drawText(ctx, `${key('confirm')} 确认   ${key('cancel')} 返回`, 256 - 8, 204, { align: 'right', color: UI.dim });
   }
 }

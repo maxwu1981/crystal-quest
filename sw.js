@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 163 个文件，约 2.5 MB。
-const VERSION = '5c005558a912';
+// 共 164 个文件，约 2.5 MB。
+const VERSION = 'fec48aafabc4';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -169,6 +169,7 @@ const PRECACHE = [
   './src/pwa.js',
   './src/title/EndingScene.js',
   './src/title/TitleScene.js',
+  './src/touch.js',
   './src/ui/DialogueScene.js',
   './src/ui/Menu.js',
   './src/ui/Window.js',
@@ -207,9 +208,16 @@ self.addEventListener('fetch', e => {
   if (new URL(req.url).origin !== location.origin) return;  // 外链交给浏览器自己处理
 
   e.respondWith((async () => {
-    // 导航请求（点主屏图标、直接输网址、带 ?debug）一律回首页。
-    // ignoreSearch 是关键：?debug 不能让缓存查不中。
+    // 导航请求：**先按真实路径找**，取不到才回首页。
+    //
+    // 原本是「一律回首页」——那是 SPA 的写法，而这个项目不是 SPA：
+    // `/tests/` 是一张独立的测试页（浏览器内跑 53 条单元测试）。
+    // 无条件兜底会让装过 SW 的浏览器再也打不开它，将来新增任何页面同样被吞。
+    // ignoreSearch 是关键：`?debug` 不能让缓存查不中。
     if (req.mode === 'navigate') {
+      const exact = await caches.match(req, { ignoreSearch: true });
+      if (exact) return exact;
+      try { const net = await fetch(req); if (net.ok) return net; } catch { /* 断网，往下走兜底 */ }
       const home = await caches.match('./index.html', { ignoreSearch: true })
                 || await caches.match('./', { ignoreSearch: true });
       if (home) return home;

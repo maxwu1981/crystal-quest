@@ -7,6 +7,7 @@ import { drawSprite, drawRatio, portrait } from './common.js';
 import { drawStatusIcons } from './icons.js';
 import { itemIcon } from '../assets/equip.js';
 import { icons } from '../assets/art.js';
+import { key } from '../touch.js';
 
 // 这一页信息最杂，全靠三样东西分层：暗色的标签 vs 亮色的数值、
 // 三条刻线切出的四个区块（身份 / 属性 / 装备 / 魔法）、以及和队伍面板一致的横条。
@@ -30,7 +31,7 @@ export class StatusScene {
     const po = portrait(g, m.jobId);
     drawSprite(ctx, po.img, 12, 12 + po.bob, 56);
     drawText(ctx, m.name, 76, 12, { color: UI.accent });                       // 名字是这一页的标题，给暗金
-    drawText(ctx, '← → 换人   X 返回', NUM_R, 12, { align: 'right', color: UI.dim }); // 操作提示放页首右上角，把页尾整行让给魔法
+    drawText(ctx, `← → 换人   ${key('cancel')} 返回`, NUM_R, 12, { align: 'right', color: UI.dim }); // 操作提示放页首右上角，把页尾整行让给魔法
     drawText(ctx, `${job.name}  Lv ${m.level}`, 76, 25, { color: UI.dim });
     drawStatusIcons(ctx, m.status, NUM_R, 24, { align: 'right' });   // 图标比「中毒」两个字窄一半，四个也排得下
     const bar = (label, y, cur, max, ratio, color) => {

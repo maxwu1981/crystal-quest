@@ -12,7 +12,20 @@
 // localhost 和 127.0.0.1 被浏览器特批为 secure context，所以本机开发是能注册的，
 // 可以在电脑上先验证离线效果再往手机上装。
 
-if ('serviceWorker' in navigator && self.isSecureContext) {
+// **本机开发时不注册，还会把已经装上的注销掉。**
+// service worker 是 cache-first 的：一旦装上，改了源码刷新页面也纹丝不动，
+// 因为发给你的是缓存里那份。实测踩过——改完 TitleScene 的操作提示，
+// 页面上还是旧文案，查了半天才发现是 SW 在发旧文件。
+// 每个在这个项目上开发的人都会撞到这一下，所以在源头挡掉：
+// localhost / 127.0.0.1 一律跳过；要专门验证离线与主屏幕效果就加 `?pwa`。
+const DEV = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
+  && !location.search.includes('pwa');
+if (DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  caches?.keys().then(ks => ks.forEach(k => caches.delete(k)));
+}
+
+if (!DEV && 'serviceWorker' in navigator && self.isSecureContext) {
   // 等 load 之后再注册：预缓存要下 2.5MB，和开局加载抢带宽的话首屏会变慢。
   // 反正第一次访问用不上缓存，晚几百毫秒毫无损失。
   addEventListener('load', () => {

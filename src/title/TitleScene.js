@@ -4,6 +4,7 @@ import { UI } from '../ui/Window.js';
 import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
 import { loadGame } from '../game/state.js';
 import { RNG } from '../core/RNG.js';
+import { key } from '../touch.js';
 
 export class TitleScene {
   constructor(game) {
@@ -41,6 +42,6 @@ export class TitleScene {
     ctx.textAlign = 'left';
     drawText(ctx, this.game.data.config.subtitle || '', W / 2, 96, { align: 'center', color: UI.dim });
     this.menu.render(ctx);
-    drawText(ctx, 'Z / Enter 确认', W / 2, 206, { align: 'center', color: UI.gray }); // 操作提示：最不该抢戏的一行
+    drawText(ctx, `${key('confirm')} 确认`, W / 2, 206, { align: 'center', color: UI.gray }); // 操作提示：最不该抢戏的一行
   }
 }

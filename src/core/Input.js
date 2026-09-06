@@ -29,11 +29,16 @@ export class Input {
       if (!a) return;
       e.preventDefault();
       if (e.repeat) return;
-      if (!this.down.has(a)) { this.down.set(a, 0); this.queue.push(a); }
+      this.press(a);
     });
-    target.addEventListener('keyup', e => { const a = actionOf(e); if (a) this.down.delete(a); });
+    target.addEventListener('keyup', e => { const a = actionOf(e); if (a) this.release(a); });
     window.addEventListener('blur', () => this.down.clear());
   }
+
+  // 按下 / 松开一个动作。键盘走这里，触控（src/touch.js）也走这里——
+  // 两种输入共用同一条路径，才不会出现「只有手机上才有的 bug」。
+  press(a) { if (!this.down.has(a)) { this.down.set(a, 0); this.queue.push(a); } }
+  release(a) { this.down.delete(a); }
 
   // 每个逻辑帧开始时调用一次
   beginTick(dt) {

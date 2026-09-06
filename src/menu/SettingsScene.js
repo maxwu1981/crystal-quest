@@ -3,6 +3,7 @@ import { Menu } from '../ui/Menu.js';
 import { drawWindow, UI, fillWindowBg } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { audio } from '../core/audio.js';
+import { key } from '../touch.js';
 
 export const OPTIONS = [
   { key: 'battleMode', label: '交手方式', values: [['turn', '回合制'], ['atb', 'ATB']], desc: '回合制：全员下令后按速度结算。ATB：时间槽满了才能行动，敌人不等你。' },
@@ -50,6 +51,6 @@ export class SettingsScene {
     this.menu.render(ctx);
     const o = OPTIONS.find(x => x.key === this.menu.item?.value);
     drawWindow(ctx, 48, 48 + this.menu.h, 160, 56);
-    wrapText(ctx, o?.desc || '← → 切换，X 返回', 144).slice(0, 3).forEach((l, i) => drawText(ctx, l, 56, 56 + this.menu.h + i * LINE_H, { color: UI.dim }));
+    wrapText(ctx, o?.desc || `← → 切换，${key('cancel')} 返回`, 144).slice(0, 3).forEach((l, i) => drawText(ctx, l, 56, 56 + this.menu.h + i * LINE_H, { color: UI.dim }));
   }
 }

@@ -33,10 +33,18 @@ export class Game {
   }
 
   fitCanvas() {
-    // 显示尺寸按逻辑分辨率取整数倍，保证物理像素也是整数倍（不糊）
-    const scale = Math.max(1, Math.floor(Math.min(innerWidth / this.W, (innerHeight - 24) / this.H)));
-    this.canvas.style.width = this.W * scale + 'px';
-    this.canvas.style.height = this.H * scale + 'px';
+    // 显示尺寸按逻辑分辨率取整数倍，保证物理像素也是整数倍（不糊）。
+    //
+    // 但手机上整数倍会浪费大半个屏幕：390px 宽的手机算下来正好是 1 倍，
+    // 画面只占不到一半。所以整数倍算出来只有 1 倍、而实际能放下 1.3 倍以上时，
+    // 改用精确比例铺满——`image-rendering: pixelated` 仍然保证是硬边像素，
+    // 只是像素大小不再完全均匀。在手机上「铺满」比「绝对均匀」重要得多。
+    const touch = matchMedia('(pointer: coarse)').matches;
+    const pad = touch ? this.touchPad || 0 : 24;     // 触控时底部要给虚拟按键留位置
+    const exact = Math.min(innerWidth / this.W, (innerHeight - pad) / this.H);
+    const scale = exact < 2 && exact > 1.3 ? exact : Math.max(1, Math.floor(exact));
+    this.canvas.style.width = Math.round(this.W * scale) + 'px';
+    this.canvas.style.height = Math.round(this.H * scale) + 'px';
   }
 
   async boot() {
