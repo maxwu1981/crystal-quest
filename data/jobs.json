@@ -1,265 +1,265 @@
 {
- "boxer": {
-  "name": "拳头师",
-  "desc": "武馆出身，宋江阵的底子。挨得住，也打得动。",
-  "base": {
-   "hp": 36,
-   "mp": 0,
-   "str": 12,
-   "agi": 5,
-   "int": 1,
-   "vit": 12,
-   "acc": 32,
-   "eva": 8
+  "boxer": {
+    "name": "拳头师",
+    "desc": "武馆出身，宋江阵的底子。挨得住，也打得动。",
+    "base": {
+      "hp": 36,
+      "mp": 0,
+      "str": 12,
+      "agi": 5,
+      "int": 1,
+      "vit": 12,
+      "acc": 32,
+      "eva": 8
+    },
+    "growth": {
+      "hp": 8,
+      "mp": 0,
+      "str": 2.2,
+      "agi": 1,
+      "int": 0.3,
+      "vit": 2.2,
+      "acc": 3,
+      "eva": 1
+    },
+    "commands": [
+      "attack",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": []
   },
-  "growth": {
-   "hp": 8,
-   "mp": 0,
-   "str": 2.2,
-   "agi": 1,
-   "int": 0.3,
-   "vit": 2.2,
-   "acc": 3,
-   "eva": 1
+  "hunter": {
+    "name": "山猎人",
+    "desc": "山脚长大的猎人，认得兽径，也认得不该走的路。",
+    "base": {
+      "hp": 28,
+      "mp": 0,
+      "str": 8,
+      "agi": 12,
+      "int": 3,
+      "vit": 6,
+      "acc": 32,
+      "eva": 20
+    },
+    "growth": {
+      "hp": 6.5,
+      "mp": 0,
+      "str": 1.8,
+      "agi": 2.2,
+      "int": 0.5,
+      "vit": 1.2,
+      "acc": 3.6,
+      "eva": 2.5
+    },
+    "commands": [
+      "attack",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": []
   },
-  "commands": [
-   "attack",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": []
- },
- "hunter": {
-  "name": "山猎人",
-  "desc": "大武山上长大的猎人，脚程最快，眼睛最利。",
-  "base": {
-   "hp": 28,
-   "mp": 0,
-   "str": 8,
-   "agi": 12,
-   "int": 3,
-   "vit": 6,
-   "acc": 32,
-   "eva": 20
+  "general": {
+    "name": "家将",
+    "desc": "八家将的脚步。赤手空拳也镇得住东西。",
+    "base": {
+      "hp": 44,
+      "mp": 0,
+      "str": 10,
+      "agi": 5,
+      "int": 2,
+      "vit": 12,
+      "acc": 26,
+      "eva": 8
+    },
+    "growth": {
+      "hp": 10,
+      "mp": 0,
+      "str": 1.6,
+      "agi": 0.9,
+      "int": 0.3,
+      "vit": 1.7,
+      "acc": 3,
+      "eva": 0.8
+    },
+    "unarmed": 1.8,
+    "hits": 2,
+    "commands": [
+      "attack",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": []
   },
-  "growth": {
-   "hp": 6.5,
-   "mp": 0,
-   "str": 1.8,
-   "agi": 2.2,
-   "int": 0.5,
-   "vit": 1.2,
-   "acc": 3.6,
-   "eva": 2.5
+  "herbwife": {
+    "name": "青草婆",
+    "desc": "认得满山的草。草能止血，也能收惊。",
+    "base": {
+      "hp": 24,
+      "mp": 12,
+      "str": 4,
+      "agi": 6,
+      "int": 11,
+      "vit": 6,
+      "acc": 12,
+      "eva": 10
+    },
+    "growth": {
+      "hp": 5,
+      "mp": 3,
+      "str": 0.8,
+      "agi": 1.2,
+      "int": 2.2,
+      "vit": 1,
+      "acc": 1.5,
+      "eva": 1.2
+    },
+    "commands": [
+      "attack",
+      "magic",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": [
+      "cure",
+      {
+        "id": "shoujing",
+        "level": 2
+      },
+      {
+        "id": "protect",
+        "level": 3
+      },
+      {
+        "id": "esuna",
+        "level": 5
+      },
+      {
+        "id": "cura",
+        "level": 7
+      },
+      {
+        "id": "cureall",
+        "level": 8
+      },
+      {
+        "id": "raise",
+        "level": 9
+      }
+    ]
   },
-  "commands": [
-   "attack",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": []
- },
- "general": {
-  "name": "家将",
-  "desc": "八家将的脚步。赤手空拳也镇得住东西。",
-  "base": {
-   "hp": 44,
-   "mp": 0,
-   "str": 10,
-   "agi": 5,
-   "int": 2,
-   "vit": 12,
-   "acc": 26,
-   "eva": 8
+  "talisman": {
+    "name": "符仔仙",
+    "desc": "一张符烧下去，什么都得让路。",
+    "base": {
+      "hp": 20,
+      "mp": 14,
+      "str": 3,
+      "agi": 7,
+      "int": 13,
+      "vit": 4,
+      "acc": 10,
+      "eva": 10
+    },
+    "growth": {
+      "hp": 4,
+      "mp": 3.5,
+      "str": 0.6,
+      "agi": 1.2,
+      "int": 2.6,
+      "vit": 0.8,
+      "acc": 1.5,
+      "eva": 1.2
+    },
+    "commands": [
+      "attack",
+      "magic",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": [
+      "fire",
+      "thunder",
+      {
+        "id": "ice",
+        "level": 2
+      },
+      {
+        "id": "sleep",
+        "level": 4
+      },
+      {
+        "id": "poison",
+        "level": 6
+      },
+      {
+        "id": "fira",
+        "level": 8
+      },
+      {
+        "id": "dark",
+        "level": 8
+      },
+      {
+        "id": "thundara",
+        "level": 9
+      }
+    ]
   },
-  "growth": {
-   "hp": 10,
-   "mp": 0,
-   "str": 1.6,
-   "agi": 0.9,
-   "int": 0.3,
-   "vit": 1.7,
-   "acc": 3,
-   "eva": 0.8
-  },
-  "unarmed": 1.8,
-  "hits": 2,
-  "commands": [
-   "attack",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": []
- },
- "herbwife": {
-  "name": "青草婆",
-  "desc": "认得满山的草。草能止血，也能收惊。",
-  "base": {
-   "hp": 24,
-   "mp": 12,
-   "str": 4,
-   "agi": 6,
-   "int": 11,
-   "vit": 6,
-   "acc": 12,
-   "eva": 10
-  },
-  "growth": {
-   "hp": 5,
-   "mp": 3,
-   "str": 0.8,
-   "agi": 1.2,
-   "int": 2.2,
-   "vit": 1,
-   "acc": 1.5,
-   "eva": 1.2
-  },
-  "commands": [
-   "attack",
-   "magic",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": [
-   "cure",
-   {
-    "id": "shoujing",
-    "level": 2
-   },
-   {
-    "id": "protect",
-    "level": 3
-   },
-   {
-    "id": "esuna",
-    "level": 5
-   },
-   {
-    "id": "cura",
-    "level": 7
-   },
-   {
-    "id": "cureall",
-    "level": 8
-   },
-   {
-    "id": "raise",
-    "level": 9
-   }
-  ]
- },
- "talisman": {
-  "name": "符仔仙",
-  "desc": "一张符烧下去，什么都得让路。",
-  "base": {
-   "hp": 20,
-   "mp": 14,
-   "str": 3,
-   "agi": 7,
-   "int": 13,
-   "vit": 4,
-   "acc": 10,
-   "eva": 10
-  },
-  "growth": {
-   "hp": 4,
-   "mp": 3.5,
-   "str": 0.6,
-   "agi": 1.2,
-   "int": 2.6,
-   "vit": 0.8,
-   "acc": 1.5,
-   "eva": 1.2
-  },
-  "commands": [
-   "attack",
-   "magic",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": [
-   "fire",
-   "thunder",
-   {
-    "id": "ice",
-    "level": 2
-   },
-   {
-    "id": "sleep",
-    "level": 4
-   },
-   {
-    "id": "poison",
-    "level": 6
-   },
-   {
-    "id": "fira",
-    "level": 8
-   },
-   {
-    "id": "dark",
-    "level": 8
-   },
-   {
-    "id": "thundara",
-    "level": 9
-   }
-  ]
- },
- "peddler": {
-  "name": "走贩",
-  "desc": "什么都卖，什么都会一点，路最熟。",
-  "base": {
-   "hp": 30,
-   "mp": 10,
-   "str": 8,
-   "agi": 8,
-   "int": 8,
-   "vit": 7,
-   "acc": 26,
-   "eva": 12
-  },
-  "growth": {
-   "hp": 6.2,
-   "mp": 2.5,
-   "str": 1.4,
-   "agi": 1.5,
-   "int": 1.5,
-   "vit": 1.3,
-   "acc": 3.0,
-   "eva": 1.5
-  },
-  "commands": [
-   "attack",
-   "magic",
-   "defend",
-   "item",
-   "flee"
-  ],
-  "spells": [
-   "cure",
-   "fire",
-   {
-    "id": "protect",
-    "level": 4
-   },
-   {
-    "id": "thunder",
-    "level": 5
-   },
-   {
-    "id": "sleep",
-    "level": 7
-   },
-   {
-    "id": "esuna",
-    "level": 9
-   }
-  ]
- }
+  "peddler": {
+    "name": "走贩",
+    "desc": "什么都卖，什么都会一点，路最熟。",
+    "base": {
+      "hp": 30,
+      "mp": 10,
+      "str": 8,
+      "agi": 8,
+      "int": 8,
+      "vit": 7,
+      "acc": 26,
+      "eva": 12
+    },
+    "growth": {
+      "hp": 6.2,
+      "mp": 2.5,
+      "str": 1.4,
+      "agi": 1.5,
+      "int": 1.5,
+      "vit": 1.3,
+      "acc": 3.0,
+      "eva": 1.5
+    },
+    "commands": [
+      "attack",
+      "magic",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": [
+      "cure",
+      "fire",
+      {
+        "id": "protect",
+        "level": 4
+      },
+      {
+        "id": "thunder",
+        "level": 5
+      },
+      {
+        "id": "sleep",
+        "level": 7
+      },
+      {
+        "id": "esuna",
+        "level": 9
+      }
+    ]
+  }
 }

@@ -7,10 +7,18 @@ import { drawArt, artH } from '../core/draw.js';
 const NPC_STEP_TIME = 0.28;
 
 // 对话变体：[{ if?, unless?, set?:[flags], give?:{gold, items:[{id,qty}]}, lines:[...] }]，取第一个条件满足的
+// if / unless 可以是一个 flag，也可以是一组：
+//   if: ['a','b']     两个都成立才选这一条
+//   unless: ['a','b'] 任一成立就跳过
+// 加数组是因为「按顺序发放」表达不了：伯公庙三段神器要求「打完 Boss **且**已领第二件」，
+// 单个 flag 写不出来，结果三段的触发顺序和叙事顺序整个倒过来
+// （玩家先听到「又吐一件出来」，再听到第一次发现那句）。
+const allOf = (c, flags) => (Array.isArray(c) ? c : [c]).every(f => flags[f]);
+const anyOf = (c, flags) => (Array.isArray(c) ? c : [c]).some(f => flags[f]);
 export function pickVariant(dialogue, flags = {}) {
   for (const v of dialogue || []) {
-    if (v.if && !flags[v.if]) continue;
-    if (v.unless && flags[v.unless]) continue;
+    if (v.if && !allOf(v.if, flags)) continue;
+    if (v.unless && anyOf(v.unless, flags)) continue;
     return v;
   }
   return null;
