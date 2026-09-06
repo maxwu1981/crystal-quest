@@ -1,6 +1,6 @@
 // 主菜单（地图上按 X）：透明场景，叠在地图上。子菜单各自是独立场景。
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, UI } from '../ui/Window.js';
+import { drawWindow, UI, fillWindowBg } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { saveGame, loadGame } from '../game/state.js';
 import { drawPartyPanel, drawInfoPanel, drawTextBlock, PARTY_W } from './common.js';
@@ -41,6 +41,8 @@ export class MenuScene {
   }
   update(dt) { if (this.msgT > 0) this.msgT -= dt; this.menu.update(this.game.input); }
   render(ctx) {
+    // 队伍面板与右侧指令窗左右相接，接缝处会漏出野外。先垫一层。
+    fillWindowBg(ctx);
     drawPartyPanel(ctx, this.game);
     this.menu.render(ctx);
     drawInfoPanel(ctx, this.game, PARTY_W, MENU_H, 256 - PARTY_W, INFO_H);

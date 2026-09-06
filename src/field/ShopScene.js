@@ -1,6 +1,6 @@
 // 商店：购买 / 出售 / 离开
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, UI } from '../ui/Window.js';
+import { drawWindow, UI, fillWindowBg } from '../ui/Window.js';
 import { drawMenuIcons, iconGap } from '../menu/icons.js';
 import { itemIcon } from '../assets/equip.js';
 import { drawText, LINE_H } from '../core/text.js';
@@ -50,6 +50,9 @@ export class ShopScene {
   render(ctx) {
     const data = this.game.data, st = this.game.state;
     const hovered = this.mode !== 'root' && this.list.item?.value ? data.items[this.list.item.value] : null;
+    // 五个窗上下左右相接铺满整屏（0-32 顶 / 左 0-176 / 右 176-256 分三段）。
+    // 窗体是内缩 1px + 圆角画的，接缝处会漏出店里的地板和墙，先垫一层。
+    fillWindowBg(ctx);
     drawWindow(ctx, 0, 0, 256, 32);
     // 交易结果（买到了／钱不够）用暗金，和「说明文字」区分开：那一行既当招呼语又当回执，
     // 不换颜色的话玩家分不出这句是商品说明还是刚才那笔交易的回应

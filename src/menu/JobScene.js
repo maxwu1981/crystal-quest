@@ -1,6 +1,6 @@
 // 转职：选角色 → 选职业（右侧预览属性变化）→ 立即生效。需要标志位 jobUnlocked（记名人给的「记名的碎片」）。
 import { Menu } from '../ui/Menu.js';
-import { drawWindow, drawDivider, UI } from '../ui/Window.js';
+import { drawWindow, drawDivider, UI, fillWindowBg } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, changeJob, spellsFor, equipmentAfterJobChange } from '../game/party.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W, portrait } from './common.js';
@@ -40,6 +40,8 @@ export class JobScene {
   }
   render(ctx) {
     const g = this.game, data = g.data;
+    // 两个窗左右相接（队伍面板 + 右侧），接缝处会漏出野外
+    fillWindowBg(ctx);
     if (this.mode === 'member') {
       drawPartyPanel(ctx, g, { cursor: this.cursor });
       drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
