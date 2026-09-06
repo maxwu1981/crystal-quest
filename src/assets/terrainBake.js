@@ -4,7 +4,7 @@
 // 破了项目单文件 400 行的规矩，而这条缝正好把"画"和"排"分得干净。
 import { TILE, TILE_FX, tileFrames } from './tiles.js';
 import { ART } from '../core/draw.js';
-import { PX, u, us, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
+import { PX, U, u, us, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
 import { RNG } from '../core/RNG.js';
 
 // ---------------------------------- 烘焙工具 ----------------------------------
@@ -41,7 +41,8 @@ function fillSide(g, side, i, a, b) {
 function tongues(rng, base, jag) {
   const d = new Array(PX).fill(0);
   for (let i = 0; i < PX;) {
-    const w = Math.min(PX - i, 4 + rng.int(0, 3));
+    // 舌头宽度 4–7 也是 PX=32 时定的：ART=6 下不换算，锯齿密到看着像毛边
+    const w = Math.min(PX - i, u(4) + rng.int(0, u(3)));   // 舌头宽度；base/jag 由调用方换算
     const v = Math.max(1, base + rng.int(-jag, jag));
     for (let k = 0; k < w; k++) d[i + k] = Math.max(1, v - (k === 0 || k === w - 1 ? 1 : 0));
     i += w;
@@ -103,27 +104,34 @@ const SH_W = [0.24, 0.22, 0.14, 0.08];
 export function shadowTile(mask, k) {
   return canvasPX(g => {
     const col = a => `rgba(20,26,36,${(a * k).toFixed(3)})`;
+    // SH_N/SH_W 是**一物理像素一档**的渐变，当初按 PX=32 定的。
+    // ART=6 下 PX=96，原样画出来的影子只有 5px 高——占一格的二十分之一，
+    // 「远近」这件事全靠它，缩掉就没有立体感了。这里把每一档铺成 u(1) 厚的一条。
+    const band = u(1);
     if (mask & N) {
       const cutL = !(mask & NW), cutR = !(mask & NE);
-      SH_N.forEach((a, y) => {
+      SH_N.forEach((a, i) => {
         g.fillStyle = col(a);
-        const x0 = cutL ? Math.min(y, 3) : 0, x1 = PX - (cutR ? Math.min(y, 3) : 0);
-        if (y < SH_N.length - 1) g.fillRect(x0, y, x1 - x0, 1);
-        else for (let x = x0; x < x1; x += 2) g.fillRect(x, y, 1, 1);
+        const cut = Math.min(u(i), u(3));
+        const x0 = cutL ? cut : 0, x1 = PX - (cutR ? cut : 0), y = u(i);
+        // 最后一档隔点画，让影子的下缘化开而不是齐刷刷断掉
+        if (i < SH_N.length - 1) g.fillRect(x0, y, x1 - x0, band);
+        else for (let x = x0; x < x1; x += band * 2) g.fillRect(x, y, band, band);
       });
     }
     if (mask & W) {
       const cutT = !(mask & NW), cutB = !(mask & SW);
-      SH_W.forEach((a, x) => {
+      SH_W.forEach((a, i) => {
         g.fillStyle = col(a);
-        const y0 = cutT ? Math.min(x, 3) : 0, y1 = PX - (cutB ? Math.min(x, 3) : 0);
-        if (x < SH_W.length - 1) g.fillRect(x, y0, 1, y1 - y0);
-        else for (let y = y0; y < y1; y += 2) g.fillRect(x, y, 1, 1);
+        const cut = Math.min(u(i), u(3));
+        const y0 = cutT ? cut : 0, y1 = PX - (cutB ? cut : 0), x = u(i);
+        if (i < SH_W.length - 1) g.fillRect(x, y0, band, y1 - y0);
+        else for (let y = y0; y < y1; y += band * 2) g.fillRect(x, y, band, band);
       });
     }
     if ((mask & NW) && !(mask & (N | W))) {   // 只在对角挨着时补个小角，交代得清楚就够
-      g.fillStyle = col(0.26); g.fillRect(0, 0, 4, 4);
-      g.fillStyle = col(0.13); g.fillRect(0, 4, 3, 1); g.fillRect(4, 0, 1, 3);
+      g.fillStyle = col(0.26); g.fillRect(0, 0, u(4), u(4));
+      g.fillStyle = col(0.13); g.fillRect(0, u(4), u(3), u(1)); g.fillRect(u(4), 0, u(1), u(3));
     }
   });
 }
@@ -140,25 +148,29 @@ const SCALLOP = [0, 0, 1, 1, 2, 2, 2, 1, 1, 0, 0, 0, 1, 1, 1, 0];
 const SHALLOW = [5, 6, 6, 5, 4, 4, 5, 6, 7, 7, 6, 5, 4, 4, 5, 6];   // 浅滩深浅，同样 16px 一循环
 export function foamFrames(mask, n) {
   const out = [];
+  // SCALLOP/SHALLOW 是**每物理像素一格**的查表，周期 16 = 半格（按 PX=32 定的）。
+  // ART=6 下 PX=96，原样索引就变成六分之一格一个浪头、浪高只有 5–7px：
+  // 扇贝密成锯齿，浅滩窄成一条线。索引先除回 U，取到的值再乘回去。
+  const wave = (arr, x) => u(arr[Math.floor(x / U) & 15]);
   for (let i = 0; i < n; i++) out.push(canvasPX(g => {
-    const o = 2 + FOAM_OFF[i % FOAM_OFF.length];
+    const o = u(2 + FOAM_OFF[i % FOAM_OFF.length]);
     const a = 0.40 + 0.10 * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / n));
     for (const [bit] of SIDES) {
       if (!(mask & bit)) continue;
       // 先铺一层浅滩：靠岸的水浅、颜色淡。这一层不动，作用是把「水和陆地之间那条笔直的格线」
       // 换成一条深浅渐变的带子 —— 光靠一条浪花线压不住那条直边。
       for (let x = 0; x < PX; x++) {
-        const d = SHALLOW[x & 15];
-        g.fillStyle = 'rgba(150,214,222,0.20)'; fillSide(g, bit, x, 0, d - 2);
-        g.fillStyle = 'rgba(140,200,212,0.11)'; fillSide(g, bit, x, d - 2, d);
+        const d = wave(SHALLOW, x);
+        g.fillStyle = 'rgba(150,214,222,0.20)'; fillSide(g, bit, x, 0, d - u(2));
+        g.fillStyle = 'rgba(140,200,212,0.11)'; fillSide(g, bit, x, d - u(2), d);
       }
       for (let x = 0; x < PX; x++) {
-        const s = SCALLOP[x & 15], y0 = Math.max(0, o + s - 1);
-        g.fillStyle = `rgba(232,250,255,${(a + s * 0.06).toFixed(3)})`;
-        fillSide(g, bit, x, y0, y0 + 1 + (s >> 1));          // 浪头厚一点，浪谷薄一点
-        if (s) {                                             // 浪头后面拖一点更淡的沫
+        const raw = SCALLOP[Math.floor(x / U) & 15], s = u(raw), y0 = Math.max(0, o + s - u(1));
+        g.fillStyle = `rgba(232,250,255,${(a + raw * 0.06).toFixed(3)})`;
+        fillSide(g, bit, x, y0, y0 + u(1) + (s >> 1));       // 浪头厚一点，浪谷薄一点
+        if (raw) {                                           // 浪头后面拖一点更淡的沫
           g.fillStyle = `rgba(198,230,244,${(a * 0.42).toFixed(3)})`;
-          fillSide(g, bit, x, y0 + 2 + (s >> 1), y0 + 3 + (s >> 1));
+          fillSide(g, bit, x, y0 + u(2) + (s >> 1), y0 + u(3) + (s >> 1));
         }
       }
     }
@@ -173,9 +185,9 @@ export function wetTile(mask, rng) {
   return canvasPX(g => {
     for (const [bit] of SIDES) {
       if (!(mask & bit)) continue;
-      const d = tongues(rng, 4, 1);
+      const d = tongues(rng, u(4), u(1));
       for (let i = 0; i < PX; i++) {
-        const core = Math.max(0, d[i] - 2);
+        const core = Math.max(0, d[i] - u(2));
         g.fillStyle = 'rgba(150,152,150,0.34)'; fillSide(g, bit, i, 0, core);
         g.fillStyle = 'rgba(170,172,170,0.28)'; fillSide(g, bit, i, core, d[i]);
         if (!(i & 1)) fillSide(g, bit, i, d[i], d[i] + 1);   // 最外一圈隔点抖开，别留一条硬边
