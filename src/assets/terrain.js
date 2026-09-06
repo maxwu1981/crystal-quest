@@ -16,7 +16,7 @@
 import { TILE, TILE_FX, tileFrames } from './tiles.js';
 import { ART } from '../core/draw.js';
 import { RNG } from '../core/RNG.js';
-import { PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
+import { u, PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
 import { DECO_PAINT, DECO_VARIANTS, baked, canvasPX, foamFrames, fringeTile, hash,
          keyOutGround, objectTile, palette, seamRecord, shadowTile, wetTile } from './terrainBake.js';
 
@@ -69,6 +69,12 @@ const DECO = {
   cave_floor: { density: 0.28, pick: [['patchD', 6], ['patchL', 3], ['rock', 3], ['moss', 2], ['crack', 2]] },
   flagstone: { density: 0.22, pick: [['crack', 4], ['moss', 3], ['pebble', 2]] },
   floor: { density: 0.16, pick: [['patchL', 3], ['patchD', 3], ['crack', 1]] },   // 室内：只做旧，不摆东西
+  // 林子与山是**大片平铺**的地形，一屏能占掉半个画面，重复感比草地更刺眼——
+  // 提到 ART=6 之后连岩石纹理的走向都看得清，网格一眼可见。
+  // 这两种只用明暗斑（外加山上的碎石）：树冠和岩壁本来就该是杂的，
+  // 摆花摆贝壳反而假。密度比草地高，因为它们的底纹更规整、更需要打散。
+  forest: { density: 0.42, pick: [['patchL', 6], ['patchD', 7], ['tuft', 2]] },
+  mountain: { density: 0.40, pick: [['patchD', 7], ['patchL', 5], ['rock', 3], ['crack', 2]] },
 };
 
 // ---------------------------------- 组装 ----------------------------------
@@ -113,8 +119,11 @@ export function buildTerrainFx(map, tiles, mapId) {
         if (!src) continue;
         let m = 0;
         for (const [bit, dx, dy] of AROUND) if (at(x + dx, y + dy) === t) m |= bit;
-        push(ovr, baked(`fr|${t}|${m}|${f.depth}|${f.jag}|${f.contact ? 1 : 0}|${vr}`,
-          r => fringeTile(src, m, f.depth, f.jag, f.contact, r)));
+        // depth/jag 是当初在 ART=2（PX=32）下手调的物理像素，要按 U 换算回同样的相对深度，
+        // 否则 ART 一提高，咬合就从「咬掉六分之一格」变成「咬掉五十分之一格」，边界又变回硬的。
+        const dep = u(f.depth), jag = u(f.jag);
+        push(ovr, baked(`fr|${t}|${m}|${dep}|${jag}|${f.contact ? 1 : 0}|${vr}`,
+          r => fringeTile(src, m, dep, jag, f.contact, r)));
         used++;
       }
     }
@@ -138,7 +147,10 @@ export function buildTerrainFx(map, tiles, mapId) {
     else if (water && WETTABLE.has(me)) push(shd, baked(`wet|${water}|${vr}`, r => wetTile(water, r)));
 
     // 3) 地面装饰。事件格（宝箱/门/水晶）不摆东西，免得玩家把装饰看成可以互动的东西。
-    const d = inert ? null : DECO[me];
+    // 判据只看 NO_TOUCH，不看 inert：inert 把「会投影到邻格」和「自己身上能不能有装饰」
+    // 混成了一件事，而这两件无关——山会朝邻格投影，不代表山坡上不能有碎石。
+    // 放开之后仍然安全：CASTER 里的树/水晶/村落/柜台/床/墙没有 DECO 条目，取到的是 undefined。
+    const d = NO_TOUCH.has(me) ? null : DECO[me];
     if (d && !map.events[`${x},${y}`] && rng.next() < d.density) {
       let total = 0;
       for (const [, w] of d.pick) total += w;

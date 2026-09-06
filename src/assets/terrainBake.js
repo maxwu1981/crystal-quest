@@ -4,7 +4,7 @@
 // 破了项目单文件 400 行的规矩，而这条缝正好把"画"和"排"分得干净。
 import { TILE, TILE_FX, tileFrames } from './tiles.js';
 import { ART } from '../core/draw.js';
-import { PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
+import { PX, u, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
 import { RNG } from '../core/RNG.js';
 
 // ---------------------------------- 烘焙工具 ----------------------------------
@@ -312,7 +312,7 @@ export function palette(img) {
 // 第一版是几个矩形叠出来的，铺在草地上看着是一块块补丁，比不加还糟。
 // 整块画完再统一压到目标透明度（destination-in），否则重叠处会出现深浅不一的硬边。
 function blotch(g, rng, color, a) {
-  const rx = rng.int(5, 9), ry = rng.int(4, 7);
+  const rx = u(rng.int(5, 9)), ry = u(rng.int(4, 7));
   const cx = rng.int(rx + 1, PX - rx - 2), cy = rng.int(ry + 1, PX - ry - 2);
   g.fillStyle = color;
   for (let dy = -ry; dy <= ry; dy++) {
