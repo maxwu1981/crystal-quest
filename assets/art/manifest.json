@@ -71,7 +71,15 @@
   "mountain": "tile_mountain.png",
   "tree": "tile_tree.png",
   "roof": "tile_roof.png",
-  "wall": "tile_wall.png"
+  "wall": "tile_wall.png",
+  "door": "tile_door.png",
+  "floor": "tile_floor.png",
+  "sand": "tile_sand.png",
+  "chest": "tile_chest.png",
+  "chest_open": "tile_chest_open.png",
+  "crystal": "tile_crystal.png",
+  "stairs_down": "tile_stairs_down.png",
+  "stairs_up": "tile_stairs_up.png"
  },
  "icons": {}
 }

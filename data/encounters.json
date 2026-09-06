@@ -50,8 +50,8 @@
   },
   "cave": {
     "steps": [
-      10,
-      26
+      12,
+      28
     ],
     "groups": [
       {
@@ -71,10 +71,32 @@
       },
       {
         "enemies": [
+          "goblin",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "goblin",
+          "goblin",
+          "bat"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
           "darkslime",
           "darkslime"
         ],
         "weight": 2
+      },
+      {
+        "enemies": [
+          "slime",
+          "darkslime"
+        ],
+        "weight": 1
       },
       {
         "enemies": [
@@ -100,7 +122,7 @@
   },
   "cave_deep": {
     "steps": [
-      10,
+      11,
       24
     ],
     "groups": [
@@ -113,14 +135,6 @@
       },
       {
         "enemies": [
-          "bat",
-          "bat",
-          "darkslime"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
           "skeleton",
           "darkslime",
           "bat"
@@ -129,8 +143,45 @@
       },
       {
         "enemies": [
+          "bat",
+          "bat",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
           "darkslime",
           "darkslime",
+          "darkslime"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "ghost",
+          "bat",
+          "bat"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "ghost",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
           "darkslime"
         ],
         "weight": 1
