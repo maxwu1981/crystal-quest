@@ -1,129 +1,153 @@
 {
-  "name": "罗经圈 外围",
-  "encounterZone": "cave",
-  "spawn": {
+ "name": "罗经圈 外围",
+ "encounterZone": "cave",
+ "spawn": {
+  "x": 1,
+  "y": 17
+ },
+ "legend": {
+  "#": {
+   "tile": "cave_wall",
+   "solid": true
+  },
+  ".": {
+   "tile": "cave_floor",
+   "encounter": true
+  },
+  "S": {
+   "tile": "sand",
+   "encounter": true
+  },
+  "w": {
+   "tile": "water",
+   "solid": true
+  },
+  "=": {
+   "tile": "bridge"
+  },
+  "<": {
+   "tile": "stairs_up"
+  },
+  ">": {
+   "tile": "stairs_down"
+  }
+ },
+ "rows": [
+  "########################",
+  "#..............##......#",
+  "#.#######.####....#.##.#",
+  "#.#######.....#####.##.#",
+  "#.#######.########..##.#",
+  "#.###.#SSSSSSSSSSS#.##.#",
+  "#.www.Swwww=wwwwwS#....#",
+  "#.www.Swwww=wwwwwS####.#",
+  "#.www.Swwww=wwwwwS.....#",
+  "#.###.S==wSSS>wwwS####.#",
+  "#.....SwwwwwSwwwwS#www.#",
+  "#.####Swwwww=wwwwS#wwww#",
+  "#.www#Swwwww=ww==S#wwww#",
+  "#.www#Swwwww=wwwwS#www.#",
+  "#.www#SSSSSSSSSSSS####.#",
+  "#.##########.###.#.....#",
+  "#.##########.###.#####.#",
+  "#...########.###.#####.#",
+  "#<#...........ww.......#",
+  "########################"
+ ],
+ "events": [
+  {
+   "x": 1,
+   "y": 18,
+   "type": "warp",
+   "to": {
+    "map": "overworld",
+    "x": 20,
+    "y": 4,
+    "facing": "down"
+   }
+  },
+  {
+   "x": 13,
+   "y": 9,
+   "type": "warp",
+   "to": {
+    "map": "cave_2",
     "x": 1,
-    "y": 17
+    "y": 17,
+    "facing": "right"
+   }
   },
-  "legend": {
-    "#": {
-      "tile": "cave_wall",
-      "solid": true
-    },
-    ".": {
-      "tile": "cave_floor",
-      "encounter": true
-    },
-    "S": {
-      "tile": "sand",
-      "encounter": true
-    },
-    "w": {
-      "tile": "water",
-      "solid": true
-    },
-    "=": {
-      "tile": "bridge"
-    },
-    "<": {
-      "tile": "stairs_up"
-    },
-    ">": {
-      "tile": "stairs_down"
-    }
+  {
+   "x": 5,
+   "y": 5,
+   "type": "chest",
+   "id": "c1_potion",
+   "item": "potion",
+   "qty": 3
   },
-  "rows": [
-    "########################",
-    "#..............##......#",
-    "#.#######.####....#.##.#",
-    "#.#######.....#####.##.#",
-    "#.#######.########..##.#",
-    "#.###.#SSSSSSSSSSS#.##.#",
-    "#.www.Swwww=wwwwwS#....#",
-    "#.www.Swwww=wwwwwS####.#",
-    "#.www.Swwww=wwwwwS.....#",
-    "#.###.S==wSSS>wwwS####.#",
-    "#.....SwwwwwSwwwwS#www.#",
-    "#.####Swwwww=wwwwS#wwww#",
-    "#.www#Swwwww=ww==S#wwww#",
-    "#.www#Swwwww=wwwwS#www.#",
-    "#.www#SSSSSSSSSSSS####.#",
-    "#.##########.###.#.....#",
-    "#.##########.###.#####.#",
-    "#...########.###.#####.#",
-    "#<#...........ww.......#",
-    "########################"
-  ],
-  "events": [
-    {
-      "x": 1,
-      "y": 18,
-      "type": "warp",
-      "to": {
-        "map": "overworld",
-        "x": 20,
-        "y": 4,
-        "facing": "down"
-      }
-    },
-    {
-      "x": 13,
-      "y": 9,
-      "type": "warp",
-      "to": {
-        "map": "cave_2",
-        "x": 1,
-        "y": 17,
-        "facing": "right"
-      }
-    },
-    {
-      "x": 5,
-      "y": 5,
-      "type": "chest",
-      "id": "c1_potion",
-      "item": "potion",
-      "qty": 3
-    },
-    {
-      "x": 7,
-      "y": 5,
-      "type": "chest",
-      "id": "c1_tent",
-      "item": "tent",
-      "qty": 1
-    },
-    {
-      "x": 8,
-      "y": 9,
-      "type": "chest",
-      "id": "c1_ether",
-      "item": "ether",
-      "qty": 2
-    },
-    {
-      "x": 13,
-      "y": 3,
-      "type": "chest",
-      "id": "c1_eyedrop",
-      "item": "eyedrop",
-      "qty": 3
-    },
-    {
-      "x": 18,
-      "y": 4,
-      "type": "chest",
-      "id": "c1_gold",
-      "gold": 150
-    },
-    {
-      "x": 18,
-      "y": 15,
-      "type": "chest",
-      "id": "c1_staff",
-      "item": "crystal_staff",
-      "qty": 1
-    }
-  ],
-  "npcs": []
+  {
+   "x": 7,
+   "y": 5,
+   "type": "chest",
+   "id": "c1_tent",
+   "item": "tent",
+   "qty": 1
+  },
+  {
+   "x": 8,
+   "y": 9,
+   "type": "chest",
+   "id": "c1_ether",
+   "item": "ether",
+   "qty": 2
+  },
+  {
+   "x": 13,
+   "y": 3,
+   "type": "chest",
+   "id": "c1_eyedrop",
+   "item": "eyedrop",
+   "qty": 3
+  },
+  {
+   "x": 18,
+   "y": 4,
+   "type": "chest",
+   "id": "c1_gold",
+   "gold": 150
+  },
+  {
+   "x": 18,
+   "y": 15,
+   "type": "chest",
+   "id": "c1_staff",
+   "item": "crystal_staff",
+   "qty": 1
+  },
+  {
+   "id": "c1_kusanagi",
+   "x": 22,
+   "y": 1,
+   "item": "kusanagi",
+   "text": [
+    "水退过的地方留着一圈黑印，中间躺着一把剑。",
+    "剑身上缠的不是水草，是烧焦的草。",
+    "这洞里三百年没起过火。"
+   ],
+   "type": "chest"
+  },
+  {
+   "id": "c1_gaebolg",
+   "x": 22,
+   "y": 4,
+   "item": "gaebolg",
+   "text": [
+    "岩缝里卡着一支矛，倒钩朝内，拔出来的时候会把肉带走。",
+    "钩上没有血，只有很旧的盐。",
+    "拿矛的人大概是从海上来的。"
+   ],
+   "type": "chest"
+  }
+ ],
+ "npcs": []
 }

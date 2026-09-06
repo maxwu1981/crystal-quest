@@ -1,115 +1,175 @@
 {
-  "name": "伯公庙",
-  "encounterZone": null,
-  "spawn": {
-    "x": 4,
-    "y": 6
+ "name": "伯公庙",
+ "encounterZone": null,
+ "spawn": {
+  "x": 4,
+  "y": 6
+ },
+ "legend": {
+  "W": {
+   "tile": "wall",
+   "solid": true
   },
-  "legend": {
-    "W": {
-      "tile": "wall",
-      "solid": true
-    },
-    "f": {
-      "tile": "floor"
-    },
-    "D": {
-      "tile": "door"
-    },
-    "C": {
-      "tile": "counter",
-      "solid": true,
-      "counter": true
-    }
+  "f": {
+   "tile": "floor"
   },
-  "rows": [
-    "WWWWWWWWWW",
-    "WffffffffW",
-    "WfffCCfffW",
-    "WffffffffW",
-    "WffffffffW",
-    "WffffffffW",
-    "WffffffffW",
-    "WWWWDWWWWW"
-  ],
-  "events": [
+  "D": {
+   "tile": "door"
+  },
+  "C": {
+   "tile": "counter",
+   "solid": true,
+   "counter": true
+  }
+ },
+ "rows": [
+  "WWWWWWWWWW",
+  "WffffffffW",
+  "WfffCCfffW",
+  "WffffffffW",
+  "WffffffffW",
+  "WffffffffW",
+  "WffffffffW",
+  "WWWWDWWWWW"
+ ],
+ "events": [
+  {
+   "x": 4,
+   "y": 7,
+   "type": "warp",
+   "to": {
+    "map": "village",
+    "x": 11,
+    "y": 13,
+    "facing": "down"
+   }
+  }
+ ],
+ "npcs": [
+  {
+   "id": "bogong_granny",
+   "name": "拜伯公的阿婆",
+   "sprite": "woman",
+   "x": 4,
+   "y": 1,
+   "dir": "down",
+   "dialogue": [
     {
-      "x": 4,
-      "y": 7,
-      "type": "warp",
-      "to": {
-        "map": "village",
-        "x": 11,
-        "y": 13,
-        "facing": "down"
-      }
-    }
-  ],
-  "npcs": [
-    {
-      "id": "bogong_granny",
-      "name": "拜伯公的阿婆",
-      "sprite": "woman",
-      "x": 4,
-      "y": 1,
-      "dir": "down",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "铃还在吧？莫丢。伯公借你们的，要还的。",
-            "……算了，你们留着。伯公不缺铃。"
-          ]
-        },
-        {
-          "unless": "gotBell",
-          "set": [
-            "gotBell"
-          ],
-          "give": {
-            "items": [
-              {
-                "id": "bell",
-                "qty": 1
-              }
-            ]
-          },
-          "lines": [
-            "伯公是这庄的头家，田头田尾都是他在顾。",
-            "这只铃你们带着。",
-            "在山里听到有人叫你的名——先摇铃，再回头。"
-          ]
-        },
-        {
-          "lines": [
-            "魔神仔怕响，不怕人。",
-            "所以我们敲锣、摇铃、放炮。吵一点，它就绕路走。"
-          ]
-        }
-      ]
+     "if": "gameCleared",
+     "lines": [
+      "铃还在吧？莫丢。伯公借你们的，要还的。",
+      "……算了，你们留着。伯公不缺铃。"
+     ]
     },
     {
-      "id": "bogong_keeper",
-      "name": "顾庙的阿伯",
-      "sprite": "elder",
-      "x": 7,
-      "y": 4,
-      "dir": "left",
-      "dialogue": [
-        {
-          "if": "gameCleared",
-          "lines": [
-            "那条缝合起来了。红纸我今早撕掉了。",
-            "土是温的，跟以前一样。"
-          ]
-        },
-        {
-          "lines": [
-            "伯公坛前的土，昨暗自己裂了一条缝。",
-            "我用红纸压住了。你们看——纸还在跳。"
-          ]
-        }
+     "unless": "gotBell",
+     "set": [
+      "gotBell"
+     ],
+     "give": {
+      "items": [
+       {
+        "id": "bell",
+        "qty": 1
+       }
       ]
+     },
+     "lines": [
+      "伯公是这庄的头家，田头田尾都是他在顾。",
+      "这只铃你们带着。",
+      "在山里听到有人叫你的名——先摇铃，再回头。"
+     ]
+    },
+    {
+     "lines": [
+      "魔神仔怕响，不怕人。",
+      "所以我们敲锣、摇铃、放炮。吵一点，它就绕路走。"
+     ]
     }
-  ]
+   ]
+  },
+  {
+   "id": "bogong_keeper",
+   "name": "顾庙的阿伯",
+   "sprite": "elder",
+   "x": 7,
+   "y": 4,
+   "dir": "left",
+   "dialogue": [
+    {
+     "if": "bossDefeated",
+     "unless": "altar3",
+     "set": [
+      "altar3"
+     ],
+     "give": {
+      "items": [
+       {
+        "id": "gram",
+        "qty": 1
+       }
+      ]
+     },
+     "lines": [
+      "火种转来了，土就毋会裂了。最后这件，是自家滚出来的。",
+      "一把剑。断过又接起来，接口还看得出。",
+      "伯公的意思大概系——数还清了，东西还你们。"
+     ]
+    },
+    {
+     "if": "jobUnlocked",
+     "unless": "altar2",
+     "set": [
+      "altar2"
+     ],
+     "give": {
+      "items": [
+       {
+        "id": "zulfiqar",
+        "qty": 1
+       }
+      ]
+     },
+     "lines": [
+      "又吐一件出来。这摆系刀，刀尖分两叉。",
+      "𠊎阿公讲过，早年渡海过来个毋单净𠊎等客家人。",
+      "有兜人上了岸，东西留下来，人无留下来。"
+     ]
+    },
+    {
+     "if": "questStarted",
+     "unless": "altar1",
+     "set": [
+      "altar1"
+     ],
+     "give": {
+      "items": [
+       {
+        "id": "was_scepter",
+        "qty": 1
+       }
+      ]
+     },
+     "lines": [
+      "红纸压毋核。今朝𠊎掀开看，缝肚吐出这个。",
+      "一支杖，杖头系只狗，耳公竖到直直。",
+      "伯公坛下背埋个东西，比这庄还较老。你们拿去，路上用得着。"
+     ]
+    },
+    {
+     "if": "bossDefeated",
+     "lines": [
+      "那条缝合起来了。红纸我今早撕掉了。",
+      "土是温的，跟以前一样。"
+     ]
+    },
+    {
+     "lines": [
+      "伯公坛前的土，昨暗自己裂了一条缝。",
+      "我用红纸压住了。你们看——纸还在跳。"
+     ]
+    }
+   ]
+  }
+ ]
 }

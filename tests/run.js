@@ -399,11 +399,45 @@ test('商店只卖非神话装备，宝箱/掉落才有神话装备', () => {
     for (const id of n.script?.items || []) assert(!data.items[id].myth, `商店不该卖神话装备 ${id}`);
     for (const r of n.script?.reward || []) assert(data.items[r.id], `掉落物 ${r.id} 不存在`);
   }
-  const fromChests = new Set();
-  for (const md of Object.values(data.maps)) for (const ev of md.events || []) if (ev.item) fromChests.add(ev.item);
-  for (const md of Object.values(data.maps)) for (const n of md.npcs || []) for (const r of n.script?.reward || []) fromChests.add(r.id);
-  const mythAvailable = [...fromChests].filter(id => data.items[id]?.myth);
-  assert(mythAvailable.length >= 4, `流程里只能拿到 ${mythAvailable.length} 件神话装备`);
+});
+
+// 收集全部获取途径：宝箱 / Boss 掉落 / NPC 赠予
+function itemSources() {
+  const src = new Map();
+  const add = (id, where) => { if (!id) return; if (!src.has(id)) src.set(id, []); src.get(id).push(where); };
+  for (const [mid, md] of Object.entries(data.maps)) {
+    for (const ev of md.events || []) add(ev.item, `${mid} 宝箱 ${ev.id || ev.x + ',' + ev.y}`);
+    for (const n of md.npcs || []) {
+      for (const r of n.script?.reward || []) add(r.id, `${mid} ${n.name} 掉落`);
+      for (const v of n.dialogue || []) for (const g of v.give?.items || []) add(g.id, `${mid} ${n.name} 赠予`);
+    }
+  }
+  return src;
+}
+
+test('每件神话装备都真的拿得到（之前 23 件里有 15 件玩家永远见不到）', () => {
+  const src = itemSources();
+  const missing = Object.entries(data.items).filter(([id, it]) => it.myth && !src.has(id)).map(([id]) => id);
+  assert(!missing.length, `这些神话装备定义了却没有任何出处：${missing.join(' ')}`);
+});
+
+test('神话装备的职业限制合法，且不会出现「拿得到但全队没人能装」', () => {
+  const src = itemSources();
+  const partyJobs = new Set(data.party.map(p => p.jobId));
+  for (const [id, it] of Object.entries(data.items)) {
+    if (!it.myth || !it.cat) continue;
+    if (!it.jobs) continue;                       // 不写 jobs = 全职业通用
+    assert(it.jobs.length, `${id} 的 jobs 是空数组，谁都装不了`);
+    for (const j of it.jobs) assert(data.jobs[j], `${id} 引用了不存在的职业 ${j}`);
+  }
+  // 大武山祭场的四个箱子是设计成「初始四人各一件」的，必须对得上默认队伍
+  const finalChests = (data.maps.cave_3?.events || []).filter(e => e.type === 'chest' && data.items[e.item]?.myth);
+  for (const ev of finalChests) {
+    const jobs = data.items[ev.item].jobs;
+    assert(!jobs || jobs.some(j => partyJobs.has(j)),
+      `祭场宝箱 ${ev.id} 的 ${data.items[ev.item].name} 只有 ${jobs.join('/')} 能装，初始队伍拿了也用不了`);
+  }
+  assert(src.size, '一件可获得的道具都没有，收集逻辑坏了');
 });
 
 test('正式美术：所有角色精灵一样高、尺寸一致（防止某个职业显得特别小）', () => {

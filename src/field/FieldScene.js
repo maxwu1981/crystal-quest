@@ -163,7 +163,9 @@ export class FieldScene {
     let text;
     if (ev.gold) { st.gold += ev.gold; text = `获得了 ${ev.gold} 金币！`; }
     else { addItem(st.inventory, ev.item, ev.qty || 1); const it = g.data.items[ev.item]; text = `拾到了 ${it.name}${ev.qty > 1 ? ' ×' + ev.qty : ''}。`; }
-    g.scenes.push(new DialogueScene(g, { pages: [text] }));
+    // ev.text：开箱前先讲这东西的来历（神话装备用，普通箱子不写就没有）
+    const pages = ev.text ? [...(Array.isArray(ev.text) ? ev.text : [ev.text]), text] : [text];
+    g.scenes.push(new DialogueScene(g, { pages }));
   }
   touchCrystal(ev) {
     const g = this.game, st = g.state, story = g.data.story?.crystal || {};

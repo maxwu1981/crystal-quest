@@ -1,150 +1,162 @@
 {
-  "name": "大武山 祭场",
-  "encounterZone": null,
-  "spawn": {
-    "x": 11,
-    "y": 13
+ "name": "大武山 祭场",
+ "encounterZone": null,
+ "spawn": {
+  "x": 11,
+  "y": 13
+ },
+ "legend": {
+  "#": {
+   "tile": "cave_wall",
+   "solid": true
   },
-  "legend": {
-    "#": {
-      "tile": "cave_wall",
-      "solid": true
-    },
-    ".": {
-      "tile": "cave_floor"
-    },
-    "S": {
-      "tile": "sand"
-    },
-    "M": {
-      "tile": "mountain",
-      "solid": true
-    },
-    "w": {
-      "tile": "water",
-      "solid": true
-    },
-    "X": {
-      "tile": "crystal",
-      "solid": true
-    },
-    "<": {
-      "tile": "stairs_up"
-    }
+  ".": {
+   "tile": "cave_floor"
   },
-  "rows": [
-    "########################",
-    "########SSSSSSSS########",
-    "######SSSMSSSMSSSS######",
-    "#####SSSSSSXSSSSSSM#####",
-    "####SSSSSMSSSMSSSSSS####",
-    "##SSSSSSMSSSSSMSSSSSSS##",
-    "##SSSSSSSSSSSSSSSMSSSS##",
-    "##SwwwSSMSSSSSMSSSSSSS##",
-    "##SwwwSSSSSSSSSSSSSSSS##",
-    "###wwwSSMSSSSSMSSSSMS###",
-    "###SSSSSSSSSSSSSSSSSS###",
-    "#####SSSMSSSSSMSMSS#####",
-    "#######..........#######",
-    "#########......#########",
-    "###########<############",
-    "########################"
-  ],
-  "events": [
-    {
-      "x": 11,
-      "y": 14,
-      "type": "warp",
-      "to": {
-        "map": "cave_2",
-        "x": 21,
-        "y": 2,
-        "facing": "left"
-      }
-    },
-    {
-      "x": 11,
-      "y": 3,
-      "type": "crystal",
-      "needFlag": "bossDefeated"
-    },
-    {
-      "x": 2,
-      "y": 5,
-      "type": "chest",
-      "id": "c3_vajra",
-      "item": "vajra",
+  "S": {
+   "tile": "sand"
+  },
+  "M": {
+   "tile": "mountain",
+   "solid": true
+  },
+  "w": {
+   "tile": "water",
+   "solid": true
+  },
+  "X": {
+   "tile": "crystal",
+   "solid": true
+  },
+  "<": {
+   "tile": "stairs_up"
+  }
+ },
+ "rows": [
+  "########################",
+  "########SSSSSSSS########",
+  "######SSSMSSSMSSSS######",
+  "#####SSSSSSXSSSSSSM#####",
+  "####SSSSSMSSSMSSSSSS####",
+  "##SSSSSSMSSSSSMSSSSSSS##",
+  "##SSSSSSSSSSSSSSSMSSSS##",
+  "##SwwwSSMSSSSSMSSSSSSS##",
+  "##SwwwSSSSSSSSSSSSSSSS##",
+  "###wwwSSMSSSSSMSSSSMS###",
+  "###SSSSSSSSSSSSSSSSSS###",
+  "#####SSSMSSSSSMSMSS#####",
+  "#######..........#######",
+  "#########......#########",
+  "###########<############",
+  "########################"
+ ],
+ "events": [
+  {
+   "x": 11,
+   "y": 14,
+   "type": "warp",
+   "to": {
+    "map": "cave_2",
+    "x": 21,
+    "y": 2,
+    "facing": "left"
+   }
+  },
+  {
+   "x": 11,
+   "y": 3,
+   "type": "crystal",
+   "needFlag": "bossDefeated"
+  },
+  {
+   "x": 2,
+   "y": 5,
+   "type": "chest",
+   "id": "c3_vajra",
+   "item": "vajra",
+   "qty": 1
+  },
+  {
+   "x": 21,
+   "y": 5,
+   "type": "chest",
+   "id": "c3_harpe",
+   "item": "harpe",
+   "qty": 1
+  },
+  {
+   "x": 3,
+   "y": 10,
+   "type": "chest",
+   "id": "c3_caduceus",
+   "item": "caduceus",
+   "qty": 1
+  },
+  {
+   "x": 20,
+   "y": 10,
+   "type": "chest",
+   "id": "c3_laevateinn",
+   "item": "laevateinn",
+   "qty": 1
+  }
+ ],
+ "npcs": [
+  {
+   "id": "boss",
+   "name": "乌火",
+   "sprite": "knight",
+   "x": 11,
+   "y": 5,
+   "dir": "down",
+   "unless": "bossDefeated",
+   "script": {
+    "type": "boss",
+    "enemies": [
+     "knight"
+    ],
+    "winFlag": "bossDefeated",
+    "after": [
+     "……原来……这一代的人……还肯上山来……",
+     "火种还给你们。可是记住——",
+     "压不是解。总有一天要有人下来，把话讲清楚……",
+     "（乌火散成一地火星，慢慢暗下去。火星落到土上，一件一件冷成了东西）"
+    ],
+    "reward": [
+     {
+      "id": "excalibur",
       "qty": 1
-    },
-    {
-      "x": 21,
-      "y": 5,
-      "type": "chest",
-      "id": "c3_harpe",
-      "item": "harpe",
+     },
+     {
+      "id": "dragon_heart",
       "qty": 1
-    },
-    {
-      "x": 3,
-      "y": 10,
-      "type": "chest",
-      "id": "c3_caduceus",
-      "item": "caduceus",
+     },
+     {
+      "id": "xuanyuan",
       "qty": 1
-    },
-    {
-      "x": 20,
-      "y": 10,
-      "type": "chest",
-      "id": "c3_laevateinn",
-      "item": "laevateinn",
+     },
+     {
+      "id": "brynhild",
       "qty": 1
+     },
+     {
+      "id": "nemean_fist",
+      "qty": 1
+     }
+    ]
+   },
+   "dialogue": [
+    {
+     "lines": [
+      "……三百年了。你们知道压在这下面的是什么吗。",
+      "不是妖，不是鬼。是这块地欠的债。",
+      "你们的祖先来开垦，砍了山，占了溪，然后点一把火压住，就当没这回事。",
+      "火熄了。债还是债。",
+      "我不是来害人的——我是来讨的。",
+      "要火种？从我这里拿去。"
+     ]
     }
-  ],
-  "npcs": [
-    {
-      "id": "boss",
-      "name": "乌火",
-      "sprite": "knight",
-      "x": 11,
-      "y": 5,
-      "dir": "down",
-      "unless": "bossDefeated",
-      "script": {
-        "type": "boss",
-        "enemies": [
-          "knight"
-        ],
-        "winFlag": "bossDefeated",
-        "after": [
-          "……原来……这一代的人……还肯上山来……",
-          "火种还给你们。可是记住——",
-          "压不是解。总有一天要有人下来，把话讲清楚……",
-          "（乌火散成一地火星，慢慢暗下去。地上留下一把刀，和一颗还在跳的东西）"
-        ],
-        "reward": [
-          {
-            "id": "excalibur",
-            "qty": 1
-          },
-          {
-            "id": "dragon_heart",
-            "qty": 1
-          }
-        ]
-      },
-      "dialogue": [
-        {
-          "lines": [
-            "……三百年了。你们知道压在这下面的是什么吗。",
-            "不是妖，不是鬼。是这块地欠的债。",
-            "你们的祖先来开垦，砍了山，占了溪，然后点一把火压住，就当没这回事。",
-            "火熄了。债还是债。",
-            "我不是来害人的——我是来讨的。",
-            "要火种？从我这里拿去。"
-          ]
-        }
-      ]
-    }
-  ]
+   ]
+  }
+ ]
 }

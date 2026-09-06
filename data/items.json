@@ -1032,6 +1032,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
+   "boxer",
    "general"
   ],
   "atk": 46,
@@ -1050,6 +1051,7 @@
   "price": 0,
   "cat": "knuckle",
   "jobs": [
+   "boxer",
    "general"
   ],
   "atk": 42,
