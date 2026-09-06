@@ -31,41 +31,41 @@
     "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). medium build made bulkier by the pack on his back"
   },
   "_head": "所有角色统一：头（含头发）约占身高的三分之一，是经典 SNES 二头身偏 Q 的比例。这条最容易漂——补生成时 Gemini 常给出写实的小头，摆在其他帧旁边就像换了个人。 补一条：家将踩过反向的坑——build 里写了「CHIBI 两个半头高」，后面跟一长串「但大头不等于胖，身体要瘦、手臂要细」，结果后半句把前半句压过去，出来是六头身的写实比例。但改成「可度量」的写法（「头和躯干一样高」「全身三个头高」）也不管用——试过，还是六头身。真正的原因是描述里那串**反例**：「身体要瘦、腰要细、手臂要细、不要壮」，每个词都在往写实解剖学拉，把头身比那句压过去了。这串话当初是为了修「有点胖」的反馈加的，矫枉过正。正确做法是**删掉反例**，照阿勇那条真正管用的写法写正面描述：「头占三分之一」+「身体结实厚重」。另外别去做「头身比」的自动门禁：兜帽和斗笠把头和肩连成一片，「最窄处即脖子」的启发式会失效（青草婆看着明明是 Q 版却量出 0.156）。判据要用「和其他角色并排看协不协调」，见 tools/_cap/party_compare.png 的做法。",
-  "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。",
+  "_villagers": "下面 7 种是村民。它们原本是 sprites.js 里的程序化小人，16×16 逻辑像素，比 16×24 的主角矮一截，站在一起像小孩。改成走 Gemini 管线后自动同高。画风跟队伍一致（西方奇幻 SNES），不做台湾化——用户明确说过「就用西方奇幻無所謂 地名換就好」。 又踩到一次头身比：村民的 build 原本写「ordinary adult build」，「adult（成年人）体型」这个词直接把模型拉向写实解剖比例，出来是四五头身，跟三头身的队伍站一起明显矮一截、头小一圈。和家将那次是同一个病：**描述里任何指向写实的词都会压过「头占三分之一」那句**。改成「chunky sturdy build, same big-headed proportions as the hero party」才对。",
   "man": {
     "name": "男庄民",
     "look": "an ordinary village man with short dark hair, a plain blue tunic with a leather belt, brown trousers and simple shoes",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky sturdy build, same big-headed proportions as the hero party"
   },
   "woman": {
     "name": "妇人",
     "look": "an ordinary village woman with shoulder-length brown hair, a rose-pink long dress with a pale apron over it",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, the dress falls straight and does not flare into a bell"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky sturdy build, same big-headed proportions as the hero party; the dress falls straight and does not flare into a bell"
   },
   "elder": {
     "name": "老人",
     "look": "a stooped old villager with white hair and a short white beard, a plain brown robe, leaning on a simple wooden walking stick",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). slightly hunched, shorter and rounder than the other adults"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky build, slightly hunched and rounder than the others, same big-headed proportions as the hero party"
   },
   "kid": {
     "name": "囝仔",
     "look": "a small village child with messy yellow hair, a green short-sleeved shirt and brown short trousers, bare feet",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). small and round, clearly a child but the same total height as the other sprites"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). small and round, clearly a child but the same total height as the other sprites"
   },
   "merchant": {
     "name": "商人",
     "look": "a village shopkeeper with brown hair under a small flat teal cap, a teal-green coat over a cream shirt, a coin pouch at the belt",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky slightly stout build, same big-headed proportions as the hero party"
   },
   "innkeeper": {
     "name": "旅馆头家",
     "look": "an innkeeper with tied-back brown hair, a deep red shirt under a long white apron, a cloth towel over one shoulder",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). ordinary adult build, slightly stout"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky slightly stout build, same big-headed proportions as the hero party"
   },
   "guard": {
     "name": "巡更的",
     "look": "a village watchman in grey-blue studded leather armour over a slate tunic, a simple helmet, holding a plain wooden spear upright",
-    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion, not realistic). solid, broad-shouldered adult build"
+    "build": "LARGE head about ONE THIRD of total height (classic chibi SNES proportion). chunky broad-shouldered build, same big-headed proportions as the hero party"
   },
   "_side_view": "侧面帧反复踩到的三个坑，写提示词时必须带上：① 头发/发髻要明确说在脑后——不说的话 Gemini 会把整团头发画到脸的前面（家将的发髻踩过两次）。朝左的侧面就写：脸、鼻、额在左边缘，所有头发和发髻在右边、在他身后，脸前面不许有头发。② 「大头」那句会被理解成整个人一起放大，身体跟着变胖。③ 但只补一句「不要胖」又会把头也缩掉。有效的写法是把头和身分开各说一句：「头必须巨大——含头发占身高三分之一，明显比肩膀宽；只有身体是瘦的——细腰、细手臂、细腿。是大头配精瘦小身子，不要缩头，也不要把躯干画胖。」「头比肩宽」是最好用的锚，因为它是可验证的几何关系，不是形容词。 ④ 出完侧面帧一定要**看朝向**：Gemini 有时会给出朝右的侧面，而战斗里敌人在左边、所有人都该朝左。这个数值测不出来（比例、面积全都正常），只能看图。好消息是不用重出——水平镜像一下就好，art.js 的 right 帧本来就是 left 镜像来的。巴冷踩过这个：正面侧面比例都对，就是整个人背对着敌人。",
   "_tiles": "瓦片重出后要复查配色：Gemini 画石材爱带粉红，铺石地已经踩过两次。修法是色相钉到 0.085（暖褐）、饱和 ×0.30、明度 ×0.80 转成灰石，跟 tools/match_tone.py --pin 同一个思路。山瓦片同理——不写死「亚热带无雪」它会画雪顶，而且第一版会跟森林长得一样，必须强调块状岩壁与强烈明暗，否则玩家分不出「山不能走、森林能走」。",
