@@ -1,253 +1,375 @@
 {
-  "village_field": {
-    "steps": [
-      12,
-      32
+ "village_field": {
+  "steps": [
+   12,
+   32
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "goblin"
     ],
-    "groups": [
-      {
-        "enemies": [
-          "goblin"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "goblin",
-          "goblin"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "slime",
-          "slime"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "wolf"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "slime",
-          "goblin",
-          "slime"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "wolf",
-          "goblin"
-        ],
-        "weight": 1
-      }
-    ]
-  },
-  "cave": {
-    "steps": [
-      12,
-      28
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "goblin",
+     "goblin"
     ],
-    "groups": [
-      {
-        "enemies": [
-          "bat",
-          "bat"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "bat",
-          "bat",
-          "bat"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "goblin",
-          "bat"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "goblin",
-          "goblin",
-          "bat"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "darkslime",
-          "darkslime"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "slime",
-          "darkslime"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "skeleton"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "skeleton",
-          "bat"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "skeleton",
-          "darkslime"
-        ],
-        "weight": 1
-      }
-    ]
-  },
-  "cave_deep": {
-    "steps": [
-      11,
-      24
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "slime",
+     "slime"
     ],
-    "groups": [
-      {
-        "enemies": [
-          "skeleton",
-          "skeleton"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "skeleton",
-          "darkslime",
-          "bat"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "bat",
-          "bat",
-          "darkslime"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "darkslime",
-          "darkslime",
-          "darkslime"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "ghost"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "ghost",
-          "bat",
-          "bat"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "ghost",
-          "skeleton"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "skeleton",
-          "skeleton",
-          "darkslime"
-        ],
-        "weight": 1
-      }
-    ]
-  },
-  "plains": {
-    "steps": [
-      14,
-      34
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "wolf"
     ],
-    "groups": [
-      {
-        "enemies": [
-          "goblin",
-          "goblin"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "wolf"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "bee",
-          "bee"
-        ],
-        "weight": 3
-      },
-      {
-        "enemies": [
-          "bee",
-          "bee",
-          "bee"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "mandrake"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "mandrake",
-          "bee"
-        ],
-        "weight": 2
-      },
-      {
-        "enemies": [
-          "wolf",
-          "wolf"
-        ],
-        "weight": 1
-      },
-      {
-        "enemies": [
-          "ghost"
-        ],
-        "weight": 1
-      }
-    ]
-  }
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "slime",
+     "goblin",
+     "slime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "wolf",
+     "goblin"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "stinkbug",
+     "stinkbug",
+     "stinkbug"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "muntjac"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "stinkbug",
+     "stinkbug",
+     "goblin"
+    ],
+    "weight": 1
+   }
+  ]
+ },
+ "cave": {
+  "steps": [
+   12,
+   28
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "bat",
+     "bat"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "bat",
+     "bat",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "goblin",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "goblin",
+     "goblin",
+     "bat"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "darkslime",
+     "darkslime"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "slime",
+     "darkslime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "darkslime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "paperkid",
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "paperkid",
+     "darkslime",
+     "darkslime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "viper",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "tigergran"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "tigergran",
+     "paperkid"
+    ],
+    "weight": 1
+   }
+  ]
+ },
+ "cave_deep": {
+  "steps": [
+   11,
+   24
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "skeleton",
+     "skeleton"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "darkslime",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "bat",
+     "bat",
+     "darkslime"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "darkslime",
+     "darkslime",
+     "darkslime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "ghost"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "ghost",
+     "bat",
+     "bat"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "ghost",
+     "skeleton"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "skeleton",
+     "darkslime"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "earthox"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "earthox",
+     "paperkid"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "tigergran",
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "paperkid",
+     "skeleton",
+     "skeleton"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "tigergran",
+     "ghost",
+     "paperkid"
+    ],
+    "weight": 1
+   }
+  ]
+ },
+ "plains": {
+  "steps": [
+   14,
+   34
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "goblin",
+     "goblin"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "wolf"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "bee",
+     "bee"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "bee",
+     "bee",
+     "bee"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "mandrake"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "mandrake",
+     "bee"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "wolf",
+     "wolf"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "ghost"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "stinkbug",
+     "stinkbug",
+     "stinkbug",
+     "stinkbug"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "viper"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "viper",
+     "mandrake"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "muntjac",
+     "muntjac"
+    ],
+    "weight": 1
+   }
+  ]
+ }
 }

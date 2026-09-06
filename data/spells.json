@@ -63,6 +63,15 @@
   "scope": "all",
   "desc": "全体雷属性伤害"
  },
+ "shoujing": {
+  "name": "收惊",
+  "mp": 5,
+  "power": 9,
+  "element": "light",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "喊一声，日头的光落下来。见不得光的东西最怕这个"
+ },
  "cure": {
   "name": "治愈",
   "mp": 4,

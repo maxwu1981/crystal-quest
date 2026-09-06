@@ -8,8 +8,8 @@
    "str": 12,
    "agi": 5,
    "int": 1,
-   "vit": 10,
-   "acc": 30,
+   "vit": 12,
+   "acc": 32,
    "eva": 8
   },
   "growth": {
@@ -18,7 +18,7 @@
    "str": 2.2,
    "agi": 1,
    "int": 0.3,
-   "vit": 1.8,
+   "vit": 2.2,
    "acc": 3,
    "eva": 1
   },
@@ -40,17 +40,17 @@
    "agi": 12,
    "int": 3,
    "vit": 6,
-   "acc": 24,
+   "acc": 32,
    "eva": 20
   },
   "growth": {
-   "hp": 6,
+   "hp": 6.5,
    "mp": 0,
-   "str": 1.6,
+   "str": 1.8,
    "agi": 2.2,
    "int": 0.5,
    "vit": 1.2,
-   "acc": 3,
+   "acc": 3.6,
    "eva": 2.5
   },
   "commands": [
@@ -65,26 +65,26 @@
   "name": "家将",
   "desc": "八家将的脚步。赤手空拳也镇得住东西。",
   "base": {
-   "hp": 42,
+   "hp": 44,
    "mp": 0,
    "str": 10,
-   "agi": 8,
+   "agi": 5,
    "int": 2,
    "vit": 12,
    "acc": 26,
-   "eva": 12
+   "eva": 8
   },
   "growth": {
-   "hp": 9,
+   "hp": 10,
    "mp": 0,
-   "str": 2.0,
-   "agi": 1.6,
+   "str": 1.6,
+   "agi": 0.9,
    "int": 0.3,
-   "vit": 2.0,
+   "vit": 1.7,
    "acc": 3,
-   "eva": 1.5
+   "eva": 0.8
   },
-  "unarmed": 1.5,
+  "unarmed": 1.8,
   "hits": 2,
   "commands": [
    "attack",
@@ -126,6 +126,10 @@
   ],
   "spells": [
    "cure",
+   {
+    "id": "shoujing",
+    "level": 2
+   },
    {
     "id": "protect",
     "level": 3
@@ -198,8 +202,12 @@
     "level": 8
    },
    {
+    "id": "dark",
+    "level": 8
+   },
+   {
     "id": "thundara",
-    "level": 11
+    "level": 9
    }
   ]
  },
@@ -208,22 +216,22 @@
   "desc": "什么都卖，什么都会一点，路最熟。",
   "base": {
    "hp": 30,
-   "mp": 8,
+   "mp": 10,
    "str": 8,
    "agi": 8,
    "int": 8,
    "vit": 7,
-   "acc": 22,
+   "acc": 26,
    "eva": 12
   },
   "growth": {
-   "hp": 6,
-   "mp": 2,
-   "str": 1.5,
+   "hp": 6.2,
+   "mp": 2.5,
+   "str": 1.4,
    "agi": 1.5,
    "int": 1.5,
    "vit": 1.3,
-   "acc": 2.5,
+   "acc": 3.0,
    "eva": 1.5
   },
   "commands": [
@@ -246,7 +254,11 @@
    },
    {
     "id": "sleep",
-    "level": 8
+    "level": 7
+   },
+   {
+    "id": "esuna",
+    "level": 9
    }
   ]
  }

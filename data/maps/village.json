@@ -35,7 +35,7 @@
    "solid": true
   },
   "W": {
-   "tile": "wall",
+   "tile": "wall_base",
    "solid": true
   },
   "R": {
@@ -43,7 +43,7 @@
    "solid": true
   },
   "D": {
-   "tile": "door"
+   "tile": "door_front"
   },
   "c": {
    "tile": "counter",
@@ -52,6 +52,28 @@
   },
   "E": {
    "tile": "path"
+  },
+  "^": {
+   "tile": "roof_ridge",
+   "solid": true
+  },
+  "v": {
+   "tile": "roof_eave",
+   "solid": true
+  },
+  "U": {
+   "tile": "wall_upper",
+   "solid": true
+  },
+  "N": {
+   "tile": "wall_window",
+   "solid": true
+  },
+  "_": {
+   "tile": "shadow_dirt"
+  },
+  "-": {
+   "tile": "shadow_grass"
   }
  },
  "rows": [
@@ -64,23 +86,23 @@
   "TggggggggggggggppggTggggggggTggggggT",
   "TggggggTgggggggppggggggggggggggggggT",
   "TggggggggggggggppggggggggTgggggggggT",
-  "TFFFFFFFFFFFFFFppFFFFFFFFFFFFFFFFFFT",
+  "TFFFFFFFFF^^^FFppFFFFFFFFFFFFFFFFFFT",
   "F,T,,,,,,,RRR,,pp,,sssssssss,,,,,,,F",
-  "F,,,,,,,T,RRR,Tpp,Tsssssssss,,,,,T,F",
-  "F,,,,,,,,,WDW,,pp,,sssssssss,,,,,,,F",
-  "F,RRRRRRRRR,,,,pp,,sssssssss,,,,,,,F",
-  "F,RRRRRRRRR,T,,pp,,,RRRRRRR,,,,,,,,F",
-  "F,RRRRRRRRR,,,,pp,,,RRRRRRR,,,,,,,,F",
-  "F,WWWWDWWWW,,,,pp,,,WWWDWWW,,,,,,,,F",
-  "F,ppppppppp,,,,pp,,,ppppppp,,,,,,,,F",
+  "F,,,,,,,T,vvv,Tpp,Tsssssssss,,,,,T,F",
+  "F,^^^^^^^^WDW,,pp,,sssssssss,,,,,,,F",
+  "F,RRRRRRRR----,pp,,s^^^^^^^s,,,,,,,F",
+  "F,vvvvvvvv,,T,,pp,,,vvvvvvv,,,,,,,,F",
+  "F,UUNUUUNU,,,,,pp,,,UNUUUNU,,,,,,,,F",
+  "F,WWWWDWWW,,,,,pp,,,WWWDWWW,,,,,,,,F",
+  "F-_________,,,,pp,,-_______-,,,,,,,F",
   "FppppppppppppppppppppppppppppppppppF",
-  "F,,,,,,,,,,c,c,pp,,,,,,,,,,,,,RRR,,F",
-  "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
-  "F,RRRRRRR,,,,,,pp,,,RRRRRRR,,,RRR,,F",
-  "F,WWWDWWW,,,,,,pp,,,WWWDWWW,,,WWW,,F",
-  "F,ssssssss,,,,,pp,,,,,,,,,,,,,,,,,,F",
-  "F,ssssssss,,,T,pp,,T,,,,,,,,,,,,,,,F",
-  "F,,,,,,,,,,,,,,pp,,,,,,,,,,,T,,,,T,F",
+  "F,^^^^^^^,,c,c,pp,,,^^^^^^^,,,^^^,,F",
+  "F,vvvvvvv,,,,,,pp,,,vvvvvvv,,,RRR,,F",
+  "F,UNUUUNU,,,,,,pp,,,UNUUUNU,,,vvv,,F",
+  "F,WWWDWWW,,,,,,pp,,,WWWDWWW,,,UNU,,F",
+  "F-________,,,,,pp,,---------,^^^^,,F",
+  "F,ssssssss,,,T,pp,,T,,,,,,,,,WWWW,,F",
+  "F,,,,,,,,,,,,,,pp,,,,,,,,,,,-----T,F",
   "FwwwwbwwwwwwwwwbbwwwwwwwwbwwwwwwwwwF",
   "F,T,,,,,,,,,,,,pp,,,,,,,,,,,,,T,,,,F",
   "F,,,,,,,,,,,,,,pp,,,,,,,,,,,,,,,,,,F",
@@ -569,8 +591,8 @@
    "id": "weaver",
    "name": "编笼的阿伯",
    "sprite": "elder",
-   "x": 4,
-   "y": 19,
+   "x": 1,
+   "y": 20,
    "dir": "right",
    "dialogue": [
     {

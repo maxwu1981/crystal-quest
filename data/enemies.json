@@ -268,5 +268,169 @@
    "dark"
   ],
   "ai": "basic"
+ },
+ "stinkbug": {
+  "name": "荔枝椿象",
+  "sprite": "bee",
+  "hp": 20,
+  "mp": 0,
+  "atk": 8,
+  "def": 3,
+  "acc": 22,
+  "eva": 8,
+  "spd": 7,
+  "mdef": 2,
+  "crit": 2,
+  "exp": 8,
+  "gold": 5,
+  "weak": [
+   "fire",
+   "ice"
+  ],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic",
+  "onHit": {
+   "status": "blind",
+   "chance": 0.3
+  }
+ },
+ "muntjac": {
+  "name": "山羌",
+  "sprite": "wolf",
+  "hp": 26,
+  "mp": 0,
+  "atk": 10,
+  "def": 2,
+  "acc": 26,
+  "eva": 38,
+  "spd": 16,
+  "mdef": 3,
+  "crit": 4,
+  "exp": 16,
+  "gold": 4,
+  "weak": [
+   "dark"
+  ],
+  "resist": [],
+  "immune": [],
+  "spells": [],
+  "ai": "basic"
+ },
+ "viper": {
+  "name": "龟壳花",
+  "sprite": "wolf",
+  "hp": 33,
+  "mp": 0,
+  "atk": 14,
+  "def": 4,
+  "acc": 34,
+  "eva": 18,
+  "spd": 12,
+  "mdef": 4,
+  "crit": 18,
+  "exp": 26,
+  "gold": 13,
+  "weak": [
+   "ice"
+  ],
+  "resist": [],
+  "immune": [
+   "poison"
+  ],
+  "spells": [],
+  "ai": "basic",
+  "onHit": {
+   "status": "poison",
+   "chance": 0.5
+  }
+ },
+ "tigergran": {
+  "name": "虎姑婆",
+  "sprite": "mandrake",
+  "hp": 150,
+  "mp": 24,
+  "atk": 21,
+  "def": 10,
+  "acc": 42,
+  "eva": 8,
+  "spd": 7,
+  "mdef": 10,
+  "int": 10,
+  "crit": 8,
+  "exp": 72,
+  "gold": 44,
+  "weak": [
+   "fire",
+   "dark"
+  ],
+  "resist": [],
+  "immune": [
+   "sleep",
+   "blind"
+  ],
+  "spells": [
+   "sleep"
+  ],
+  "ai": "basic"
+ },
+ "paperkid": {
+  "name": "纸糊童子",
+  "sprite": "goblin",
+  "hp": 30,
+  "mp": 20,
+  "atk": 8,
+  "def": 3,
+  "acc": 24,
+  "eva": 10,
+  "spd": 9,
+  "mdef": 6,
+  "int": 8,
+  "crit": 2,
+  "exp": 16,
+  "gold": 10,
+  "weak": [
+   "fire",
+   "light"
+  ],
+  "resist": [],
+  "immune": [
+   "poison",
+   "sleep",
+   "blind"
+  ],
+  "spells": [
+   "cure"
+  ],
+  "ai": "basic"
+ },
+ "earthox": {
+  "name": "地牛",
+  "sprite": "wolf",
+  "hp": 175,
+  "mp": 0,
+  "atk": 23,
+  "def": 24,
+  "acc": 40,
+  "eva": 0,
+  "spd": 3,
+  "mdef": 6,
+  "crit": 2,
+  "exp": 105,
+  "gold": 68,
+  "weak": [
+   "thunder"
+  ],
+  "resist": [
+   "fire",
+   "ice"
+  ],
+  "immune": [
+   "poison",
+   "blind"
+  ],
+  "spells": [],
+  "ai": "basic"
  }
 }

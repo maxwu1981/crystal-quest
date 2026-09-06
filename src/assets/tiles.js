@@ -10,6 +10,48 @@ function scatter(ctx, rng, n, color) {
 }
 function hlines(ctx, ys, color) { ctx.fillStyle = color; for (const y of ys) ctx.fillRect(0, y, TILE, 1); }
 
+// ======================== 房子怎么才有厚度 ========================
+// 「一片瓦顶 + 一条白墙」平铺出来像贴在地上的色块，因为整栋房子只有两个色阶。
+// 2D 俯视图里的立体感不是靠透视，是靠**从上到下走一遍明暗序**：
+// 每一格瓦片负责一条横带，带与带之间的明暗跳变就是「这里转折了」的信号。
+//
+//   ^ roof_ridge   正脊：顶上一线暗＝看不见的后坡（交代「屋顶有两面」）→ 脊瓦顶面受光 → 硬影 → 前坡最亮
+//   R roof         瓦面：竖向筒瓦，每格下缘一条课缝（上一垄压着下一垄的瓦口）
+//   v roof_eave    檐口：瓦面转暗 → 滴水 → **出挑的檐板受光** → 檐下硬阴影
+//   U wall_upper   墙身上部：顶上承接檐影，往下四行化开，化开处是全墙最亮的一线
+//   N wall_window  同上，外加一个凹进去的直棂窗（墙上有个洞，墙就立起来了）
+//   W wall_base    墙身下部 + 石脚：墙面一路白下来会飘，底下压深色石头才算「站」在地上
+//   D door_front   门楼：出挑的石门楣 + 缩进去的双扇木门 + 门槛石
+//   _ / - shadow_* 房子投在地上的影（可通行）。地图里这条影比房子**左右各宽一格**，
+//                  那一格就是屋檐出挑的量——不画侧墙也能读出屋顶比墙宽。
+//
+// 光统一从正上偏左来：受光面一律在带的上缘，阴影落在下缘。全套只认这一个光向，
+// 混着来就会互相抵消，看起来又变回平的。
+// 颜色贴着 assets/art/ 里已有的 Gemini 瓦片走（屋顶 #4d1212~#661f1f，墙 #dbdbdb），
+// 这样正式美术只换掉一部分时也不会撞色。
+const ROOF = { far: '#2a1112', cap: '#8f3330', lit: '#7a2727', body: '#5a1717', rib: '#4a1212', dark: '#33100f' };
+const WALL = { hi: '#efe8d8', body: '#ded5c2', mid: '#c9bfa9', sh1: '#9a9080', sh2: '#776e5f', sh3: '#585144' };
+const STONE = { lit: '#9a958c', body: '#7c776e', dark: '#544f46', seam: '#3b382f' };
+const WOOD = { lit: '#8f5f37', body: '#5e3a20', dark: '#33200f' };
+
+// 竖向筒瓦：一垄 4 像素，左边一列是垄脊（受光），右边两列是垄沟（背光）。
+// 屋顶的所有格子共用这一套垄距，上下几格才接得成一条通到底的瓦垄。
+function tileRibs(ctx, y, h, ridge, valley) {
+  for (let x = 0; x < TILE; x += 4) {
+    ctx.fillStyle = ridge; ctx.fillRect(x, y, 1, h);
+    ctx.fillStyle = valley; ctx.fillRect(x + 2, y, 2, h);
+  }
+}
+// 地上的屋影：上 6 行本影、2 行半影，第 9 行用隔点抖开，再往下是地面本色。
+// 边缘一定要抖散——一条齐刷刷的硬边会被看成「地上挖了个方洞」，而不是影子。
+function castShadow(ctx, rng, ground, speckA, speckB, core, penumbra, edge) {
+  fill(ctx, ground);
+  scatter(ctx, rng, 6, speckA); scatter(ctx, rng, 3, speckB);
+  ctx.fillStyle = core; ctx.fillRect(0, 0, TILE, 6);
+  ctx.fillStyle = penumbra; ctx.fillRect(0, 6, TILE, 2);
+  ctx.fillStyle = edge; for (let x = 0; x < TILE; x += 2) ctx.fillRect(x, 8, 1, 1);
+}
+
 const DRAW = {
   grass(ctx, rng) { fill(ctx, '#5cb85c'); scatter(ctx, rng, 10, '#4e9f4e'); scatter(ctx, rng, 5, '#72c872'); },
   path(ctx, rng) { fill(ctx, '#d2b47a'); scatter(ctx, rng, 8, '#c19d5f'); scatter(ctx, rng, 3, '#e0c58f'); },
@@ -23,13 +65,115 @@ const DRAW = {
     fill(ctx, '#2f7fd6');
     ctx.fillStyle = '#6ab0f0'; ctx.fillRect(2, 4, 5, 1); ctx.fillRect(9, 10, 5, 1); ctx.fillRect(1, 12, 3, 1); ctx.fillRect(11, 2, 3, 1);
   },
+  // 室内的墙。顶上那道影是「上面还压着屋顶」的交代——少了它，墙和地板一样平。
   wall(ctx) {
-    fill(ctx, '#bdbdbd'); hlines(ctx, [3, 7, 11, 15], '#8d8d8d');
-    ctx.fillStyle = '#8d8d8d';
-    ctx.fillRect(4, 0, 1, 3); ctx.fillRect(12, 0, 1, 3); ctx.fillRect(8, 4, 1, 3);
-    ctx.fillRect(4, 8, 1, 3); ctx.fillRect(12, 8, 1, 3); ctx.fillRect(8, 12, 1, 3);
+    fill(ctx, '#cfcac1');
+    ctx.fillStyle = '#6f6a62'; ctx.fillRect(0, 0, TILE, 1);   // 梁/檐投下来的硬影
+    ctx.fillStyle = '#948e85'; ctx.fillRect(0, 1, TILE, 1);
+    ctx.fillStyle = '#e6e1d8'; ctx.fillRect(0, 2, TILE, 1);   // 影一化开就是最亮的一线
+    hlines(ctx, [7, 12], '#a8a29a');
+    ctx.fillStyle = '#a8a29a';
+    ctx.fillRect(4, 3, 1, 4); ctx.fillRect(12, 3, 1, 4);
+    ctx.fillRect(1, 8, 1, 4); ctx.fillRect(8, 8, 1, 4);
+    ctx.fillStyle = '#7f7a72'; ctx.fillRect(0, 15, TILE, 1);  // 贴地的一线，墙脚才落得下去
   },
-  roof(ctx) { fill(ctx, '#c62828'); hlines(ctx, [3, 7, 11, 15], '#8e1b1b'); hlines(ctx, [0, 4, 8, 12], '#e05353'); },
+  // 屋面：竖向筒瓦 + 每格下缘的课缝。老版本是横线平铺，读起来像一块摊平的红布；
+  // 改成竖垄之后眼睛会顺着垄往下走，坡度就出来了。课缝同时把「一垄压一垄」讲清楚。
+  roof(ctx, rng) {
+    fill(ctx, ROOF.body);
+    tileRibs(ctx, 0, TILE, ROOF.lit, ROOF.rib);
+    ctx.fillStyle = ROOF.lit; ctx.fillRect(0, 13, TILE, 1);   // 瓦口受光的一线
+    ctx.fillStyle = ROOF.dark; ctx.fillRect(0, 14, TILE, 2);  // 压在下一垄上的阴影
+    scatter(ctx, rng, 4, ROOF.rib);
+  },
+  // 正脊。最上面那一行是**后坡**露出来的一线：屋顶有两面坡这件事只能靠它交代，
+  // 少了它屋顶就只是一块从天而降的板。往下依次是脊瓦顶面（全屋最亮）、脊下硬影、前坡。
+  roof_ridge(ctx) {
+    fill(ctx, '#6d2020');                                     // 前坡：紧挨着脊，最朝天，用最亮的瓦色
+    tileRibs(ctx, 5, 11, '#93342f', ROOF.body);
+    ctx.fillStyle = ROOF.lit; ctx.fillRect(0, 13, TILE, 1);
+    ctx.fillStyle = ROOF.dark; ctx.fillRect(0, 14, TILE, 2);
+    ctx.fillStyle = ROOF.far; ctx.fillRect(0, 0, TILE, 1);    // 后坡：越远越暗
+    ctx.fillStyle = ROOF.cap; ctx.fillRect(0, 1, TILE, 1);    // 脊瓦顶面受光
+    ctx.fillStyle = ROOF.body; ctx.fillRect(0, 2, TILE, 2);
+    ctx.fillStyle = ROOF.dark; ctx.fillRect(0, 4, TILE, 1);   // 脊瓦投在前坡上的硬影
+    ctx.fillStyle = ROOF.cap; ctx.fillRect(3, 0, 2, 1); ctx.fillRect(11, 0, 2, 1); // 脊上的小起翘，别做大，重复会花
+  },
+  // 檐口。一格里走完「瓦面转暗 → 滴水 → 檐板受光 → 檐下硬影」。
+  // 檐板那条亮线是全屋最要紧的一笔：它是唯一一条**水平的受光面**，
+  // 看到它，眼睛才知道上面那块是斜的、下面那块是竖的。
+  roof_eave(ctx) {
+    fill(ctx, ROOF.rib);                                      // 坡底背光，比屋面暗一档
+    tileRibs(ctx, 0, 9, ROOF.body, ROOF.dark);
+    ctx.fillStyle = ROOF.lit;                                 // 滴水/瓦当：每垄瓦口一个圆头
+    for (let x = 0; x < TILE; x += 4) ctx.fillRect(x, 9, 2, 1);
+    ctx.fillStyle = ROOF.dark; ctx.fillRect(0, 10, TILE, 1);
+    ctx.fillStyle = WOOD.lit; ctx.fillRect(0, 11, TILE, 1);   // 檐板顶面
+    ctx.fillStyle = WOOD.body; ctx.fillRect(0, 12, TILE, 1);  // 檐板正面
+    ctx.fillStyle = WOOD.dark; ctx.fillRect(0, 13, TILE, 1);  // 檐板下沿
+    ctx.fillStyle = '#3d3730'; ctx.fillRect(0, 14, TILE, 2);  // 檐下：出挑投在墙上的影，由 wall_upper 接着化开
+  },
+  // 墙身上部。顶上四行把檐影一级级化开——化开的行数就是屋檐挑出去的量，
+  // 一步到位会像贴了条黑胶带，太慢又会糊成一片灰。
+  wall_upper(ctx, rng) {
+    fill(ctx, WALL.body);
+    scatter(ctx, rng, 5, WALL.hi); scatter(ctx, rng, 3, WALL.mid);  // 白灰墙的斑驳，先撒，等下被檐影盖住上面几行
+    ctx.fillStyle = WALL.sh3; ctx.fillRect(0, 0, TILE, 1);
+    ctx.fillStyle = WALL.sh2; ctx.fillRect(0, 1, TILE, 1);
+    ctx.fillStyle = WALL.sh1; ctx.fillRect(0, 2, TILE, 1);
+    ctx.fillStyle = WALL.mid; ctx.fillRect(0, 3, TILE, 1);
+    ctx.fillStyle = WALL.hi; ctx.fillRect(0, 4, TILE, 1);     // 影一化开就是最亮的一线
+    ctx.fillStyle = WALL.mid;                                 // 斗子砌的砖缝：横两条，竖的错开
+    ctx.fillRect(0, 9, TILE, 1); ctx.fillRect(0, 14, TILE, 1);
+    ctx.fillRect(4, 5, 1, 4); ctx.fillRect(11, 5, 1, 4);
+    ctx.fillRect(2, 10, 1, 4); ctx.fillRect(8, 10, 1, 4); ctx.fillRect(13, 10, 1, 4);
+  },
+  // 直棂窗。窗子本身不重要，重要的是它**凹进去**：上沿一道硬影、下面一块出挑的窗台。
+  // 墙上只要有一个真的凹下去的洞，这堵墙就立起来了。
+  wall_window(ctx, rng) {
+    DRAW.wall_upper(ctx, rng);
+    ctx.fillStyle = STONE.lit; ctx.fillRect(3, 4, 10, 1);     // 窗楣（过梁）顶面受光
+    ctx.fillStyle = STONE.body; ctx.fillRect(3, 5, 10, 1);
+    ctx.fillStyle = '#1e1a15'; ctx.fillRect(4, 6, 8, 6);      // 洞口
+    ctx.fillStyle = '#100d09'; ctx.fillRect(4, 6, 8, 1);      // 洞口顶内壁：背光，进深全靠它
+    ctx.fillStyle = '#6a5a44'; ctx.fillRect(11, 8, 1, 4); ctx.fillRect(5, 11, 7, 1); // 右下内壁吃到光
+    ctx.fillStyle = WOOD.body; ctx.fillRect(6, 6, 1, 6); ctx.fillRect(9, 6, 1, 6);   // 两根竖棂
+    ctx.fillStyle = STONE.lit; ctx.fillRect(3, 12, 10, 1);    // 窗台出挑
+    ctx.fillStyle = STONE.dark; ctx.fillRect(3, 13, 10, 1);   // 窗台投在墙上的影
+  },
+  // 墙身下部 + 石脚。石脚不是装饰：墙面一路白下来会飘，
+  // 底下压一段深色的卵石，房子才是「站」在地上而不是浮在上面。
+  wall_base(ctx, rng) {
+    fill(ctx, WALL.body);
+    scatter(ctx, rng, 5, WALL.hi);
+    ctx.fillStyle = WALL.mid;
+    ctx.fillRect(0, 4, TILE, 1);
+    ctx.fillRect(5, 0, 1, 4); ctx.fillRect(12, 0, 1, 4); ctx.fillRect(2, 5, 1, 5); ctx.fillRect(9, 5, 1, 5);
+    ctx.fillStyle = STONE.lit; ctx.fillRect(0, 10, TILE, 1);  // 石脚顶面受光
+    ctx.fillStyle = STONE.body; ctx.fillRect(0, 11, TILE, 4);
+    ctx.fillStyle = STONE.dark; ctx.fillRect(3, 11, 1, 4); ctx.fillRect(8, 11, 1, 4); ctx.fillRect(12, 11, 1, 4);
+    ctx.fillStyle = STONE.lit; ctx.fillRect(1, 11, 1, 2); ctx.fillRect(5, 11, 1, 2); ctx.fillRect(10, 11, 1, 2);
+    ctx.fillStyle = STONE.seam; ctx.fillRect(0, 15, TILE, 1); // 墙脚线：贴地的最暗一笔
+  },
+  // 门楼。门口是全屋唯一有进深的开口，凹进去这件事必须交代清楚：
+  // 出挑的石门楣压出一道硬影，门扇缩在影里，最后一条门槛石收在地面上。
+  door_front(ctx, rng) {
+    DRAW.wall_base(ctx, rng);
+    ctx.fillStyle = STONE.lit; ctx.fillRect(2, 1, 12, 1);     // 门楣顶面
+    ctx.fillStyle = STONE.body; ctx.fillRect(2, 2, 12, 1);
+    ctx.fillStyle = '#120e0a'; ctx.fillRect(3, 3, 10, 2);     // 门洞顶部最暗＝进深
+    ctx.fillStyle = WOOD.body; ctx.fillRect(4, 5, 8, 10);     // 两扇木门
+    ctx.fillStyle = WOOD.lit; ctx.fillRect(4, 5, 1, 10); ctx.fillRect(6, 5, 1, 10); ctx.fillRect(9, 5, 1, 10);
+    ctx.fillStyle = WOOD.dark; ctx.fillRect(3, 5, 1, 10); ctx.fillRect(12, 5, 1, 10); ctx.fillRect(7, 5, 1, 10);
+    ctx.fillStyle = '#c9a227'; ctx.fillRect(5, 10, 1, 1); ctx.fillRect(10, 10, 1, 1); // 铜门环
+    ctx.fillStyle = '#a3271f'; ctx.fillRect(1, 4, 1, 8); ctx.fillRect(14, 4, 1, 8);   // 门两边的对联
+    ctx.fillStyle = STONE.lit; ctx.fillRect(3, 15, 10, 1);    // 门槛石
+  },
+  // 屋影落在泥地/禾埕上。房子和地面之间没有这条影，两者就在同一个平面上，
+  // 再怎么画瓦片都还是「一张贴在地上的画」。颜色照 Gemini 的 path 走。
+  shadow_dirt(ctx, rng) { castShadow(ctx, rng, '#b08d4a', '#9c7c40', '#c4a05a', '#5b4626', '#755c31', '#8f7139'); },
+  // 同上，落在草地上。压暗到 #12401f 才压得住 Gemini 那块很饱和的绿。
+  shadow_grass(ctx, rng) { castShadow(ctx, rng, '#2c8b39', '#237a30', '#3fa04c', '#12401f', '#1c5c28', '#237430'); },
   door(ctx) { DRAW.wall(ctx); ctx.fillStyle = '#4e342e'; ctx.fillRect(4, 3, 8, 13); ctx.fillStyle = '#ffca28'; ctx.fillRect(10, 10, 1, 1); },
   floor(ctx) { fill(ctx, '#a1887f'); hlines(ctx, [3, 7, 11, 15], '#795548'); },
   counter(ctx) { DRAW.floor(ctx); ctx.fillStyle = '#8d6e63'; ctx.fillRect(0, 0, 16, 10); ctx.fillStyle = '#d7a86e'; ctx.fillRect(0, 0, 16, 5); ctx.fillStyle = '#5d4037'; ctx.fillRect(0, 10, 16, 1); },
