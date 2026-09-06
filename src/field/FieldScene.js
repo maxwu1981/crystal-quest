@@ -14,6 +14,7 @@ import { DIRS, lerp, clamp } from './grid.js';
 import { audio } from '../core/audio.js';
 import { addItem } from '../game/items.js';
 import { EndingScene } from '../title/EndingScene.js';
+import { saveGame } from '../game/state.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 
@@ -172,7 +173,24 @@ export class FieldScene {
     if (ev.needFlag && !st.flags[ev.needFlag]) { g.scenes.push(new DialogueScene(g, { pages: story.locked || ['……'] })); return; }
     if (st.flags.gameCleared) { g.scenes.push(new DialogueScene(g, { pages: story.again || ['水晶静静地发着光。'] })); return; }
     st.flags.gameCleared = true; audio.sfx('levelup');
-    g.scenes.push(new DialogueScene(g, { pages: story.take || ['取回了风之水晶！'], onDone: () => g.fadeTo(() => { g.scenes.clear(); g.scenes.push(new EndingScene(g)); }, { speed: 1 }) }));
+    g.scenes.push(new DialogueScene(g, {
+      pages: story.take || ['取回了风之水晶！'],
+      onDone: () => g.fadeTo(() => { g.scenes.clear(); g.scenes.push(new EndingScene(g, () => this.returnAfterEnding())); }, { speed: 1 }),
+    }));
+  }
+  // 字幕滚完不回标题，而是把队伍送回内埔庄。
+  // 29 个 NPC 写了通关后台词（69 页），原本 gameCleared 只在内存里活几秒就回标题，
+  // 这些话玩家一句也听不到；石臼的 story.crystal.again 同理。顺手落一份通关档，
+  // 让标题的「想起」读得到通关状态。
+  returnAfterEnding() {
+    const g = this.game, st = g.state;
+    for (const m of st.party) healFull(m, g.data);   // healFull 是单人的
+    Object.assign(st.map, { id: 'village', ...g.data.maps.village.spawn, facing: 'down' });
+    saveGame(st);
+    g.scenes.clear();
+    g.scenes.push(new FieldScene(g));
+    const pages = g.data.story?.ending?.afterReturn;
+    if (pages?.length) g.scenes.push(new DialogueScene(g, { pages }));
   }
   runInn(def, pages, script) {
     const g = this.game, price = script.price ?? 30;

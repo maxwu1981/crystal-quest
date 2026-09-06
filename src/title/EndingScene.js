@@ -1,11 +1,13 @@
-// 结局：星空上滚动的剧情结尾与制作名单，滚完回标题。按住确认加速。
+// 结局：星空上滚动的剧情结尾与制作名单。按住确认加速。
+// 滚完之后走 onDone（通关流程会把玩家送回内埔庄，让 29 个 NPC 的通关后台词有机会被听到）；
+// 没给 onDone 就退回标题。
 import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
 import { RNG } from '../core/RNG.js';
 import { TitleScene } from './TitleScene.js';
 
 export class EndingScene {
-  constructor(game) {
-    this.game = game; this.transparent = false; this.bgm = 'title'; this.t = 0;
+  constructor(game, onDone = null) {
+    this.game = game; this.onDone = onDone; this.transparent = false; this.bgm = 'title'; this.t = 0;
     this.lines = game.data.story?.ending?.lines || ['感谢游玩！'];
     const rng = new RNG(11);
     this.stars = Array.from({ length: 80 }, () => [rng.int(0, 255), rng.int(0, 223), rng.next() * 6.28]);
@@ -17,7 +19,8 @@ export class EndingScene {
     this.scroll += dt * this.speed * (this.game.input.isDown('confirm') ? 6 : 1);
     if (this.scroll >= this.totalH && !this.done) {
       this.done = true;
-      this.game.fadeTo(() => { this.game.scenes.clear(); this.game.scenes.push(new TitleScene(this.game)); }, { speed: 1 });
+      if (this.onDone) this.game.fadeTo(this.onDone, { speed: 1 });
+      else this.game.fadeTo(() => { this.game.scenes.clear(); this.game.scenes.push(new TitleScene(this.game)); }, { speed: 1 });
     }
   }
   render(ctx) {

@@ -1,5 +1,7 @@
 // 自动试玩：不靠真实按键和 requestAnimationFrame，直接同步步进 game.update()。
 // 用法：打开游戏页面，在控制台执行  const t = await import('/tests/playtest.js'); await t.runAll()
+import { pickVariant } from '../src/field/npc.js';
+
 // 回到地图场景（标题画面时先开新游戏）
 export function toField(g) {
   if (!g.scenes.scenes.some(s => s.constructor.name === 'FieldScene')) g.newGame();
@@ -156,7 +158,22 @@ export function playBoss(g) {
   walk(g, drv, 'up', 2); f.interact(); skipDialogue(g, drv); drv.tick(90);
   const ending = g.scenes.top.constructor.name;
   g.input.down.set('confirm', 0); drv.tick(2400); g.input.down.delete('confirm'); drv.tick(120);
-  return { bossVisible, inBattle, canFlee, bgm, afterDlg, bossGone, flag, ending, cleared: !!g.state.flags.gameCleared, finalTop: g.scenes.top.constructor.name };
+  // 字幕滚完要回到内埔庄，不是回标题。29 个 NPC 写了通关后台词，
+  // 从前 gameCleared 只在内存里活几秒就回标题，那些话玩家一句也听不到。
+  const afterEndingTop = g.scenes.top.constructor.name;
+  skipDialogue(g, drv); drv.tick(30);
+  const back = g.scenes.top;
+  let savedCleared = null;
+  try { savedCleared = !!JSON.parse(localStorage.getItem('crystal-quest-save') || '{}')?.flags?.gameCleared; } catch { /* 隐私模式读不到就算了 */ }
+  // 通关后台词现在够不够得着
+  let clearedNpcs = 0, clearedPages = 0;
+  for (const md of Object.values(g.data.maps)) for (const n of md.npcs || []) {
+    const v = (n.dialogue || []).find(x => x.if === 'gameCleared');
+    if (v && pickVariant(n.dialogue, g.state.flags) === v) { clearedNpcs++; clearedPages += v.lines.length; }
+  }
+  return { bossVisible, inBattle, canFlee, bgm, afterDlg, bossGone, flag, ending,
+    cleared: !!g.state.flags.gameCleared, afterEndingTop,
+    finalTop: back.constructor.name, finalMap: g.state.map.id, savedCleared, clearedNpcs, clearedPages };
 }
 
 
