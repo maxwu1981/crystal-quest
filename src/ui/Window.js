@@ -38,12 +38,13 @@ export function drawWindow(ctx, x, y, w, h) {
   roundPath(ctx, x + 0.5, y + 0.5, w - 1, h - 1, R);
   ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
 
-  // ② 底色：上浅下深的墨绿，留 3.5% 透光。底下的地图只透出一点颜色（窗口不再像贴上去的纸片），
-  //    但透过头就会看见 NPC 的轮廓在字后面晃——试过 6%，太多了。
+  // ② 底色：上浅下深的墨绿。试过半透明（FF6 那种玻璃感），3.5% 就能看见地图的路和
+  //    NPC 轮廓在字底下晃，菜单又是整屏铺满，透出来的东西没有任何信息量——所以做成不透明，
+  //    「玻璃」交给下面那道上缘高光去表现。
   roundPath(ctx, x + 1, y + 1, w - 2, h - 2, R - 1);
   const bg = ctx.createLinearGradient(0, y, 0, y + h);
-  bg.addColorStop(0, 'rgba(26,45,37,0.965)');
-  bg.addColorStop(1, 'rgba(8,16,13,0.965)');
+  bg.addColorStop(0, '#1a2d25');
+  bg.addColorStop(1, '#08100d');
   ctx.fillStyle = bg; ctx.fill();
 
   // ③ 内侧上缘的受光：一道渐隐高光，玻璃感就靠它。高度不超过窗高一半，
@@ -61,7 +62,9 @@ export function drawWindow(ctx, x, y, w, h) {
   br.addColorStop(0, '#9c7f50'); br.addColorStop(0.45, '#6b5637'); br.addColorStop(1, '#3d3120');
   ctx.strokeStyle = br; ctx.lineWidth = 2; ctx.stroke();
 
-  // ⑤ 米色内线（1px，直角）。半像素对齐，缩放后才不会糊成两像素
+  // ⑤ 米色内线（1px，直角）。半像素对齐，缩放后才不会糊成两像素。
+  //    窗口小于 4 圈边框的总厚度时（w 或 h < 10）就没有内线可画，直接跳过，免得画出反向矩形
+  if (w < 10 || h < 10) { ctx.restore(); return; }
   ctx.beginPath(); ctx.rect(x + 4.5, y + 4.5, w - 9, h - 9);
   const inner = ctx.createLinearGradient(0, y, 0, y + h);
   inner.addColorStop(0, 'rgba(216,207,168,0.9)'); inner.addColorStop(1, 'rgba(216,207,168,0.34)');

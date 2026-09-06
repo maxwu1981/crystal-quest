@@ -1,11 +1,25 @@
 // 对话框：打字机效果、多页、可选项。透明场景，压在地图上。
-import { drawWindow } from './Window.js';
-import { drawText, wrapText, LINE_H } from '../core/text.js';
+import { drawWindow, UI } from './Window.js';
+import { drawText, measure, wrapText, LINE_H } from '../core/text.js';
 import { Menu } from './Menu.js';
 import { audio } from '../core/audio.js';
 
 const BOX = { x: 0, y: 152, w: 256, h: 72 };
 const CPS = 40; // 每秒字数
+
+// 说话人名牌：挂在对话框左上角的一块小牌子。
+// 没用 drawWindow——完整窗口至少要 23px 高（四圈边框吃掉 11px），压在对话框上像块砖；
+// 这里只要一层暗铜边 + 深底 + 上缘一道受光，15px 就够，而且和窗口是同一套光源。
+// 名字挪到框外之后，框里 4 行全归正文，反而比原来（名字占掉一行）宽裕。
+function drawNamePlate(ctx, name, x, y) {
+  const w = Math.round(measure(ctx, name)) + 12, h = 16;
+  ctx.save();
+  ctx.fillStyle = 'rgba(10,19,15,0.97)'; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = '#7a633f'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.fillStyle = 'rgba(216,207,168,0.45)'; ctx.fillRect(x + 1, y + 1, w - 2, 1);
+  ctx.restore();
+  drawText(ctx, name, x + 6, y + 2, { color: UI.accent });
+}
 
 export class DialogueScene {
   constructor(game, { name = '', pages = [], choices = null, onDone = null }) {
@@ -47,11 +61,22 @@ export class DialogueScene {
   render(ctx) {
     const { x, y, w, h } = BOX;
     drawWindow(ctx, x, y, w, h);
-    let ty = y + 8;
-    if (this.name) { drawText(ctx, this.name, x + 8, ty, { color: '#e6c46a' }); ty += LINE_H; }
-    wrapText(ctx, this.text.slice(0, this.shown), w - 16).slice(0, 4).forEach((l, i) => drawText(ctx, l, x + 8, ty + i * LINE_H));
-    if (this.done && !this.menu && !(this.isLast && this.choices) && Math.floor(this.t * 3) % 2 === 0) {
-      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x + w - 14, y + h - 12); ctx.lineTo(x + w - 8, y + h - 12); ctx.lineTo(x + w - 11, y + h - 8); ctx.closePath(); ctx.fill();
+    if (this.name) drawNamePlate(ctx, this.name, x + 10, y - 14);
+    // 断行宽度仍是 w-16 = 240：tests/run.js 的「对话每页最多 3 行」按 240 量过所有台词，
+    // 改窄了会有台词被截掉而测试还是绿的。
+    wrapText(ctx, this.text.slice(0, this.shown), w - 16).slice(0, 4)
+      .forEach((l, i) => drawText(ctx, l, x + 8, y + 8 + i * LINE_H, { color: UI.text }));
+    if (this.done && !this.menu && !(this.isLast && this.choices)) {
+      // 翻页提示。原来是 3Hz 亮灭（每秒闪 1.5 次），那是频闪不是提示：
+      // 改成常亮 + 1.6 秒一个来回的 1px 上下轻移，一样在说「还有」，但不刺眼。
+      const bob = Math.round(Math.sin(this.t * (Math.PI * 2 / 1.6)));
+      const cx = x + w - 13, cy = y + h - 12 + bob;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.beginPath(); ctx.moveTo(cx - 4, cy - 1); ctx.lineTo(cx + 4, cy - 1); ctx.lineTo(cx, cy + 5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = UI.accent;
+      ctx.beginPath(); ctx.moveTo(cx - 3, cy); ctx.lineTo(cx + 3, cy); ctx.lineTo(cx, cy + 4); ctx.closePath(); ctx.fill();
+      ctx.restore();
     }
     this.menu?.render(ctx);
   }

@@ -74,7 +74,9 @@ export class Menu {
         drawCursor(ctx, x, y + 2);
       }
       drawText(ctx, it.label, x + 9, y, { color });
-      if (it.right != null) drawText(ctx, String(it.right), x + colW - 2, y, { align: 'right', color });
+      // right 是右对齐的附加值（数量、价格、当前设置…）。可以单独给颜色：
+      // 设置页要让「可以改的那个值」自己亮起来，而不是和标签一样白。
+      if (it.right != null) drawText(ctx, String(it.right), x + colW - 2, y, { align: 'right', color: it.disabled ? color : (it.rightColor || color) });
     });
     // 有东西被滚动出去时，右缘画一条 1px 滚动条。位置本身就说明「上下还有」，
     // 不用闪烁的箭头去提示。没滚动时完全不画。

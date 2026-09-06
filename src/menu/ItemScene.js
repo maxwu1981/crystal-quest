@@ -1,6 +1,6 @@
 // 道具菜单：列表 → 选目标 → 使用
 import { Menu } from '../ui/Menu.js';
-import { drawWindow } from '../ui/Window.js';
+import { drawWindow, drawDivider, UI } from '../ui/Window.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
 import { drawPartyPanel, drawTextBlock, stepCursor, PARTY_W } from './common.js';
@@ -52,16 +52,18 @@ export class ItemScene {
       drawWindow(ctx, 0, 0, 256, 32);
       const it = this.menu.item?.value ? data.items[this.menu.item.value] : null;
       const desc = it ? (it.type === 'consumable' ? (it.desc || '') : itemStats(it)) : '道具';
-      drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? '#e6c46a' : '#fff' });
+      drawText(ctx, this.msg || desc, 8, 10, { color: this.msg ? UI.accent : UI.text });
       this.menu.render(ctx);
       return;
     }
     drawPartyPanel(ctx, this.game, { cursor: this.cursor });
     drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
-    const it = data.items[this.itemId];
-    drawText(ctx, it.name, PARTY_W + 8, 8);
-    drawText(ctx, `剩余 ×${countItem(this.inv, this.itemId)}`, PARTY_W + 8, 8 + LINE_H, { color: '#8a8468' });
-    drawText(ctx, '选择对象', PARTY_W + 8, 8 + LINE_H * 2, { color: '#8a8468' });
-    drawTextBlock(ctx, this.msg, PARTY_W + 8, 60, 64);
+    // 右栏分两段：上段说「拿的是什么」，一条刻线之后是「结果怎么样」
+    const it = data.items[this.itemId], x = PARTY_W + 8;
+    drawText(ctx, it.name, x, 8, { color: UI.accent });
+    drawText(ctx, `剩余 ×${countItem(this.inv, this.itemId)}`, x, 8 + LINE_H, { color: UI.dim });
+    drawDivider(ctx, x, 8 + LINE_H * 2 + 2, 256 - PARTY_W - 16);
+    drawText(ctx, '选择对象', x, 8 + LINE_H * 2 + 8, { color: UI.dim });
+    drawTextBlock(ctx, this.msg, x, 8 + LINE_H * 4, 64, { color: UI.text });
   }
 }

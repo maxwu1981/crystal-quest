@@ -1,6 +1,6 @@
 // 装备菜单：选角色 → 选部位 → 从背包挑装备（带攻防预览）
 import { Menu } from '../ui/Menu.js';
-import { drawWindow } from '../ui/Window.js';
+import { drawWindow, drawDivider, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats } from '../game/party.js';
 import { canEquip, equip } from '../game/items.js';
@@ -55,17 +55,19 @@ export class EquipScene {
     if (this.mode === 'member') {
       drawPartyPanel(ctx, this.game, { cursor: this.cursor });
       drawWindow(ctx, PARTY_W, 0, 256 - PARTY_W, 224);
-      drawText(ctx, '装备', PARTY_W + 8, 8); drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H, { color: '#8a8468' });
+      drawText(ctx, '装备', PARTY_W + 8, 8, { color: UI.accent });
+      drawDivider(ctx, PARTY_W + 8, 8 + LINE_H, 256 - PARTY_W - 16);
+      drawText(ctx, '选择角色', PARTY_W + 8, 8 + LINE_H + 6, { color: UI.dim });
       return;
     }
     const m = this.member, job = this.game.data.jobs[m.jobId], { cur, next } = this.previewStats();
     drawWindow(ctx, 0, 0, 256, 56);
     drawSprite(ctx, this.game.sprites[`${m.jobId}_down_0`], 8, 8, 40);
-    drawText(ctx, `${m.name}  ${job.name}  Lv ${m.level}`, 52, 10);
+    drawText(ctx, `${m.name}  ${job.name}  Lv ${m.level}`, 52, 10, { color: UI.text });
     const stat = (label, a, b, x) => {
       const y = 10 + LINE_H + 4;
-      drawText(ctx, label, x, y, { color: '#8a8468' }); drawText(ctx, String(a), x + 28, y);
-      if (b != null && b !== a) drawText(ctx, `→ ${b}`, x + 50, y, { color: b > a ? '#9ecf7a' : '#c8705a' });
+      drawText(ctx, label, x, y, { color: UI.dim }); drawText(ctx, String(a), x + 44, y, { align: 'right', color: UI.text });
+      if (b != null && b !== a) drawText(ctx, `→ ${b}`, x + 50, y, { color: b > a ? UI.good : UI.danger });
     };
     stat('攻击', cur.atk, next?.atk, 52); stat('防御', cur.def, next?.def, 150);
     this.slotMenu.render(ctx);
@@ -81,12 +83,13 @@ export class EquipScene {
         // tools/import_downloads.py）也已经会往 manifest.icons 写文件名，补上图就自动显示，不用改代码。
         const ic = it.icon && icons[it.icon];
         const tx = ic ? 40 : 8, tw = ic ? 208 : 240;
-        if (ic) drawSprite(ctx, ic, 6, 132, 28);
-        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? '#e6c46a' : '#fff' });
-        if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: '#8a8468' });
-        drawText(ctx, itemStats(it), tx, 120 + LINE_H, { color: '#8fb9a8' });
-        wrapText(ctx, it.desc || '', tw).slice(0, 2).forEach((l, i) => drawText(ctx, l, tx, 120 + LINE_H * (i + 2), { color: '#8a8468' }));
-      } else drawText(ctx, '选择要更换的部位', 8, 120, { color: '#8a8468' });
+        if (ic) drawSprite(ctx, ic, 6, 136, 28); // 136 是刻线之下：图标和属性/说明同一段
+        drawText(ctx, it.name + (it.myth ? '  ★神话' : ''), tx, 120, { color: it.myth ? UI.accent : UI.text });
+        if (it.lore) drawText(ctx, it.lore, 248, 120, { align: 'right', color: UI.dim });
+        drawDivider(ctx, 8, 120 + LINE_H - 2, 240); // 名字/出处一段，属性与说明一段
+        drawText(ctx, itemStats(it), tx, 120 + LINE_H + 4, { color: UI.cool });
+        wrapText(ctx, it.desc || '', tw).slice(0, 2).forEach((l, i) => drawText(ctx, l, tx, 124 + LINE_H * (i + 2), { color: UI.dim }));
+      } else drawText(ctx, '选择要更换的部位', 8, 120, { color: UI.dim });
     }
   }
 }

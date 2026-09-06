@@ -1,6 +1,6 @@
 // 设置：战斗模式（回合制 / ATB）、声音。存在 state.settings 里，随存档保存。
 import { Menu } from '../ui/Menu.js';
-import { drawWindow } from '../ui/Window.js';
+import { drawWindow, UI } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { audio } from '../core/audio.js';
 
@@ -19,7 +19,8 @@ export function applySettings(game) { audio.setMute(!!game.state.settings?.mute)
 export class SettingsScene {
   constructor(game) { this.game = game; this.transparent = true; this.build(); }
   build(keep = 0) {
-    const items = OPTIONS.map(o => ({ label: `${o.label}`, right: o.values.find(v => v[0] === getSetting(this.game, o.key))?.[1] ?? '?', value: o.key }));
+    // 当前值用暗金：这一栏是「按左右能改的东西」，颜色本身就是提示
+    const items = OPTIONS.map(o => ({ label: `${o.label}`, right: o.values.find(v => v[0] === getSetting(this.game, o.key))?.[1] ?? '?', rightColor: UI.accent, value: o.key }));
     items.push({ label: '返回', value: 'back' });
     this.menu = new Menu({ items, x: 48, y: 48, w: 160, h: 16 + items.length * LINE_H, onSelect: it => this.select(it.value, 1), onCancel: () => this.game.scenes.pop() });
     this.menu.cursor = keep;
@@ -37,10 +38,10 @@ export class SettingsScene {
     this.menu.update(input);
   }
   render(ctx) {
-    drawWindow(ctx, 48, 24, 160, 24); drawText(ctx, '设置', 128, 31, { align: 'center' });
+    drawWindow(ctx, 48, 24, 160, 24); drawText(ctx, '设置', 128, 30, { align: 'center', color: UI.accent });
     this.menu.render(ctx);
     const o = OPTIONS.find(x => x.key === this.menu.item?.value);
     drawWindow(ctx, 48, 48 + this.menu.h, 160, 56);
-    wrapText(ctx, o?.desc || '← → 切换，X 返回', 144).slice(0, 3).forEach((l, i) => drawText(ctx, l, 56, 56 + this.menu.h + i * LINE_H, { color: '#8a8468' }));
+    wrapText(ctx, o?.desc || '← → 切换，X 返回', 144).slice(0, 3).forEach((l, i) => drawText(ctx, l, 56, 56 + this.menu.h + i * LINE_H, { color: UI.dim }));
   }
 }
