@@ -60,6 +60,35 @@ const WETTABLE = new Set(['sand', 'grass', 'path', 'forest', 'cave_floor', 'flag
 const SEAMABLE = new Set(['tree', 'crystal', 'town']);
 const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'floor', 'forest']); // 能当底铺的
 
+// 会做「水平镜像变体」的瓦片。
+// 同一张图铺满一整片时，网格周期在 ART=6 下一眼可见——山、林、洞壁尤其明显，
+// 因为它们成片占掉半个屏幕。装饰只能在上面点缀，破不掉底纹本身的周期。
+// 按位置挑一半的格子换成水平镜像：不新增任何美术，观感上的变化直接翻倍。
+//
+// **只翻水平**：这些瓦片的明暗都是「上方来光」，垂直翻会把受光面翻到底下去。
+// 有方向含义的（楼梯、门、屋顶、桥、柜台）一个都不能进这张表。
+// 草和沙没进来是因为它们的底纹近乎均匀，翻了也看不出差别，白占一份缓存。
+const MIRROR = new Set(['mountain', 'forest', 'cave_wall', 'cave_floor']);
+
+// 把一组帧整体做水平镜像，返回和 anim 条目同形的记录（f/k/dur/ts），
+// 这样渲染时挑帧的算法可以和普通动画瓦片共用一套。
+function mirrorRec(id, rec, still) {
+  const src = rec ? rec.f : (still ? [still] : null);
+  if (!src) return null;
+  return baked(`mir|${id}`, () => ({
+    f: src.map(im => {
+      const c = document.createElement('canvas');
+      c.width = im.width; c.height = im.height;
+      const g = c.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      g.translate(im.width, 0); g.scale(-1, 1);
+      g.drawImage(im, 0, 0);
+      return c;
+    }),
+    k: rec ? rec.k : 0, dur: rec ? rec.dur : 1, ts: 0,
+  }));
+}
+
 // 地面装饰：[种类, 权重]。density 是这种地面上有多少比例的格子会摆点东西。
 // 大头故意留给 patch（大块明暗斑）—— 它最不起眼，但破除「同一张瓦片铺满整屏」的效果最大。
 const DECO = {
@@ -82,11 +111,14 @@ const DECO = {
 //   base[i] 替掉这一格本来要画的瓦片（树/水晶/村落的抠底合成图；是替换不是叠加，绘制次数不变）
 //   ovr[i]  正常叠加（过渡边 / 浪花 / 装饰）。元素是缓存画布，或「一组帧」（浪花）。
 //   shd[i]  正片叠底（崖影 / 湿地）。渲染时单独走一遍，合成模式一整趟只切两次。
-export function buildTerrainFx(map, tiles, mapId) {
+export function buildTerrainFx(map, tiles, mapId, anim) {
   const n = map.w * map.h;
   const ovr = new Array(n).fill(null), shd = new Array(n).fill(null), base = new Array(n).fill(null);
   const seamList = [];   // 需要逐帧推进时间的合成图（会被风吹的树、会明灭的水晶）
   const rng = new RNG(hash('deco:' + mapId));   // 装饰的布点：种子只跟地图 id 有关，重进一次还是这个样子
+  // 镜像单独一条 RNG：装饰那条是**有条件**才取值的，掺进来会让镜像图案跟着装饰的分布走。
+  // 而且每格都要无条件取一次，序列才不受瓦片种类影响。
+  const mrng = new RNG(hash('mirror:' + mapId));
   const foamN = 12;
   const at = (x, y) => (x < 0 || y < 0 || x >= map.w || y >= map.h) ? null : map.cells[y * map.w + x].tile;
   for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
@@ -162,6 +194,14 @@ export function buildTerrainFx(map, tiles, mapId) {
     // 4) 崖影。放在最后，渲染时也画在最后 —— 影子里的花本来就该是暗的。
     // 浓度只有两档（1 = 崖壁石墙，0.6 = 树木家具），一格只画一张，不叠。
     if (!inert && (cast & (N | W | NW))) push(shd, baked(`sh|${cast}|${castK}`, () => shadowTile(cast, castK)));
+
+    // 5) 镜像变体。必须**无条件**取这一次随机数（哪怕这格根本不镜像），
+    // 否则序列会跟着地图上瓦片的分布走，换一张地图就全变了。
+    // 让给抠底合成图（树/水晶）：那种是「草地 + 抠好的树」，翻转会把草底也翻了。
+    if (mrng.next() < 0.5 && !base[i] && MIRROR.has(me)) {
+      const rec = mirrorRec(me, anim?.[me], tiles?.[me]);
+      if (rec) { base[i] = rec; if (rec.f.length > 1 && !seamList.includes(rec)) seamList.push(rec); }
+    }
   }
   // 宝箱画在事件层而不是地形层。正式美术的箱子已经是透明底了，所以这里只是给它补一片落影，
   // 让它「站」在地上而不是浮着；万一换成不透明的箱子图，objectTile 会顺手把底抠掉。

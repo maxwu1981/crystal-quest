@@ -118,7 +118,7 @@ export class FieldScene {
     const bw = Math.min(this.game.W, this.map.w * TILE), bh = Math.min(this.game.H, this.map.h * TILE);
     // 地形过渡（草咬进路、崖影、水岸浪花、地面装饰）也在这里一次算完，
     // 结果是两张与 cells 等长的「这一格再叠哪几张图」的表，渲染时零计算。
-    const ter = buildTerrainFx(this.map, this.game.tiles, id);
+    const ter = buildTerrainFx(this.map, this.game.tiles, id, anim);
     for (const r of ter.seamList) list.push(r);   // 抠底合成图（树/水晶）也要跟着动，时间和别的动画瓦片一起推
     this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, obj: ter.obj, foamN: ter.foamN,
       motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
