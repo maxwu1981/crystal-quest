@@ -61,6 +61,38 @@ def derive(name, art, dry=False):
     return f'{w}x{h} → {tw}x{th}'
 
 
+
+def stale_masters(tol=22):
+    """找出「母版和当前美术已经对不上」的那些。
+
+    为什么必须查：`assets/art/raw/` 里的原图是当初出图时存的，
+    后来我为了修比例、修服装重新生成过很多帧，但那些重生成走的是浏览器管线、
+    没回写原图。于是从这些旧原图做出来的母版是**几轮之前的设计**——
+    实测符仔仙的母版还是兜帽金边袍，而当前游戏里已经是宽檐斗笠了。
+    直接派生就会把修好的美术悄悄退回去。
+    做法是把母版缩到当前美术的尺寸逐像素比，差异超过 tol% 就判定过期。
+    """
+    out = []
+    for f in sorted(os.listdir(MASTER)) if os.path.isdir(MASTER) else []:
+        if not f.endswith('.png'): continue
+        cur = os.path.join(ART_DIR, f)
+        if not os.path.exists(cur): continue
+        mw, mh, mp = pixel.decode_png(open(os.path.join(MASTER, f), 'rb').read())
+        cw, ch, cp = pixel.decode_png(open(cur, 'rb').read())
+        small = pixel.downscale(mw, mh, bytearray(mp), (0, 0, mw, mh), cw, ch)
+        pixel.threshold_alpha(small)
+        diff = tot = 0
+        for i in range(0, len(cp), 4):
+            a1, a2 = small[i + 3] > 128, cp[i + 3] > 128
+            tot += 1
+            if a1 != a2: diff += 1
+            elif a1 and abs(small[i] - cp[i]) + abs(small[i+1] - cp[i+1]) + abs(small[i+2] - cp[i+2]) > 150:
+                diff += 1
+        pct = diff * 100 // max(1, tot)
+        if pct > tol: out.append((f, pct))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('art', nargs='?', type=int)
@@ -77,7 +109,11 @@ def main():
     missing = sorted(used - set(masters))
 
     print(f'当前 ART = {cur}（画布 {256*cur}×{224*cur}，角色 {16*cur}×{24*cur}，瓦片 {16*cur}×{16*cur}）')
-    print(f'母版覆盖 {len(masters)}/{len(used)} 张')
+    stale = stale_masters()
+    print(f'母版覆盖 {len(masters)}/{len(used)} 张' + (f'，其中 {len(stale)} 张已过期' if stale else ''))
+    if stale:
+        print('过期母版（比当前美术旧，派生会把美术退回去，必须重新出图）：')
+        for f, pct in stale: print(f'    {f.replace(".png","")}  差异 {pct}%')
     if missing:
         print(f'还没有母版的 {len(missing)} 张（这些提不了精度，要重新出图）：')
         for i in range(0, len(missing), 4):
@@ -88,12 +124,15 @@ def main():
         print('ART 只支持 2 / 4 / 6 / 8'); sys.exit(1)
 
     print()
-    n = 0
+    stale_names = {f for f, _ in stale}
+    n = skipped = 0
     for f in masters:
         if f not in used: continue
+        if f in stale_names:
+            skipped += 1; continue        # 过期母版一律不派生，宁可保持旧精度也不能退回旧设计
         r = derive(f, a.art, a.dry)
         if r != 'already': n += 1
-    print(f'{"（试跑）" if a.dry else ""}从母版派生了 {n} 张')
+    print(f'{"（试跑）" if a.dry else ""}从母版派生了 {n} 张' + (f'，跳过 {skipped} 张过期母版' if skipped else ''))
     if not a.dry:
         s = open(DRAW_JS, encoding='utf-8').read()
         open(DRAW_JS, 'w', encoding='utf-8').write(

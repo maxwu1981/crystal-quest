@@ -66,3 +66,109 @@ export function buildTiles(rng) {
   for (const name of Object.keys(DRAW)) out[name] = artCanvas(TILE, TILE, ctx => DRAW[name](ctx, rng));
   return out;
 }
+
+// ============================ 动画瓦片 ============================
+// FF6 的地图之所以「活」，一大半靠动画瓦片：水在流、灯在呼吸、草梢被风推。
+//
+// 做法：初始化时把一张静态瓦片烘成 N 张成品帧（离屏画布），渲染时按时间挑一张画。
+// 于是每帧的绘制调用数和以前一模一样——每格仍然只有一次 drawImage，动画本身零成本。
+// 千万不要改成每帧做逐像素处理：地图满屏 250 格以上，那样必掉帧。
+// 因为是「换一张已经画好的图」，它对正式美术 PNG 和程序化 fallback 一视同仁。
+//
+// 分寸（这一条比效果本身重要）：所有循环周期 ≥4.8 秒，位移振幅只有 1~2 个**物理**像素
+// （= 0.5~1 逻辑像素），亮度振幅 ≤0.2 而且只落在光源那一小块。
+// 相邻两帧的差永远不超过 1 像素，所以看到的是「慢慢挪」，不是「闪」。
+
+// 这里的离屏画布不走 artCanvas 的 ART 缩放：动画讲的是「挪一个物理像素」，
+// 直接用基图自己的像素坐标最省事，ART 改了也不用跟着改。
+function fxCanvas(img, fn) {
+  const c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  fn(ctx, img.width, img.height);
+  return c;
+}
+const wrap = (v, n) => ((v % n) + n) % n;
+
+// 整块环绕漂移：水面。用环绕而不是留白，平移后瓦片四边还接得上；
+// 又因为所有水格共用同一个相位（见 phase:0），整片水是一起流的，不会碎成马赛克。
+function drift(ctx, img, w, h, dx, dy) {
+  const ox = wrap(dx, w), oy = wrap(dy, h);
+  for (const x of [ox - w, ox]) for (const y of [oy - h, oy]) ctx.drawImage(img, x, y);
+}
+
+// 一条缓慢下移的浅色涌浪，给水面一点反光。souce-atop 保证只作用在已有像素上，
+// 瓦片若有透明区不会糊出白边。
+function swell(ctx, w, h, y0, band, a) {
+  ctx.globalCompositeOperation = 'source-atop';
+  for (const off of [-h, 0, h]) {
+    const g = ctx.createLinearGradient(0, y0 + off, 0, y0 + off + band);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, `rgba(255,255,255,${a})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, y0 + off, w, band);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// 顶部一条带整体横移：草尖 / 树梢被风吹。同样环绕，平移后边上不会开缝。
+function swayTop(ctx, img, w, h, dx, frac) {
+  ctx.drawImage(img, 0, 0);
+  if (!dx) return;
+  const hb = Math.round(h * frac), ox = wrap(dx, w);
+  ctx.clearRect(0, 0, w, hb);
+  ctx.drawImage(img, 0, 0, w, hb, ox, 0, w, hb);
+  ctx.drawImage(img, 0, 0, w, hb, ox - w, 0, w, hb);   // 补上被推出去的那一列
+}
+
+// 居中的加色光晕：磷光石 / 水晶的明灭。
+// 半径必须小于半格，让光在瓦片边界之前衰减到 0，否则会看到一个方形的光斑边。
+function glow(ctx, img, w, h, rgb, a) {
+  ctx.drawImage(img, 0, 0);
+  if (a <= 0) return;
+  const cx = w / 2, cy = h / 2, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.47);
+  g.addColorStop(0, `rgba(${rgb},${a})`);
+  g.addColorStop(0.55, `rgba(${rgb},${a * 0.35})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.globalCompositeOperation = 'lighter';   // 加色，暗处才会真的被「照亮」而不是蒙灰
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+const WAVE_X = [0, 1, 2, 2, 2, 1, 0, -1, -2, -2, -2, -1]; // 水面 12 帧一圈的水平摇摆（物理像素）
+const WAVE_Y = [1, 1, 1, 0, 0, -1, -1, -1, -1, 0, 0, 1];  // 相位差 90°，合起来是很小的一圈打转
+const SWAY = [0, 1, 0, -1];                               // 风：左右各 1 物理像素，四帧一循环
+const breathe = (i, n) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / n); // 0→1→0，两端导数为 0，接得平滑
+
+// phase：0 = 全图同相位（水面要连成一整片）
+//        1 = 按 (x+y) 错开（风一波一波斜着扫过去，而不是满屏一起动）
+//        2 = 散开（好几盏灯一起呼吸就成了频闪，必须错开）
+export const TILE_FX = {
+  // 5.4 秒一圈。漂移 ±2px 让水在流，涌浪是唯一的亮度变化，峰值只有 0.10
+  water: { n: 12, dur: 0.45, phase: 0, paint: (c, img, w, h, i, n) => {
+    drift(c, img, w, h, WAVE_X[i], WAVE_Y[i]);
+    swell(c, w, h, Math.floor(i * h / n), Math.max(4, Math.round(h / 5)), 0.10);
+  } },
+  // 4.8 秒一圈，只有 1 物理像素 = 0.5 逻辑像素。草是最占面积的瓦片，只敢动这么多
+  grass: { n: 4, dur: 1.2, phase: 1, paint: (c, img, w, h, i) => swayTop(c, img, w, h, SWAY[i], 0.50) },
+  tree: { n: 4, dur: 1.2, phase: 1, paint: (c, img, w, h, i) => swayTop(c, img, w, h, SWAY[i], 0.62) },
+  forest: { n: 4, dur: 1.2, phase: 1, paint: (c, img, w, h, i) => swayTop(c, img, w, h, SWAY[i], 0.55) },
+  // 5.6 秒一次呼吸，中心透明度 0.05↔0.20，边缘为 0。罗经圈深处就靠它照明
+  glowstone: { n: 8, dur: 0.7, phase: 2, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '120,232,214', 0.05 + 0.15 * breathe(i, n)) },
+  // 6.4 秒一次。风之水晶是故事道具，允许比磷光石亮一点
+  crystal: { n: 8, dur: 0.8, phase: 2, paint: (c, img, w, h, i, n) => glow(c, img, w, h, '158,244,255', 0.06 + 0.18 * breathe(i, n)) },
+};
+
+// 基图 → 帧数组。换地图、来回进出都命中缓存，全游戏总共只烘 40 张 32×32 画布。
+const FRAME_CACHE = new Map();
+export function tileFrames(img, spec) {
+  if (!img || !spec) return null;
+  let f = FRAME_CACHE.get(img);
+  if (!f) {
+    f = [];
+    for (let i = 0; i < spec.n; i++) f.push(fxCanvas(img, (ctx, w, h) => spec.paint(ctx, img, w, h, i, spec.n)));
+    FRAME_CACHE.set(img, f);
+  }
+  return f;
+}

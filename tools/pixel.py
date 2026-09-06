@@ -62,11 +62,24 @@ def encode_png(w, h, rgba):
 
 # ---------- 处理 ----------
 def chroma_key(w, h, px, key=(255, 0, 255), tol=90):
-    """把接近 key 色（默认洋红）的像素变透明。"""
+    """把接近 key 色（默认洋红）的像素变透明。
+
+    两条规则：
+    ① 与 key 色的 RGB 距离在 tol 内——处理正常的纯洋红背景。
+    ② 落在「洋红轴」上的像素（绿通道远低于红蓝、且红蓝接近），无论明暗一律抠掉。
+       这条是为了处理**投在洋红背景上的阴影**：Gemini 常给物件画一层落影，
+       出来是 (36,0,36)、(73,0,73) 这种暗洋红，离纯洋红太远，规则①够不着。
+       低分辨率时这圈残留只有一两个像素看不出来，做 128×128 母版时就是明显的紫边。
+       游戏美术里没有高饱和洋红（青草婆的靛蓝色相 0.66、符仔仙是焦褐），所以不会误伤。
+    """
     kr, kg, kb = key
     for i in range(0, w * h * 4, 4):
         r, g, b = px[i], px[i + 1], px[i + 2]
-        if abs(r - kr) < tol and abs(g - kg) < tol and abs(b - kb) < tol: px[i + 3] = 0
+        if abs(r - kr) < tol and abs(g - kg) < tol and abs(b - kb) < tol:
+            px[i + 3] = 0; continue
+        mx = max(r, b)
+        if mx > 10 and g < mx * 0.45 and abs(r - b) < mx * 0.35:
+            px[i + 3] = 0
     return px
 
 def alpha_bbox(w, h, px):
@@ -179,12 +192,31 @@ def outline(w, h, px, color=(27, 27, 47)):
                     px[i:i + 4] = bytes((r, g, b, 255)); break
     return px
 
+def demagenta(px):
+    """把落在「洋红轴」上的不透明像素去色（保留明暗，只去掉紫调）。
+
+    为什么需要：`posterize` 是逐通道独立量化的，深色像素的绿通道容易被压到 0
+    而红蓝停在同一档，于是量化出 (36,0,36) 这种纯洋红——它不是抠底残留，
+    是量化**新造**出来的。实测符仔仙的焦褐袍抠底后只剩 110 个洋红轴像素，
+    过一遍 posterize 变成 1270，深色部位整片泛紫。
+    直接抠掉会在袍子上打洞，所以是把绿通道提回红蓝的水平、去饱和，形状不动。
+    """
+    for i in range(0, len(px), 4):
+        if px[i + 3] < 128: continue
+        r, b = px[i], px[i + 2]
+        mx = max(r, b)
+        if mx > 10 and px[i + 1] < mx * 0.45 and abs(r - b) < mx * 0.35:
+            lv = (r + b) // 2
+            px[i] = px[i + 1] = px[i + 2] = lv
+    return px
+
+
 def process_sprite(w, h, px, tw, th, anchor='bottom', key=True, add_outline=True, fit='contain', single=True):
     if key: chroma_key(w, h, px)
     # 一张图里若混进了第二个角色/装饰，只留最大的一块，否则包围盒会把它们一起框住
     if key and single: largest_blob(w, h, px)
     box = fit_box(alpha_bbox(w, h, px), tw / th, anchor=anchor, fit=fit) if key else (0, 0, w, h)
     out = downscale(w, h, px, box, tw, th)
-    posterize(out); threshold_alpha(out)
+    posterize(out); demagenta(out); threshold_alpha(out)
     if key and add_outline: outline(tw, th, out)
     return out
