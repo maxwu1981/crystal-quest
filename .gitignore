@@ -5,3 +5,4 @@ node_modules/
 assets/art/raw/
 dist/
 tools/_cap/
+tools/bin/
