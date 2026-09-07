@@ -22,7 +22,7 @@
    "solid": true
   },
   "D": {
-   "tile": "door"
+   "tile": "arch_door"
   },
   "I": {
    "tile": "pillar",
@@ -37,7 +37,7 @@
    "solid": true
   },
   "c": {
-   "tile": "counter",
+   "tile": "crate",
    "solid": true
   },
   "f": {

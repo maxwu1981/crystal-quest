@@ -90,6 +90,13 @@
     "earthox": "enemy_earthox.png"
   },
   "tiles": {
+    "sarcophagus": "tile_sarcophagus.png",
+    "seal_stone": "tile_seal_stone.png",
+    "plank": "tile_plank.png",
+    "arch_door": "tile_arch_door.png",
+    "crate": "tile_crate.png",
+    "stove": "tile_stove.png",
+    "idol": "tile_idol.png",
     "stone_wall": "tile_stone_wall.png",
     "pillar": "tile_pillar.png",
     "carpet": "tile_carpet.png",

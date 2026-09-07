@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 205 个文件，约 2.9 MB。
-const VERSION = '947ec0dcfd95';
+// 共 212 个文件，约 3.1 MB。
+const VERSION = '469819a9cfa6';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -78,6 +78,7 @@ const PRECACHE = [
   './assets/art/enemy_wolf.png',
   './assets/art/manifest.json',
   './assets/art/tile_altar.png',
+  './assets/art/tile_arch_door.png',
   './assets/art/tile_bed.png',
   './assets/art/tile_bridge.png',
   './assets/art/tile_carpet.png',
@@ -87,6 +88,7 @@ const PRECACHE = [
   './assets/art/tile_chest.png',
   './assets/art/tile_chest_open.png',
   './assets/art/tile_counter.png',
+  './assets/art/tile_crate.png',
   './assets/art/tile_crystal.png',
   './assets/art/tile_door.png',
   './assets/art/tile_flagstone.png',
@@ -94,16 +96,21 @@ const PRECACHE = [
   './assets/art/tile_forest.png',
   './assets/art/tile_glowstone.png',
   './assets/art/tile_grass.png',
+  './assets/art/tile_idol.png',
   './assets/art/tile_mountain.png',
   './assets/art/tile_ore_vein.png',
   './assets/art/tile_path.png',
   './assets/art/tile_pillar.png',
+  './assets/art/tile_plank.png',
   './assets/art/tile_roof.png',
   './assets/art/tile_rubble.png',
   './assets/art/tile_sand.png',
+  './assets/art/tile_sarcophagus.png',
+  './assets/art/tile_seal_stone.png',
   './assets/art/tile_stairs_down.png',
   './assets/art/tile_stairs_up.png',
   './assets/art/tile_stone_wall.png',
+  './assets/art/tile_stove.png',
   './assets/art/tile_throne.png',
   './assets/art/tile_town.png',
   './assets/art/tile_tree.png',

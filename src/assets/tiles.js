@@ -228,6 +228,37 @@ export const DRAW = {
   throne(ctx, rng) { DRAW.flagstone(ctx, rng); ctx.fillStyle = '#6b4423'; ctx.fillRect(4, 1, 8, 14);
     ctx.fillStyle = '#8a5a2e'; ctx.fillRect(3, 8, 10, 6); ctx.fillStyle = '#a5231d'; ctx.fillRect(5, 9, 6, 4);
     ctx.fillStyle = '#d8b24a'; ctx.fillRect(6, 2, 4, 1); ctx.fillRect(5, 13, 6, 1); },
+  sarcophagus(ctx, rng) { fill(ctx, '#4a4640'); scatter(ctx, rng, 4, '#565149');
+    ctx.fillStyle = '#b0a894'; ctx.fillRect(2, 3, 12, 10);
+    ctx.fillStyle = '#c9c1ac'; ctx.fillRect(3, 3, 11, 4);
+    ctx.fillStyle = '#2b2822'; ctx.fillRect(2, 7, 1, 6);
+    ctx.fillStyle = '#8e876f'; for (const y of [9, 11]) ctx.fillRect(4, y, 8, 1); },
+  seal_stone(ctx) { fill(ctx, '#7f8480'); ctx.fillStyle = '#9aa09b'; ctx.fillRect(1, 1, 14, 14);
+    ctx.fillStyle = '#666b67'; ctx.fillRect(3, 4, 10, 1); ctx.fillRect(3, 11, 10, 1);
+    ctx.fillRect(3, 4, 1, 8); ctx.fillRect(12, 4, 1, 8);
+    ctx.fillStyle = '#b6bcb6'; ctx.fillRect(6, 7, 4, 2); },
+  plank(ctx, rng) { DRAW.water(ctx, rng); ctx.fillStyle = '#8d6e63'; ctx.fillRect(0, 4, 16, 8);
+    ctx.fillStyle = '#6d4c41'; for (let x = 1; x < 16; x += 3) ctx.fillRect(x, 4, 1, 8);
+    ctx.fillStyle = '#5d4037'; ctx.fillRect(0, 3, 16, 1); ctx.fillRect(0, 12, 16, 1); },
+  arch_door(ctx) { DRAW.stone_wall(ctx, { next: () => 0.5, int: () => 0 });
+    ctx.fillStyle = '#9a948a'; ctx.fillRect(3, 1, 10, 14);
+    ctx.fillStyle = '#5d4037'; ctx.fillRect(4, 3, 8, 12);
+    ctx.fillStyle = '#3e2723'; ctx.fillRect(7, 3, 2, 12);
+    ctx.fillStyle = '#8d8378'; for (const y of [5, 10]) ctx.fillRect(4, y, 8, 1); },
+  crate(ctx, rng) { fill(ctx, '#8a6a45'); scatter(ctx, rng, 5, '#7a5c3c');
+    ctx.fillStyle = '#a97c50'; ctx.fillRect(2, 5, 6, 6); ctx.fillRect(8, 8, 6, 5);
+    ctx.fillStyle = '#6b4a2a'; ctx.fillRect(2, 5, 6, 1); ctx.fillRect(2, 10, 6, 1); ctx.fillRect(8, 8, 6, 1);
+    ctx.fillStyle = '#d8cbb0'; ctx.fillRect(10, 3, 4, 4); },
+  stove(ctx, rng) { fill(ctx, '#8a6a45'); scatter(ctx, rng, 4, '#7a5c3c');
+    ctx.fillStyle = '#9c4a34'; ctx.fillRect(2, 3, 12, 10);
+    ctx.fillStyle = '#7d3a28'; for (const y of [5, 8, 11]) ctx.fillRect(2, y, 12, 1);
+    ctx.fillStyle = '#ff8a1e'; ctx.fillRect(6, 10, 4, 3);
+    ctx.fillStyle = '#3a3a3a'; ctx.fillRect(6, 3, 5, 3); },
+  idol(ctx, rng) { fill(ctx, '#3a4348'); scatter(ctx, rng, 4, '#454f54');
+    ctx.fillStyle = '#8f9a90'; ctx.fillRect(6, 2, 4, 11);
+    ctx.fillStyle = '#a8b3a6'; ctx.fillRect(6, 2, 2, 11);
+    ctx.fillStyle = '#6f7a70'; ctx.fillRect(4, 13, 8, 2);
+    ctx.fillStyle = '#5d6b58'; ctx.fillRect(7, 5, 2, 1); ctx.fillRect(6, 9, 4, 1); },
   altar(ctx, rng) { DRAW.flagstone(ctx, rng); ctx.fillStyle = '#b8b2a6'; ctx.fillRect(2, 6, 12, 7);
     ctx.fillStyle = '#8f8a80'; ctx.fillRect(2, 10, 12, 1); ctx.fillStyle = '#c98a2e'; ctx.fillRect(7, 4, 3, 2);
     ctx.fillStyle = '#efe6cc'; ctx.fillRect(4, 3, 1, 3); ctx.fillRect(12, 3, 1, 3); },
