@@ -91,23 +91,44 @@ export function drawDissolve(ctx, img, x, y, vis) {
 // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
 // 只有 ±1 逻辑像素、周期 2.6–3.0 秒，并按队列序号错开相位与周期——
 // 一起同步上下会立刻变成「在抖」，这里宁可含蓄到几乎看不出来。
-// 被魔法笼罩期间把角色压成半透明，像**隔着火焰/雷光看过去**。
-// 火本身也是半透明的（spellFx.js 的 LAYERS.a），两层叠起来才是「人在火里若隐若现」；
-// 只让火透、角色不透的话，读作「火贴在角色前面」，是一张贴纸而不是一团火。
-// 下限 0.45：还留得住轮廓——演出再花，玩家也得始终看得清自己在打谁、谁在挨打。
-// 最后 0.35 秒线性收回不透明，避免特效一结束角色「啪」地跳回来。
-export function veilAlpha(a) {
-  return a.veil > 0 ? 0.45 + 0.55 * Math.max(0, 1 - a.veil / 0.35) : 1;
+// 被魔法笼罩期间目标的可见度——**一条随时间走的曲线，不是一个固定值**。
+//
+// 一发火烧在怪身上，从头到尾该有三种感觉依次出现：
+//   ① 火刚舔上来   —— 怪看得清清楚楚，只是脚下起了火
+//   ② 火苗窜过身体 —— 怪半掩在火里，看得见轮廓看不清细节
+//   ③ 整个被吞掉   —— 只剩一团火，怪没了
+//   ④ 火退下去     —— 怪重新现身（不然火灭了那块地方会是空的）
+// 固定一个 0.45 的话，这四种只剩一种，而且是最没意思的那一种。
+//
+// 两条曲线合起来才做得出这个效果，缺一不可：
+//   base  画在特效**底下**那一层的透明度；
+//   ghost 特效画完再叠上去的一层薄影（染成属性的深烬色，见 actions.js 的 ELEMENT_TINT）。
+// 只有 base 的话第 ② 段做不出来——火焰中心几乎不透光，暗色的怪压在亮橙火苗底下
+// 一帧都看不见（实测）。ghost 叠在火**上面**，才保证轮廓浮得出来；
+// 而它在第 ③ 段必须归零，否则怪永远吞不掉。
+//
+// 表里每行是 [进度, base, ghost]，之间线性插值。
+const VEIL = [
+  [0.00, 1.00, 0.00],   // ① 看得清清楚楚
+  [0.18, 1.00, 0.00],
+  [0.44, 0.55, 0.46],   // ② 半掩：底下压暗，上面浮一层影
+  [0.72, 0.05, 0.00],   // ③ 吞没：两条都到底
+  [1.00, 1.00, 0.00],   // ④ 火退，现身
+];
+
+function veilAt(a) {
+  if (!(a.veil > 0)) return [1, 0];
+  const p = 1 - a.veil / (a.veilDur || a.veil);      // 0 → 1 的特效进度
+  for (let i = 1; i < VEIL.length; i++) {
+    const [p1, b1, g1] = VEIL[i];
+    if (p > p1) continue;
+    const [p0, b0, g0] = VEIL[i - 1];
+    const k = p1 === p0 ? 0 : (p - p0) / (p1 - p0);
+    return [b0 + (b1 - b0) * k, g0 + (g1 - g0) * k];
+  }
+  return [1, 0];
 }
 
-// **特效画完之后，把被笼罩的角色再叠画一次**（GHOST 这么淡的一层）。
-// 只压底下那一层是不够的：火焰中心几乎不透光，而怪本身是暗色的，
-// 45% 的暗绿压在亮橙火苗底下等于没有——实测整只怪一帧都看不见。
-// 叠在**上面**才保证无论特效多亮，目标的轮廓始终浮在火里。
-// 没被火盖到的地方这一层会跟底下那层相加（0.45 → 约 0.55），正好也不刺眼。
-// 这层影子按属性染色（actions.js 的 ELEMENT_TINT）：直接叠原图是一团暗色污渍，
-// 把火压得发脏；染成火的中间调之后，读作「怪在火里被照着」。
-const GHOST = 0.42;
 const ghostArt = (spr, a) => (a.veilTint ? tintedSprite(spr, a.veilTint) : spr);
 
 // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
@@ -160,10 +181,11 @@ export function renderBattle(scene, ctx) {
       ctx.globalAlpha = 1; continue;
     }
     const ex = x + lungeOffset(e), ey = y + idleBob(scene, e), etint = hitTint(e);
-    ctx.globalAlpha = veilAlpha(e);
+    const [eb, eg] = veilAt(e);
+    ctx.globalAlpha = eb;
     drawHit(ctx, spr, ex, ey, etint);
     ctx.globalAlpha = 1;
-    if (e.veil > 0) ghosts.push(() => drawArt(ctx, ghostArt(spr, e), ex, ey));
+    if (eg > 0.004) ghosts.push([eg, () => drawArt(ctx, ghostArt(spr, e), ex, ey)]);
   }
   for (const p of scene.party) {
     const [x, y] = actorRect(scene, p);
@@ -175,21 +197,22 @@ export function renderBattle(scene, ctx) {
     const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
     const dx = x - lungeOffset(p), dy = y - cheer + faintSink(scene, p);
     const tint = hitTint(p);
-    ctx.globalAlpha = veilAlpha(p);      // 敌人对我方放魔法时，同样要透出人来
+    const [pb, pg] = veilAt(p);          // 敌人对我方放魔法时，同样要透出人来
+    ctx.globalAlpha = pb;
     drawHit(ctx, scene.game.sprites[key], dx, dy, tint);
     if (p.alive) for (const g of layersFor(p.member, 'left')) drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
     ctx.globalAlpha = 1;
-    if (p.veil > 0) ghosts.push(() => {
+    if (pg > 0.004) ghosts.push([pg, () => {
       drawArt(ctx, ghostArt(scene.game.sprites[key], p), dx, dy);
       if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, ghostArt(g, p), dx, dy);
-    });
+    }]);
   }
   scene.fx.render(ctx);
-  if (ghosts.length) {                   // 见 GHOST 上面那段：叠在特效**上面**的一层薄影
-    ctx.globalAlpha = GHOST;
-    for (const g of ghosts) g();
-    ctx.globalAlpha = 1;
+  for (const [a, draw] of ghosts) {      // 见 VEIL 那张表：叠在特效**上面**的一层薄影
+    ctx.globalAlpha = a;
+    draw();
   }
+  if (ghosts.length) ctx.globalAlpha = 1;
   if (scene.phase === 'input' && scene.sub === 'target') {
     const t = scene.target.list[scene.target.idx];
     const [x, y, w, h] = actorRect(scene, t);

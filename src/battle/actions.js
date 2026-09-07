@@ -13,6 +13,14 @@ const ELEMENT_FX = { fire: 'fire', thunder: 'thunder', ice: 'ice', poison: 'pois
 // 深烬色才对：物体在火里本来就是逆光的剪影，暖调的黑不脏，形状还清清楚楚。
 const ELEMENT_TINT = { fire: '#6b2408', thunder: '#20265e', ice: '#123a52',
                        poison: '#1c3a12', dark: '#150f24', light: '#4e4118' };
+
+// 给目标挂上「被笼罩」。时长直接取特效自己的 dur——两边各写一个数字，
+// 改了特效时长就会有一段「火已经灭了人还是半透明」。
+// 具体怎么从看得见渐变到被吞没，见 render.js 的 VEIL 那张表。
+function veilOn(t, fx, tint) {
+  t.veil = t.veilDur = fx ? fx.dur : 0.3;
+  t.veilTint = tint || null;
+}
 const ELEMENT_SFX = { fire: 'fire', thunder: 'thunder', ice: 'magic', poison: 'buzz', dark: 'hit' };
 
 // 附加状态：免疫 / 已有 → false
@@ -100,8 +108,8 @@ function* attack(scene, actor, a) {
   if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
   // 打在敌人身上是白色月牙，打在自己人身上是红色冲击环——一眼要能分出挨打的是谁
   const impact = actor.element ? (ELEMENT_FX[actor.element] || 'slash') : (t.side === 'party' ? 'hurt' : 'slash');
-  if (actor.element) { t.veil = 1.2; t.veilTint = ELEMENT_TINT[actor.element] || null; }   // 附魔武器同样要透出目标
-  scene.fx.add(impact, ...scene.center(t), { dir: face, ...scene.size(t) });
+  const impactFx = scene.fx.add(impact, ...scene.center(t), { dir: face, ...scene.size(t) });
+  if (actor.element) veilOn(t, impactFx, ELEMENT_TINT[actor.element]);   // 附魔武器同样要透出目标
   if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
   scene.damage(t, r.damage, { physical: true, crit: r.crit });   // crit 只用来决定伤害数字的样式，不参与结算
@@ -142,12 +150,10 @@ function* castSpell(scene, actor, a) {
 function* spellVolley(scene, actor, sp, targets) {
   const kind = ELEMENT_FX[sp.element] || 'spark';
   for (const t of targets) {
-    t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
-    t.veilTint = ELEMENT_TINT[sp.element] || null;
-    scene.fx.add(kind, ...scene.center(t), scene.size(t));
+    veilOn(t, scene.fx.add(kind, ...scene.center(t), scene.size(t)), ELEMENT_TINT[sp.element]);
   }
   audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
-  yield 0.45;                                  // 等火焰爆开的那一下再结算
+  yield 0.9;                                   // 同上：等目标被火吞掉的那一刻再结算
   let best = 1, worst = 1, downed = [];
   for (const t of targets) {
     const r = F.magicDamage(sp.power, actor, t, sp.element, scene.rng);
@@ -158,7 +164,7 @@ function* spellVolley(scene, actor, sp, targets) {
   }
   if (best > 1) scene.msg += '\n效果拔群！';
   else if (worst === 0) scene.msg += '\n完全无效…';
-  yield 0.7;
+  yield 0.75;
   if (downed.length) { scene.msg += `\n${downed.join('、')} 倒下了`; yield 0.5; }
 }
 
@@ -188,17 +194,18 @@ function* spellOn(scene, actor, sp, t) {
   }
   // veil：特效期间目标画成半透明，像**隔着火焰/雷光看过去**。
   // 时长跟特效同步（属性魔法 1.2s，其余 0.3s），由 BattleScene.update 递减。
-  t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
-  t.veilTint = ELEMENT_TINT[sp.element] || null;
-  scene.fx.add(ELEMENT_FX[sp.element] || 'spark', ...scene.center(t), scene.size(t));
+  veilOn(t, scene.fx.add(ELEMENT_FX[sp.element] || 'spark', ...scene.center(t), scene.size(t)),
+         ELEMENT_TINT[sp.element]);
   audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
-  // 0.45 而不是 0.25：属性魔法的演出在 p≈0.35 才爆开（spellFx.js 的「爆」段），
-  // 结算太早的话伤害数字先跳出来、火后到，看着像两件事
-  yield ELEMENT_FX[sp.element] ? 0.45 : 0.25;
+  // 属性魔法的结算卡在**目标被火吞掉的那一刻**（render.js 的 VEIL 表，进度 0.55 上下），
+  // 也就是这场戏的高点。0.25 那会儿火才刚聚拢，伤害数字先跳出来、火后到，像两件事。
+  yield ELEMENT_FX[sp.element] ? 0.9 : 0.25;
   const r = F.magicDamage(sp.power, actor, t, sp.element, rng);
   scene.damage(t, r.damage);
   if (r.mult > 1) scene.msg += '\n效果拔群！'; else if (r.mult === 0) scene.msg += '\n完全无效…'; else if (r.mult < 1) scene.msg += '\n效果不佳…';
-  scene.msg += `\n${t.name} 受到 ${r.damage} 伤害`; yield 0.6;
+  // 0.75：让火烧完最后那一段（吞没 → 退去 → 目标重新现身）再往下走。
+  // 提前切走的话玩家最后看到的是「怪不见了」，下一句消息才把它带回来
+  scene.msg += `\n${t.name} 受到 ${r.damage} 伤害`; yield ELEMENT_FX[sp.element] ? 0.75 : 0.6;
   if (!t.alive) { scene.msg += `\n${t.name} 倒下了`; yield 0.4; return; }
   if (sp.status && r.mult > 0 && inflict(scene, t, sp.status)) { scene.msg += `\n${t.name} ${STATUS[sp.status].name}了`; yield 0.5; }
 }

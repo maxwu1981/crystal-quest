@@ -60,7 +60,9 @@ const FIRE_FX = {
     });
     const embers = Array.from({ length: 26 }, () => ({
       dx: rng.int(-28, 28), vy: rng.int(34, 84), d: rng.next(), w: rng.next() }));
-    return { t: 0, dur: 1.25, render(ctx, p) {
+    // 1.7 秒而不是 1.25：目标的可见度要在这段时间里走完「看得清 → 半掩 → 被吞没
+    // → 火退现身」四段（render.js 的 VEIL 表），1.25 秒挤不下，每段都还没读出来就过去了。
+    return { t: 0, dur: 1.7, render(ctx, p) {
       // 底色只压一点点，主要靠加光——见 glow() 上面那段
       wash(ctx, '#5a1e04', pulse(p, 0.18, 0.85) * 0.14);
       glow(ctx, x, y - 6, 120 * kx, 'rgb(255,150,50)', pulse(p, 0.20, 0.90) * 0.42);
@@ -97,7 +99,7 @@ const FIRE_FX = {
           for (const q of tongues) {
             const h = q.h * ky * rise * L.h, w = q.w * kx * L.w;
             if (h < 2) continue;
-            tongue(ctx, x + q.dx * kx * L.spread, baseY + q.dy, h, w, 2.5 + q.w * 0.5, q.ph + p * 5.5, L.c);
+            tongue(ctx, x + q.dx * kx * L.spread, baseY + q.dy, h, w, 2.5 + q.w * 0.5, q.ph + p * 7.5, L.c);
           }
         }
         // 火脚下的一摊光：把底部彻底糊开，同时交代「火是烧在地上的」

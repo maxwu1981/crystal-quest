@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>zoom</title>
+<!-- 临时文件：把一帧放大到能数清棱线。调完就删。 -->
+<style>body{background:#14100e;margin:6px}canvas{display:block;image-rendering:pixelated;margin-bottom:6px}</style>
+<div id="out"></div>
+<script type="module">
+import { SPELL_FX } from '../src/battle/spellFx.js';
+import { ART } from '../src/core/draw.js';
+class RNG { constructor(s){this.s=s>>>0||1}
+  next(){let x=this.s;x^=x<<13;x^=x>>>17;x^=x<<5;this.s=x>>>0;return this.s/4294967296}
+  int(a,b){return a+Math.floor(this.next()*(b-a+1))} }
+const q = new URLSearchParams(location.search);
+const kind = q.get('fx') || 'ice';
+const sz = +(q.get('sz') || 48);
+const frames = (q.get('p') || '0.30,0.38,0.46,0.72').split(',').map(Number);
+const CX = 100, CY = 82;
+// 只截目标周围这块区域，再放大 Z 倍
+const RX = +(q.get('rx') || 62), RY = +(q.get('ry') || 44), RW = +(q.get('rw') || 78), RH = +(q.get('rh') || 82);
+const Z = +(q.get('z') || 4);
+const veilAlpha = left => left > 0 ? 0.45 + 0.55 * Math.max(0, 1 - left / 0.35) : 1;
+const out = document.getElementById('out');
+const cell = document.createElement('canvas');
+cell.width = RW * ART; cell.height = RH * ART;
+const cc = cell.getContext('2d');
+const big = document.createElement('canvas');
+big.width = RW * ART * Z; big.height = RH * ART * Z * frames.length;
+const bc = big.getContext('2d'); bc.imageSmoothingEnabled = false;
+big.style.width = Math.min(1180, big.width / 2) + 'px'; big.style.height = 'auto';
+frames.forEach((p, i) => {
+  cc.setTransform(1,0,0,1,0,0); cc.clearRect(0,0,cell.width,cell.height);
+  cc.scale(ART, ART); cc.translate(-RX, -RY);
+  cc.fillStyle = '#2a2118'; cc.fillRect(RX, RY, RW, RH);
+  const fx = SPELL_FX[kind](CX, CY, new RNG(7), { w: sz, h: sz });
+  cc.save(); cc.globalAlpha = veilAlpha(fx.dur * (1 - p)); cc.fillStyle = '#8f9aa6';
+  cc.fillRect(CX - sz/2, CY - sz/2, sz, sz);
+  cc.fillStyle = '#c8d2dc';
+  cc.fillRect(CX - sz*0.22, CY - sz*0.18, sz*0.14, sz*0.12);
+  cc.fillRect(CX + sz*0.08, CY - sz*0.18, sz*0.14, sz*0.12);
+  cc.restore();
+  cc.save(); fx.render(cc, p); cc.restore();
+  bc.drawImage(cell, 0, i * RH * ART * Z, RW * ART * Z, RH * ART * Z);
+});
+out.append(big);
+</script>

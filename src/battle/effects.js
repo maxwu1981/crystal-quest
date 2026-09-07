@@ -4,7 +4,15 @@ import { SPELL_FX } from './spellFx.js';
 
 export class Effects {
   constructor(rng) { this.rng = rng; this.list = []; this.shakeT = 0; }
-  add(kind, x, y, opts) { const make = FX[kind]; if (make) this.list.push(make(x, y, this.rng, opts || {})); }
+  // 返回建好的特效对象，调用方要拿它的 dur——目标的「被笼罩」时间必须跟特效等长，
+  // 各自写死一个数字的话，改了特效时长就会有一段火已经灭了人还是半透明的
+  add(kind, x, y, opts) {
+    const make = FX[kind];
+    if (!make) return null;
+    const e = make(x, y, this.rng, opts || {});
+    this.list.push(e);
+    return e;
+  }
   shake(t = 0.25) { this.shakeT = Math.max(this.shakeT, t); }
   update(dt) {
     for (const e of this.list) e.t += dt;

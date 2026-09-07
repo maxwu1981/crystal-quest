@@ -78,7 +78,11 @@ function halo(ctx, x, y, r, color, a, thick, ph, flat = 0.42) {
     const t0 = i / n * 6.283;
     const m = 0.28 + 0.72 * (0.5 + 0.5 * Math.sin(t0 * 3 + ph)) * (0.5 + 0.5 * Math.abs(Math.sin(t0)));
     ctx.globalAlpha = Math.min(1, a * m);
-    ctx.beginPath(); ctx.ellipse(x, y, r, r * flat, 0, t0, (i + 0.9) / n * 6.283); ctx.stroke();
+    // 相邻两段**严丝合缝地接**（+1 而不是 +0.9 或 +1.25）：
+    // 留缝的那版是一圈虚线，叠着画的那版在重叠处透明度翻倍、成了一串珠子，
+    // 两种都比原来那条干净的实线更假。butt 端盖的切线和下一段起点重合，接得上。
+    // 参差只能来自亮度，不能来自缺口或重叠
+    ctx.beginPath(); ctx.ellipse(x, y, r, r * flat, 0, t0, (i + 1) / n * 6.283); ctx.stroke();
   }
   ctx.restore();
 }
@@ -149,7 +153,11 @@ export const SKY_FX = {
       return { at: i * 0.13 + rng.next() * 0.05,
         pts: branch(rng, x + ox, y + oy, x + ox * 0.2, y + oy + rng.int(-11, 11), 1.9, PX, 3.4, 5) };
     });
-    const charge = inward(rng, 14, x, foot - 4, 62);
+    // 电荷：从画面外收进目标脚下。**终点必须各自错开**——
+    // 十四颗全收敛到同一个坐标时，就算每颗只有 0.08 的透明度，叠十四层也是 0.69，
+    // 劈之前那两帧目标脚边会杵着一颗接近不透明的白方块（放大到物理像素才看得出来）
+    const charge = inward(rng, 14, x, foot - 4, 62).map(q => ({
+      ...q, tx: x + rng.int(-8, 8), ty: foot - 4 + rng.int(-6, 5) }));
     const sparks = Array.from({ length: 14 }, () => ({
       dx: rng.int(-24, 24) * kx, vy: rng.int(26, 62), d: rng.next() * 0.6, w: rng.next() }));
 
@@ -172,12 +180,13 @@ export const SKY_FX = {
           strand(ctx, x + h.dx, foot + h.dy, h.h * ease(k), h.w, PX, cf * 0.75, '#bfe6ff',
             h.ph, 1.6, 0.3, 0.5, PX);
         }
-        ctx.globalAlpha = 1;
         for (const q of charge) {
-          const k = Math.max(0, (c - q.d) / (1 - q.d)); if (k <= 0) continue;
+          const k = Math.max(0, (c - q.d) / (1 - q.d)); if (k <= 0 || k > 0.86) continue;
           const e = ease(k);
-          dot(ctx, q.ax + (x - q.ax) * e, q.ay + (foot - 4 - q.ay) * e, q.s, k > 0.7 ? '#eaf6ff' : '#7fb4ff');
+          ctx.globalAlpha = Math.min(1, (1 - k / 0.86) * 2.4);   // 还没到岸就先淡掉
+          dot(ctx, q.ax + (q.tx - q.ax) * e, q.ay + (q.ty - q.ay) * e, q.s, k > 0.6 ? '#eaf6ff' : '#7fb4ff');
         }
+        ctx.globalAlpha = 1;
         ctx.restore();
       }
       // ---- 劈 ----
@@ -208,10 +217,12 @@ export const SKY_FX = {
       // ---- 爆 ----
       // 离子通道：主干退干净之后还留一道极淡的白痕，到 0.84 才散。
       // 这就是「亮一次然后拖尾」里的拖尾——**用它代替连闪几下**
-      const gh = seg(p, 0.42, 0.84);
+      // 画宽而淡，不画细而实：细的那版读起来是「一根没擦干净的线」，
+      // 宽的这版才是「刚才那道雷在空气里留下的一条热痕」
+      const gh = seg(p, 0.42, 0.80);
       if (gh > 0 && gh < 1) {
-        ctx.save(); ctx.globalAlpha = (1 - gh) ** 1.6 * 0.30;
-        limb(ctx, trunk, 0.45, '#b9d4ff'); ctx.restore();
+        ctx.save(); ctx.globalAlpha = (1 - gh) ** 1.6 * 0.16;
+        limb(ctx, trunk, 1.5, '#a8c8ff'); ctx.restore();
       }
       const bo = seg(p, 0.40, 0.76);
       if (bo > 0 && bo < 1) {
@@ -234,6 +245,9 @@ export const SKY_FX = {
       // ---- 余 ----
       const af = seg(p, 0.62, 1);
       if (af > 0) {
+        // 落点还烫着：一摊压得很低的余光陪到最后一帧，
+        // 不留这一摊的话尾段整屏只剩两条小弧，空得像特效提前结束了
+        glow(ctx, x, foot - 2, 42 * kx, 'rgb(90,130,235)', (1 - af) ** 1.4 * 0.30);
         ctx.save();
         for (const cl of clings) {
           const k = (af - cl.at) / 0.24; if (k <= 0 || k >= 1) continue;
@@ -273,7 +287,9 @@ export const SKY_FX = {
       const c = 1 - Math.abs(i - (N - 1) / 2) / (N / 2 + 0.7);     // 中间 1、两边 0
       return { dx: (i - (N - 1) / 2) * 4.6, dy: rng.int(-5, 4),
         w: (2.6 + c * 7.4) * (0.72 + rng.next() * 0.55),
-        a: 0.14 + c * 0.30, d: rng.next() * 0.26, ph: rng.next() * 6.28 };
+        // 每条都很透（中间那条也只有 0.31）。九条叠起来罩在怪身上已经接近不透明了，
+        // 第一版 0.44 的时候整只怪被柱子吃掉，玩家看不见自己在打谁（第 4 条）
+        a: 0.11 + c * 0.20, d: rng.next() * 0.26, ph: rng.next() * 6.28 };
     });
     // 六道放射：主束六条（每 60°），中间再插六条短的填空隙——
     // 仍是六重对称，只是不至于稀疏得像个星号
@@ -318,7 +334,7 @@ export const SKY_FX = {
       // ---- 降 ----
       const dn = seg(p, 0.22, 0.52);
       if (dn > 0) {
-        const back = 1 - seg(p, 0.74, 1) * 0.92;      // 升那段柱子慢慢收回去
+        const back = 1 - seg(p, 0.62, 0.97) * 0.94;   // 绽开之后柱子就该往天上收了
         ctx.save();
         for (const b of beams) {
           const k = Math.max(0, Math.min(1, (dn - b.d) / (1 - b.d))); if (k <= 0) continue;
@@ -351,19 +367,22 @@ export const SKY_FX = {
           limb(ctx, r.pts.slice(0, n), 0.42, '#fffdf2');
         }
         ctx.restore();
-        // 目标身上的核：不画实心，画两层半透明的圆，怪还得透得出来
+        // 目标身上的核：不画实心，画两层半透明的圆，怪还得透得出来。
+        // 半径也收着（第一版 7+17，罩住整只怪就成了一坨白饼）
         ctx.save();
-        ctx.globalAlpha = e * 0.34; ctx.fillStyle = '#ffeaa6';
-        ctx.beginPath(); ctx.arc(x, y, (7 + e * 17) * kx, 0, 6.29); ctx.fill();
-        ctx.globalAlpha = e * 0.66; ctx.fillStyle = '#fffdf0';
-        ctx.beginPath(); ctx.arc(x, y, (3 + e * 7) * kx, 0, 6.29); ctx.fill();
+        ctx.globalAlpha = e * 0.26; ctx.fillStyle = '#ffeaa6';
+        ctx.beginPath(); ctx.arc(x, y, (5 + e * 11) * kx, 0, 6.29); ctx.fill();
+        ctx.globalAlpha = e * 0.5; ctx.fillStyle = '#fffdf0';
+        ctx.beginPath(); ctx.arc(x, y, (2 + e * 5) * kx, 0, 6.29); ctx.fill();
         ctx.restore();
       }
-      // 三重环：厚度随半径变薄，摊开而不是放大。错开出发，免得三条一起走像一个圈
+      // 三重环：厚度随半径变薄，摊开而不是放大。三条错开出发、扁度各不相同——
+      // 齐步走、同一个扁度的话，看着就是三个套在一起的呼啦圈
       for (let i = 0; i < 3; i++) {
         const k = seg(p, 0.46 + i * 0.10, 0.86 + i * 0.10); if (k <= 0 || k >= 1) continue;
-        ring(ctx, x, y + (i === 1 ? 0 : (i ? 10 : -10)) * ky, (8 + ease(k) * 74) * kx,
-          i === 2 ? '#ffe9a0' : '#fff8de', (1 - k) ** 1.2 * 0.62, Math.max(PX, 2.6 * (1 - k)));
+        halo(ctx, x, y + (i === 1 ? 0 : (i ? 12 : -11)) * ky, (8 + ease(k) * 72) * kx,
+          i === 2 ? '#ffe4a0' : '#fff8de', (1 - k) ** 1.2 * 0.42, 2.8 * (1 - k),
+          i * 1.7, 0.34 + i * 0.13);
       }
       // ---- 升 ----
       const up = seg(p, 0.70, 1);
