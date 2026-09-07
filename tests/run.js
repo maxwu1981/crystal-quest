@@ -9,6 +9,7 @@ import './cases/maps.js';
 import './cases/party.js';
 import './cases/gear.js';
 import './cases/battle.js';
+import './cases/skills.js';
 import './cases/art.js';
 
 

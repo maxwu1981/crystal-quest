@@ -24,11 +24,26 @@
     },
     "commands": [
       "attack",
+      "skill",
       "defend",
       "item",
       "flee"
     ],
-    "spells": []
+    "spells": [],
+    "skills": [
+      {
+        "id": "chainfist",
+        "level": 1
+      },
+      {
+        "id": "sunderfist",
+        "level": 4
+      },
+      {
+        "id": "allout",
+        "level": 7
+      }
+    ]
   },
   "hunter": {
     "name": "山猎人",
@@ -55,11 +70,26 @@
     },
     "commands": [
       "attack",
+      "skill",
       "defend",
       "item",
       "flee"
     ],
-    "spells": []
+    "spells": [],
+    "skills": [
+      {
+        "id": "holdbreath",
+        "level": 1
+      },
+      {
+        "id": "venomblade",
+        "level": 4
+      },
+      {
+        "id": "sweep",
+        "level": 7
+      }
+    ]
   },
   "general": {
     "name": "家将",
@@ -88,11 +118,26 @@
     "hits": 2,
     "commands": [
       "attack",
+      "skill",
       "defend",
       "item",
       "flee"
     ],
-    "spells": []
+    "spells": [],
+    "skills": [
+      {
+        "id": "openface",
+        "level": 1
+      },
+      {
+        "id": "pacing",
+        "level": 4
+      },
+      {
+        "id": "sevenstar",
+        "level": 7
+      }
+    ]
   },
   "herbwife": {
     "name": "青草婆",

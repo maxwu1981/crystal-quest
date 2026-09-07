@@ -8,6 +8,8 @@ import { healFull, memberSpells } from '../src/game/party.js';
 import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
 import { execute } from '../src/battle/actions.js';
 import { decideEnemyAction } from '../src/battle/ai.js';
+import { estSkill } from '../src/battle/autoBattle.js';
+import { memberSkills, skillReady, skillShape, tickCooldowns } from '../src/game/battleskill.js';
 
 // 各等级默认装备（模拟玩家按金币逐步换装：出村青铜、洞窟前铁、深处钢）
 // 童乩（tangki）这一路跟符仔仙同装：都是后排、都用杖 + 袍，商店里也没有第三种
@@ -90,6 +92,39 @@ function scene(data, level, enemyIds, seed, endgame) {
     run(a) { const co = execute(this, a); let n = 0; while (!co.next().done && n++ < 200); } };
   return s;
 }
+// 物理职业的战技策略。**这一段必须有**：没有它，加了战技之后跑出来的表和以前一模一样，
+// 看着像「改动没影响」，其实只是模拟里的玩家从来没点过那一栏。
+// 策略跟一个正常玩家一样朴素：有人挨打了就开脸挡着，否则挑期望伤害最高的一招，
+// 但要**明显**比普攻好才换（不然白白吃掉冷却），而且血少于一半时不碰要放血的那几招。
+function pickSkill(s, p, enemies) {
+  const data = s.game.data;
+  if (!p.member || !data.skills) return null;
+  const ready = memberSkills(p.member, data).map(id => ({ id, sk: data.skills[id] }))
+    .filter(x => x.sk && skillReady(p, x.id, x.sk));
+  if (!ready.length) return null;
+  const party = s.alive(s.party);
+  const guard = ready.find(x => x.sk.target === 'self' && !x.sk.power);
+  if (guard && !p.status.blockade && p.hp > p.maxHp * 0.5
+      && party.some(m => m !== p && m.hp < m.maxHp * 0.5)) {
+    return { type: 'skill', skillId: guard.id, target: p };
+  }
+  const lowHp = p.hp < p.maxHp * 0.5;
+  const plain = enemies.length ? Math.max(...enemies.map(e => estSkill({ power: 1 }, p, e))) : 0;
+  let bestSk = null, bestTgt = null, best = plain * 1.05;
+  for (const x of ready) {
+    if (x.sk.target === 'self' || !x.sk.power) continue;
+    if (x.sk.hp && lowHp) continue;
+    const shape = skillShape(x.sk, p.member, x.id);
+    if (x.sk.scope === 'all') {
+      const sum = enemies.reduce((t, e) => t + estSkill(shape, p, e), 0);
+      if (sum > best) { best = sum; bestSk = x; bestTgt = 'all'; }
+    } else {
+      for (const e of enemies) { const d = estSkill(shape, p, e); if (d > best) { best = d; bestSk = x; bestTgt = e; } }
+    }
+  }
+  return bestSk ? { type: 'skill', skillId: bestSk.id, target: bestTgt } : null;
+}
+
 // 玩家策略
 function decide(s, p) {
   const data = s.game.data, sp = data.spells, enemies = s.alive(s.enemies), party = s.alive(s.party);
@@ -100,13 +135,16 @@ function decide(s, p) {
   if (hurt && heals.length) return { type: 'magic', spellId: heals[0], target: hurt };
   const attacks = usable.filter(id => sp[id].power > 0 && sp[id].target === 'enemy').sort((a, b) => sp[b].power * (sp[b].scope === 'all' ? enemies.length : 1) - sp[a].power * (sp[a].scope === 'all' ? enemies.length : 1));
   if (attacks.length && (p.jobId === 'talisman' || p.jobId === 'peddler')) { const id = attacks[0]; return { type: 'magic', spellId: id, target: sp[id].scope === 'all' ? 'all' : weakest }; }
-  return { type: 'attack', target: weakest };
+  return pickSkill(s, p, enemies) || { type: 'attack', target: weakest };
 }
 function fight(data, level, enemyIds, seed, endgame) {
   const s = scene(data, level, enemyIds, seed, endgame);
   let rounds = 0;
   while (s.alive(s.party).length && s.alive(s.enemies).length && rounds++ < 40) {
     const acts = [];
+    // 冷却在「他的回合开始」走一格，和 BattleScene.beginInput 同一个时点——
+    // 两边不一致的话，模拟出来的战技节奏就不是玩家实际会遇到的那个
+    for (const p of s.alive(s.party)) tickCooldowns(p);
     for (const p of s.alive(s.party)) acts.push({ actor: p, ...(p.status.sleep ? { type: 'sleep' } : decide(s, p)) });
     for (const e of s.alive(s.enemies)) { const d = e.status.sleep ? { type: 'sleep' } : decideEnemyAction(e, s.enemies, s.party, data, s.rng); if (d) acts.push({ actor: e, ...d }); }
     acts.sort((a, b) => (b.actor.spd + s.rng.int(0, 4)) - (a.actor.spd + s.rng.int(0, 4)));

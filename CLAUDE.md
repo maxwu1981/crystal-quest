@@ -45,7 +45,7 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
 - 像素级碰撞（一律网格制）
 
 ## 数据 schema
-- `jobs.json`  `{ id: { name, desc, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:["id" | {id, level}], unarmed?, hits? } }`
+- `jobs.json`  `{ id: { name, desc, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:["id" | {id, level}], skills:["id" | {id, level}], unarmed?, hits? } }`
   职业 id：`boxer` 拳头师 / `hunter` 山猎人 / `general` 家将 / `herbwife` 青草婆 / `talisman` 符仔仙 / `peddler` 走贩 / `tangki` 童乩
   攻击 = 力量/2 + 武器（武僧空手 = 力量/2 + unarmed×等级，hits 是命中数倍率）
   `art: "别的职业 id"` —— 还没画美术的职业借别人的图。**加新职业必须加这一行**，
@@ -80,6 +80,28 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
   `immune:["poison"]` 到底免的是哪一个说不清。拆开之后 `wood` 管属性、`poison` 只管状态。
 - `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', scope:'single'|'all', heal?, status?, cure?:[状态], revive?:比例, desc } }`
   power 为 0 且有 status = 纯状态魔法；状态 id 见 src/game/status.js（poison sleep blind protect）
+- `skills.json` 「战技」——拳头师 / 山猎人 / 家将的专属指令。**摒弃「战士只能平A」**（导演点名）。
+  `{ id: { name, job 属于哪个职业, cd 冷却回合, hp? 消耗最大 HP 的比例,
+  power 相当于几次普攻（1 ＝ 和普攻一样重）, hits? 段数倍率（和职业自带的 hits 相乘）,
+  pierce? 无视目标防御的比例, sure? 必中, crit? 额外会心（百分点）,
+  target:'enemy'|'self', scope:'single'|'all',
+  status? 命中后加在**目标**身上, selfStatus? 施放后加在**自己**身上（字符串或数组）,
+  fx? sfx? 演出与音效键, desc } }`
+  **门槛绝对不能是 MP**：这三个职业的 `base.mp` 是 0，给它们发蓝条就等于推翻上面
+  「MP 是唯一的资源」那一条。所以只用两样已经存在的东西——冷却回合（时间，不是货币，
+  存在战斗 actor 的 `actor.cool` 上，战斗结束就丢，进不了存档）与 HP（最重的两招才收）。
+  测试里有一条专门卡着 `sk.mp === undefined`。
+  **战技跟着现职走，不承接**（招式是门派的，八家将的开脸拳头师做不来）——
+  所以它一个存档字段都不占，纯从 jobId + 角色等级推导，旧存档读进来就有。
+  熟练度另算：共用 `skillUses` 那张表，练满照样 ×1.5（`skillPower`，**不要**走
+  `jobskill.skillScale`——那个会 `Math.round`，把 0.42 这种倍率压成 0）。
+  **`power` 乘在最终伤害上，不是乘在 atk 上**：乘在前面的话，「rand(atk,2atk) − def」
+  里的减防会把低倍率多段技整个吃干净（七星步每一段都打不穿防御，全是保底 1 点）。
+  实现：`formulas.skillAttack` / `game/battleskill.js` / `battle/skillAction.js`。
+  新加的两种状态：`sunder` 破甲（防御 ×0.6，全场唯一能动别人防御的东西）、
+  `blockade` 挡煞（敌人优先打他，见 `battle/ai.js`）。
+  **`STATUS` 里凡是有 `turns` 的都必须写 `gone`**——`statusPhase` 现在是照着 `turns`
+  泛化递减的（不再是手写的 `['sleep','protect']` 名单），漏写只会让状态无声无息地消失。
 - `summons.json` 「請神」的八位。字段尽量沿用 spells.json，只有召唤才有的额外标出：
   `{ id: { name 神名, title? 神号, skill 绝招名, mp, power, element 八属性之一（八位不重复）,
   target:'enemy', scope:'all', hits? 段数（默认 1）, pierce? 跳过 mdef 减半判定,
@@ -196,6 +218,12 @@ Boss 是「乌火」——它说自己不是妖不是鬼，是这块地欠的债
 
 **仍未决**：全开箱 4 级就 100%，即「翻遍迷宫就碾压」。
 这算奖励探索还是失去挑战，是设计决定，没动。
+
+**加战技之后重测过（2026-09-07）**：三个物理职业多了一整栏指令，本来一定会变简单
+（初始队伍四个人里有两个吃到）。数值按「战技不该白送输出，只该给选择」压回去之后，
+顺路开箱那条基本还在原地：4 级 57%（原 50%）、5 级 80%、6 级 90%、7 级 100%。
+唯一明显松动的是**纯商店 10 级 53% → 70%**——那是练级派那一档，本来就是难度上限，
+放宽一点无害。调战技数值前后都要跑 `tests/?balance` 对一次这张表。
 
 ### 拆文件之后必跑 `python3 tools/lint_modules.py`
 

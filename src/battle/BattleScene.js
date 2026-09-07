@@ -16,8 +16,10 @@ import { canUseOn } from '../game/items.js';
 import { iconGap } from '../menu/icons.js';
 // 童乩的「請神」：请得动谁、这一位这次多少 MP，全问数据层，战斗里不重新判一遍。
 import { availableSummons, skillScale } from '../game/jobskill.js';
+// 战技：会哪几招、冷却走到哪了、放得起放不起，全问数据层（game/battleskill.js）
+import { memberSkills, cooldownOf, hpCost, skillReady, tickCooldowns } from '../game/battleskill.js';
 
-const CMD = { attack: '攻击', magic: '魔法', summon: '請神', defend: '防御', item: '道具', flee: '逃跑' };
+const CMD = { attack: '攻击', skill: '战技', magic: '魔法', summon: '請神', defend: '防御', item: '道具', flee: '逃跑' };
 
 // 請神菜单的条目：这个角色**当前**请得动的几位，请过的 / 请不起的灰掉。
 // 谁请得动由 availableSummons 决定（职业等级那一道闸在数据层），这里只叠两件
@@ -30,6 +32,21 @@ export function summonItems(actor, data, used = new Set(), gap = '') {
     const s = data.summons[id], { mp } = skillScale(s, skillLevel);
     return { label: gap + s.name, value: id, right: mp,
       disabled: actor.mp < mp || (s.once && used.has(id)) };
+  });
+}
+
+// 战技菜单的条目：这个角色**当前**会的几招，冷却没走完 / 血不够拼的灰掉。
+// 右栏写的是代价：还要缓几回合 ＞ 要放多少血 ＞ 什么都不要（'—'）。
+// **写得极短是有原因的**：指令窗只有 LEFT_W-4 宽，右栏是右对齐贴着边画的，
+// 「七星步」这种三字招式配上「HP 12」会直接顶到一起（实机上看过）。
+// 一个字的前缀刚好留得出空隙，也不必猜那个数字是血还是蓝。
+// 抽成纯函数的理由同 summonItems——BattleScene 要画布要音频，headless 起不来。
+export function skillItems(actor, data, gap = '') {
+  return memberSkills(actor.member, data).map(id => {
+    const sk = data.skills[id], wait = cooldownOf(actor, id), cost = hpCost(sk, actor);
+    return { label: gap + sk.name, value: id,
+      right: wait ? `缓${wait}` : cost ? `血${cost}` : '—',
+      disabled: !skillReady(actor, id, sk) };
   });
 }
 
@@ -125,6 +142,11 @@ export class BattleScene {
   // ---------- 玩家下令 ----------
   beginInput(actor) {
     if (!actor.alive) return;
+    // 战技的冷却走一格。**放在这里而不是行动执行时**：回合制里四个人先一起下令、
+    // 之后才依次执行，在执行时才减的话菜单上永远显示上一回合的数字，
+    // 「缓 3 回合」读起来会变成 4 回合。beginInput 在两种模式下都是每人每回合恰好一次。
+    // 睡着的人不经过这里，也就不走格——睡过去的那一回合本来就什么都没恢复。
+    tickCooldowns(actor);
     this.current = actor;
     // 自动战斗：替玩家下这一手。决策模块返回的指令跟手动下的完全同形，
     // 所以直接走 commit，不需要为它开第二条执行路径。
@@ -156,6 +178,7 @@ export class BattleScene {
     if (cmd === 'attack') this.openTarget('enemy', t => this.commit({ type: 'attack', target: t }), () => this.openMain());
     else if (cmd === 'defend') this.commit({ type: 'defend' });
     else if (cmd === 'flee') this.commit({ type: 'flee' });
+    else if (cmd === 'skill') this.openSkill();
     else if (cmd === 'magic') this.openMagic();
     else if (cmd === 'summon') this.openSummon();
     else if (cmd === 'item') this.openItems();
@@ -166,6 +189,19 @@ export class BattleScene {
     if (!items.length) items.push({ label: '（请不动谁）', disabled: true });
     this.sub = 'summon'; this.target = null;
     this.menu = this.menuAt(items, it => this.commit({ type: 'summon', summonId: it.value, target: 'all' }), () => this.openMain());
+  }
+  // 全体的（踏罡 / 扫山）与只对自己的（开脸）选完直接下令，其余才去挑目标
+  openSkill() {
+    const a = this.current, data = this.game.data;
+    const items = skillItems(a, data, iconGap());
+    if (!items.length) items.push({ label: '（没有战技）', disabled: true });
+    this.sub = 'skill'; this.target = null;
+    this.menu = this.menuAt(items, it => {
+      const sk = data.skills[it.value], act = t => this.commit({ type: 'skill', skillId: it.value, target: t });
+      if (sk.target === 'self') act(a);
+      else if (sk.scope === 'all') act('all');
+      else this.openTarget('enemy', act, () => this.openSkill());
+    }, () => this.openMain());
   }
   openMagic() {
     const a = this.current, sp = this.game.data.spells;

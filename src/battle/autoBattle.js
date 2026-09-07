@@ -14,6 +14,7 @@
 // 因为决策要可复现——自动试玩靠同种子复现路线，掷随机会让它每次都不一样。
 
 import * as F from './formulas.js';
+import { memberSkills, skillReady, skillShape } from '../game/battleskill.js';
 
 const LOW_HP = 0.30;        // 低于这个比例算"快死了"
 const REVIVE_FIRST = true;  // 有人倒下时优先救人（少一个人打就是少一份输出）
@@ -29,6 +30,20 @@ export function estPhysical(attacker, target) {
   const p = F.hitChance(att.acc, def.eva);
   const perHit = Math.max(1, (att.atk * 1.5) - def.def + att.atk * ((att.crit || 0) / 100));
   let dmg = hits * p * perHit;
+  if (attacker.element) dmg *= F.elementMultiplier(target, attacker.element);
+  return dmg;
+}
+
+// 战技的期望伤害。和 estPhysical 同一套均值算法，只是把 skillAttack 的三个修正
+// （段数 / 破防 / 倍率）换成它们的期望版本，外加必中与额外会心。
+export function estSkill(shape, attacker, target) {
+  const att = F.effectiveStats(attacker), def = F.effectiveStats(target);
+  const hits = F.hitCount(att.acc) * (att.hits || 1) * (shape.hits || 1);
+  const p = shape.sure ? 1 : F.hitChance(att.acc, def.eva);
+  const dfn = shape.pierce ? Math.floor(def.def * (1 - shape.pierce)) : def.def;
+  const crit = (att.crit || 0) + (shape.crit || 0);
+  const perHit = Math.max(1, (att.atk * 1.5) - dfn + att.atk * (crit / 100));
+  let dmg = hits * p * perHit * (shape.power ?? 1);
   if (attacker.element) dmg *= F.elementMultiplier(target, attacker.element);
   return dmg;
 }
@@ -53,6 +68,10 @@ const spellsOf = (a, data) => (a.spells || []).map(id => ({ id, sp: data.spells[
 // 只看这两个字段会把它当成全体攻击丢到敌人身上。
 const isAttackSpell = sp => sp.power > 0 && sp.target !== 'ally' && !sp.heal && !sp.revive;
 const findItem = (inv, ids) => inv.find(s => ids.includes(s.id) && s.qty > 0);
+// 现在放得出来的战技（冷却走完、血够拼）。没有 member 的（敌人、测试桩）一律没有。
+const skillsOf = (a, data) => !a.member || !data.skills ? [] :
+  memberSkills(a.member, data).map(id => ({ id, sk: data.skills[id] }))
+    .filter(x => x.sk && skillReady(a, x.id, x.sk));
 
 // 队伍里谁最该被救：血比最低的那个
 function weakest(party) {
@@ -132,6 +151,50 @@ export function decideAutoAction(actor, party, enemies, data, inventory = []) {
 
   const best = pickTarget(actor, foes);
   const phys = best ? estPhysical(actor, best) : 0;
+
+  // 战技排在魔法前面：它不花 MP，代价只有冷却与（少数几招的）血，
+  // 所以门槛比魔法低得多——只要比普攻好就该放，留着冷却不用等于白少一份输出。
+  {
+    const skills = skillsOf(actor, data);
+    // 挡煞那一类（只对自己、没有威力）：有人被打到半血以下、而自己还站得稳时才值得花一回合
+    const guard = skills.find(x => x.sk.target === 'self' && !x.sk.power);
+    if (guard && hpRatio(actor) > 0.5 && alive(party).some(p => p !== actor && hpRatio(p) < 0.5)
+        && !actor.status?.blockade) {
+      return { type: 'skill', skillId: guard.id, target: actor };
+    }
+    // 血一少就不碰要放血的那几招
+    const lowHp = hpRatio(actor) < 0.5;
+    // 比法：先比**这一手能补掉几只**，再比**真正用得上的伤害**。
+    // 「用得上」＝ min(伤害, 对方剩余 HP)：打在 29 血的杂鱼身上，186 和 161 是一样的，
+    // 溢出的部分不该拿来给战技加分。少了这一层，七星步会为了补一只魔神仔而白白吃掉四回合冷却。
+    // 反过来，**不能**因为「普攻反正打得死某一只」就整条跳过战技——
+    // 原本这里正是一句无差别的否决，结果家将从头到尾一招都不放，
+    // 而菜单、协程、公式全对，测试全绿、画面正常，只是那一栏形同虚设。
+    const useful = (d, e) => Math.min(d, e.hp);
+    let pickSk = null, pickTgt = null;
+    let bestKills = best && phys >= best.hp ? 1 : 0;
+    let bestDmg = (best ? useful(phys, best) : 0) * 1.05;      // 要**明显**比普攻好才换
+    for (const x of skills) {
+      if (x.sk.target === 'self' || !x.sk.power) continue;
+      if (x.sk.hp && lowHp) continue;
+      const shape = skillShape(x.sk, actor.member, x.id);
+      const take = (kills, dmg, tgt) => {
+        if (kills < bestKills || (kills === bestKills && dmg <= bestDmg)) return;
+        bestKills = kills; bestDmg = dmg; pickSk = x; pickTgt = tgt;
+      };
+      if (x.sk.scope === 'all') {
+        let kills = 0, sum = 0;
+        for (const e of foes) { const d = estSkill(shape, actor, e); sum += useful(d, e); if (d >= e.hp) kills++; }
+        take(kills, sum, 'all');
+      } else {
+        for (const e of foes) {
+          const d = estSkill(shape, actor, e);
+          take(d >= e.hp ? 1 : 0, useful(d, e), e);
+        }
+      }
+    }
+    if (pickSk) return { type: 'skill', skillId: pickSk.id, target: pickTgt };
+  }
 
   if (!mpLow) {
     // 全体魔法：敌人够多才划算。用「总伤害 ÷ MP」跟普攻比，别为了放而放

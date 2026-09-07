@@ -1,0 +1,101 @@
+{
+  "chainfist": {
+    "name": "连环拳",
+    "job": "boxer",
+    "cd": 1,
+    "power": 0.55,
+    "hits": 2,
+    "target": "enemy",
+    "scope": "single",
+    "desc": "宋江阵的拳套，一步两拳，落点不同。隔一回合就能再来一次。"
+  },
+  "sunderfist": {
+    "name": "碎甲",
+    "job": "boxer",
+    "cd": 3,
+    "power": 0.75,
+    "pierce": 0.6,
+    "status": "sunder",
+    "target": "enemy",
+    "scope": "single",
+    "sfx": "crit",
+    "desc": "拳头找的是接缝，不是硬处。绕开大半防御，还把甲敲开一道口子。"
+  },
+  "allout": {
+    "name": "拼命",
+    "job": "boxer",
+    "cd": 4,
+    "hp": 0.25,
+    "power": 1.8,
+    "sure": true,
+    "crit": 35,
+    "target": "enemy",
+    "scope": "single",
+    "sfx": "crit",
+    "desc": "拿自己的血换那一下。必中，而且很容易打在要害上。"
+  },
+  "openface": {
+    "name": "开脸",
+    "job": "general",
+    "cd": 3,
+    "target": "self",
+    "scope": "single",
+    "selfStatus": [
+      "blockade",
+      "protect"
+    ],
+    "sfx": "heal",
+    "desc": "脸一画上，人就不是人了。挡在队伍前面，敌人先冲他来，同时自己硬得多。"
+  },
+  "pacing": {
+    "name": "踏罡",
+    "job": "general",
+    "cd": 3,
+    "power": 0.5,
+    "target": "enemy",
+    "scope": "all",
+    "desc": "踏罡步斗，一脚下去整片地都在震。打的是所有站着的东西。"
+  },
+  "sevenstar": {
+    "name": "七星步",
+    "job": "general",
+    "cd": 4,
+    "hp": 0.1,
+    "power": 0.34,
+    "hits": 4,
+    "target": "enemy",
+    "scope": "single",
+    "desc": "七个脚位走完，人已经绕到旁边去了。段数多，可是每一下都要先穿过对方的甲。"
+  },
+  "holdbreath": {
+    "name": "屏息",
+    "job": "hunter",
+    "cd": 2,
+    "power": 0.88,
+    "sure": true,
+    "crit": 25,
+    "target": "enemy",
+    "scope": "single",
+    "desc": "山里等一只山猪要等半天。屏住那口气，这一下不会落空。"
+  },
+  "venomblade": {
+    "name": "抹毒",
+    "job": "hunter",
+    "cd": 3,
+    "power": 0.62,
+    "status": "poison",
+    "target": "enemy",
+    "scope": "single",
+    "sfx": "buzz",
+    "desc": "刀口先在草汁里过一遍。伤不重，可是那东西会一直烂下去。"
+  },
+  "sweep": {
+    "name": "扫山",
+    "job": "hunter",
+    "cd": 4,
+    "power": 0.45,
+    "target": "enemy",
+    "scope": "all",
+    "desc": "赶山的走法：不挑一只打，把整条线上的都扫过去。"
+  }
+}

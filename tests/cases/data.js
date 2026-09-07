@@ -26,7 +26,7 @@ test('每个遇敌区都有对应的战斗背景，不会静默退回通用背�
 });
 
 test('职业引用的魔法与指令都存在', () => {
-  const cmds = new Set(['attack', 'magic', 'summon', 'defend', 'item', 'flee']);
+  const cmds = new Set(['attack', 'skill', 'magic', 'summon', 'defend', 'item', 'flee']);
   for (const [id, j] of Object.entries(data.jobs)) {
     for (const s of j.spells) { const sid = typeof s === 'string' ? s : s.id; assert(data.spells[sid], `${id} 引用了不存在的魔法 ${sid}`); if (typeof s !== 'string') assert(s.level >= 1, `${id}/${sid} level`); }
     for (const c of j.commands) assert(cmds.has(c), `${id} 未知指令 ${c}`);

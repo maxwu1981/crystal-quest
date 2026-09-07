@@ -13,28 +13,13 @@ import { ELEMENT_FX, ELEMENT_TINT, ELEMENT_SFX, ELEMENT_COLOR } from './elements
 import { availableSummons, useSkill, skillScale } from '../game/jobskill.js';
 // 哪几位的演出焦点在我方——不在这里再抄一份名单，直接问那个档自己。
 import { FX_ALLY } from './summonFxAlly.js';
-
-// 给目标挂上「被笼罩」。时长直接取特效自己的 dur——两边各写一个数字，
-// 改了特效时长就会有一段「火已经灭了人还是半透明」。
-// 具体怎么从看得见渐变到被吞没，见 render.js 的 VEIL 那张表。
-function veilOn(t, fx, tint) {
-  t.veil = t.veilDur = fx ? fx.dur : 0.3;
-  t.veilTint = tint || null;
-}
-
-// 附加状态：免疫 / 已有 → false
-// chance 是可选的成功率覆盖，给「一场只能请一次」的召唤用（请下来的神顺手护住自家人，
-// 不该再掷一次 75%）。**免疫仍然一票否决**：statusChance 对免疫的目标返回 0，
-// 这里只在它本来就 > 0 时才让覆盖值生效。
-export function inflict(scene, t, status, chance = null) {
-  const def = STATUS[status];
-  const base = F.statusChance(t, status);
-  const p = chance != null && base > 0 ? chance : base;
-  if (!def || t.status[status] || !scene.rng.chance(p)) return false;
-  t.status[status] = def.turns ? scene.rng.int(def.turns[0], def.turns[1]) : true;
-  scene.popup(t, def.name, def.color);
-  return true;
-}
+// veilOn / inflict 搬去了 afflict.js（skillAction.js 也要用，留在这儿会成循环引用）。
+// 这里原样再导出一次，tests/cases/battle.js 与将来的调用方 import 一个字都不用改。
+import { veilOn, inflict } from './afflict.js';
+export { inflict };
+// 三个物理职业的「战技」。它跟魔法/請神一样是一整条演出＋结算，单独成档
+// （actions.js 已经 339 行，CLAUDE.md 的上限是 400）。
+import { useBattleSkill } from './skillAction.js';
 
 // 行动前：毒伤害、状态倒计时。返回 false 表示角色已倒下
 function* statusPhase(scene, actor) {
@@ -42,11 +27,15 @@ function* statusPhase(scene, actor) {
     scene.msg = `${actor.name} 受到毒的侵蚀`; scene.damage(actor, F.poisonDamage(actor.maxHp)); audio.sfx('buzz'); yield 0.6;
     if (!actor.alive) { scene.msg += `\n${actor.name} 倒下了`; yield 0.5; return false; }
   }
-  for (const s of ['sleep', 'protect']) {
-    if (typeof actor.status[s] !== 'number') continue;
+  // 倒计时照着 STATUS 自己的 turns 走，**不再手写一张 ['sleep','protect'] 的名单**：
+  // 加了破甲与挡煞之后，漏登记的表现是「状态永远不消」——不报错、测试也照过，
+  // 正是这个项目栽过好几次的那一类。报的那句话来自 STATUS[s].gone。
+  for (const s of Object.keys(actor.status)) {
+    if (typeof actor.status[s] !== 'number') continue;   // 数字 ＝ 有 turns 的那几种
     if (--actor.status[s] > 0) continue;
     delete actor.status[s];
-    scene.msg = s === 'sleep' ? `${actor.name} 醒了` : `${actor.name} 的防护消失了`; yield 0.5;
+    const gone = STATUS[s]?.gone;
+    if (gone) { scene.msg = `${actor.name} ${gone}`; yield 0.5; }
   }
   return true;
 }
@@ -69,6 +58,7 @@ export function* execute(scene, a) {
   if (a.type === 'item') { yield* useItem(scene, actor, a); return; }
   if (a.type === 'attack') { yield* attack(scene, actor, a); return; }
   if (a.type === 'magic') { yield* castSpell(scene, actor, a); return; }
+  if (a.type === 'skill') { yield* useBattleSkill(scene, actor, a); return; }
   if (a.type === 'summon') { yield* callSummon(scene, actor, a); return; }
 }
 

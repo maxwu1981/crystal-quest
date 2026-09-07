@@ -1,5 +1,5 @@
 // 一次性加载 data/ 下所有 JSON。地图列表来自 config.maps，挂到 data.maps[id]。
-const BASE = ['config', 'jobs', 'spells', 'summons', 'enemies', 'encounters', 'items', 'party', 'story'];
+const BASE = ['config', 'jobs', 'spells', 'skills', 'summons', 'enemies', 'encounters', 'items', 'party', 'story'];
 
 export async function loadData(base = './data/') {
   const get = async f => {
