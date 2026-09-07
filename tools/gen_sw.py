@@ -64,8 +64,31 @@ def collect():
     return out
 
 
+# 版本号要让**页面自己**读得到（标题画面右下角显示），不能只存在 sw.js 里——
+# sw.js 更新之后页面可能还是旧的，那时候 sw 的版本号说的不是玩家眼前这一版。
+BUILD_JS = 'src/core/build.js'
+
+
+def write_build(version):
+    """把版本号写进 src/core/build.js。**算哈希时必须排除它自己**，
+    否则「写进去 → 内容变 → 哈希变 → 再写」这个环永远收敛不了。"""
+    text = ('// 本文件由 tools/gen_sw.py 生成，请勿手改。\n'
+            '// 这是**这一份页面**的版本号（sw.js 的 VERSION 同一个值）。\n'
+            '// 标题画面右下角会显示它——导演在手机上要能一眼看出自己玩的是不是最新版，\n'
+            '// 而不是靠猜。算哈希时这个文件被排除在外，不然会自己追自己。\n'
+            f"export const BUILD = '{version}';\n")
+    p = os.path.join(ROOT, BUILD_JS)
+    old = open(p, encoding='utf-8').read() if os.path.exists(p) else None
+    if old != text:
+        open(p, 'w', encoding='utf-8').write(text)
+    return text
+
+
 def render(files):
+    files = [(r, h) for r, h in files if r != BUILD_JS]     # 见 write_build
     version = hashlib.sha256(''.join(f'{r}:{h}\n' for r, h in files).encode()).hexdigest()[:12]
+    write_build(version)
+    files = sorted(files + [(BUILD_JS, '')])                # 不进哈希，但要进缓存清单
     total = sum(os.path.getsize(os.path.join(ROOT, r)) for r, _ in files)
     # './' 是 manifest 里的 start_url：点主屏图标进来请求的是目录本身，不是 index.html，
     # 两个都得进缓存，离线才打得开

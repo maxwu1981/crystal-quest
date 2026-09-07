@@ -5,6 +5,7 @@ import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
 import { loadGame } from '../game/state.js';
 import { RNG } from '../core/RNG.js';
 import { MAX_W } from '../core/draw.js';
+import { BUILD } from '../core/build.js';
 import { key } from '../touch.js';
 
 export class TitleScene {
@@ -54,5 +55,11 @@ export class TitleScene {
     this.menu.x = Math.round((W - this.menu.w) / 2);
     this.menu.render(ctx);
     drawText(ctx, `${key('confirm')} 确认`, W / 2, 206, { align: 'center', color: UI.gray }); // 操作提示：最不该抢戏的一行
+    // 版本号：右下角，比操作提示还淡。**这一行是给手机上的导演看的**——
+    // service worker 是 cache-first，发布之后手机上到底换没换成新版，
+    // 以前只能靠「感觉画面有没有变」来猜。有了这个数字，跟发布时打印的那串一比就知道。
+    // 显示的是**页面自己**的版本（src/core/build.js，由 tools/gen_sw.py 写），
+    // 不是 sw 缓存的版本——sw 换了而页面还没换的那一刻，玩家眼前的仍是旧的。
+    drawText(ctx, BUILD, W - 4, H - 10, { align: 'right', color: UI.dim });
   }
 }
