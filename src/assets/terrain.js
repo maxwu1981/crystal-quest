@@ -17,7 +17,7 @@ import { TILE, TILE_FX, tileFrames } from './tiles.js';
 import { ART } from '../core/draw.js';
 import { RNG } from '../core/RNG.js';
 import { u, PX, N, E, S, W, NE, SE, SW, NW, SIDES, CORNERS, AROUND } from './terrainBits.js';
-import { baked, canvasPX, foamFrames, fringeTile, hash,
+import { baked, canvasPX, foamFrames, fringeTile, hasTransparency, hash,
          keyOutGround, objectTile, seamRecord, shadowTile, wetTile } from './terrainBake.js';
 import { DECO_PAINT, DECO_VARIANTS, palette } from './terrainDeco.js';
 
@@ -58,8 +58,37 @@ const WETTABLE = new Set(['sand', 'grass', 'path', 'forest', 'cave_floor', 'flag
 // 正式美术里树的底草是 #178424、草地是 #0e8e24；风之水晶自带的底是洞窟地面，却摆在祭场的沙地上。
 // 于是每一棵树、每一颗水晶都框着一个 16×16 的方框。办法见 keyOutGround：抠掉自带的底换成真地面。
 // 不能乱开：洞口 cave_entrance 的边框本来就是岩壁，抠掉等于把瓦片本身抠没了。
-const SEAMABLE = new Set(['tree', 'crystal', 'town']);
-const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'floor', 'forest']); // 能当底铺的
+//
+// **物件瓦片走的是同一条路，但底是出图时就抠掉的。** 导演说的「迷宫地面杂乱、
+// 分不清哪些是路」，根因是这批物件瓦片每一张都自带一层**各不相同**的地面：
+// 王座底下是铺石、木箱底下是夯土、灶台底下又是另一种，一个房间里五种地板打架。
+// （实测底部 30% 均色与所在房间地板的 ΔRGB 是 35~282，满值 765。）
+// 修法是「重出图：只画物件，背景纯洋红」，洋红在出图管线里就抠成透明
+// （tools/pixel.py 的 chroma_key，和角色/怪物同一条），这里再把它贴到
+// **这一格实际挨着的那种地板**上——底就是那张地板，接缝与色差同时归零。
+//
+// 用邻居来决定铺哪种地，而不是写死一张「物件→地板」表：地图数据才是真相，
+// 同一个王座在铺石厅是铺石、将来搬进夯土的伙房就该是夯土，自动跟着走。
+// OBJECT_GROUND 只是**兜底**：万一某一格四周一格地板都没有（整圈是墙），
+// 没有底就会画出一个透明的洞。表里的默认值取自 tools/dungeon_kit.py 的 ROLE 表
+// （每个角色字符属于哪种房间）与现有两张地图的 legend。
+const OBJECT_GROUND = {
+  pillar: 'flagstone',      // 'I' 廊柱：厅、廊、甬道 —— 铺石
+  throne: 'flagstone',      // 'A' 王座：正厅
+  altar: 'flagstone',       // 'A' 祭坛：庙的圣所
+  sarcophagus: 'flagstone', // 'A' 石棺：墓的主室
+  arch_door: 'flagstone',   // 'D' 门洞：开在墙上，但玩家踩的是门里那条地
+  seal_stone: 'flagstone',  // 'R' 封门石：堵在甬道/墓门上
+  rubble: 'cave_floor',     // 'R' 塌方碎石：盗洞、坍塌的巷道
+  crate: 'flagstone',       // 'c' 木箱堆：库房（现有地图的库房铺的是铺石）
+  stove: 'floor',           // 'c' 灶台：伙房 —— 木地板
+  idol: 'cave_floor',       // 'C' 神像：岩龛、圣所
+};
+// 抠底换地面的名单：老三张（满铺、现场漫水抠）+ 上面那批（出图就抠好了）
+const SEAMABLE = new Set(['tree', 'crystal', 'town', ...Object.keys(OBJECT_GROUND)]);
+// 能当底铺的。carpet 也算：它是「地毯」不是物件，王座摆在中轴地毯尽头时，
+// 底就该是那条地毯而不是旁边的铺石。
+const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'floor', 'forest', 'carpet']);
 
 // 会做「水平镜像变体」的瓦片。
 // 同一张图铺满一整片时，网格周期在 ART=6 下一眼可见——山、林、洞壁尤其明显，
@@ -169,9 +198,12 @@ export function buildTerrainFx(map, tiles, mapId, anim) {
         used++;
       }
     }
-    // 1b) 树 / 水晶 / 村落：抠掉它自带的底，换成邻居用的那种地面（见 SEAMABLE / keyOutGround）。
-    //     这是**替换**那一格的瓦片，不是叠加，绘制次数一点没多。
-    if (SEAMABLE.has(me) && tiles?.[me]) {
+    // 1b) 树 / 水晶 / 村落 / 那批物件：抠掉它自带的底，换成这一格实际挨着的那种地面
+    //     （见 SEAMABLE / OBJECT_GROUND / keyOutGround）。
+    //     这是**替换**那一格的瓦片，不是叠加，绘制次数一点没多；而且只在换地图时烘一次。
+    //     物件那一批必须是**透明底的正式美术**才走这条路：PNG 没加载上时用的是
+    //     tiles.js 里的程序化兜底，那些自带地板，原样画就对了，硬抠会把物件抠出洞。
+    if (SEAMABLE.has(me) && tiles?.[me] && (!OBJECT_GROUND[me] || hasTransparency(tiles[me]))) {
       let best = null, bn = 0;
       const cnt = {};
       for (const [, dx, dy] of AROUND) {
@@ -180,8 +212,9 @@ export function buildTerrainFx(map, tiles, mapId, anim) {
         const c2 = cnt[t] = (cnt[t] || 0) + 1;
         if (c2 > bn) { bn = c2; best = t; }
       }
-      const raw = best && baked(`seam|${me}|${best}`, () => seamRecord(tiles[best], tiles[me], me));
-      const rec = raw && mir ? mirrorRec(`seam|${me}|${best}`, raw, null) : raw;
+      const gnd = best || OBJECT_GROUND[me];       // 四周一格地板都没有时才用兜底表
+      const raw = gnd && tiles[gnd] && baked(`seam|${me}|${gnd}`, () => seamRecord(tiles[gnd], tiles[me], me));
+      const rec = raw && mir ? mirrorRec(`seam|${me}|${gnd}`, raw, null) : raw;
       if (rec) { base[i] = rec; if (rec.f.length > 1 && !seamList.includes(rec)) seamList.push(rec); }
     }
     // 2) 水岸：水格涌浪花，陆地格湿一条边。

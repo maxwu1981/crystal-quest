@@ -18,13 +18,22 @@ import { snap } from '../core/draw.js';
 // motes：氛围粒子。c 是 rgb，a 是透明度区间，vx/vy 是每秒逻辑像素，amp 是横向摆幅。
 const DUST = { n: 12, c: '208,230,238', a: [0.10, 0.22], vx: [-2, 2], vy: [4, 9], amp: [2, 6] };
 const POLLEN = { n: 8, c: '255,246,214', a: [0.09, 0.18], vx: [2, 6], vy: [-3, -1], amp: [3, 7] };
+// `sun`：方向光那一层的按图微调（默认值与全部含义见 lightmap.js 的 SUN_DEF）。
+// 只有两种场景：**室外**日头斜、影子拖得长（cap 2.4~2.6 格）、受光棱暖；
+// **室内 / 洞窟**光源高而且散，影子短（cap 1.1~1.4 格）、受光棱偏冷偏弱。
+// 这一层与时间完全无关，改这几个数不可能改出闪烁来。
+const OUT = { a: 0.30, lit: 0.17, face: 0.28, cap: 2.5, col: [255, 240, 208] };   // 室外午后
+const CAVE = { a: 0.34, lit: 0.13, face: 0.34, cap: 1.2, col: [180, 214, 245] };  // 洞窟：冷光、短影
+const HALL = { a: 0.30, lit: 0.15, face: 0.30, cap: 1.4, col: [246, 226, 186] };  // 石城 / 古塚 / 室内
 export const MOOD = {
-  village: { tint: '#ffd9a2', tintA: 0.16, motes: POLLEN },                        // 内埔庄：午后的暖调
-  overworld: { tint: '#ffe6bb', tintA: 0.11, motes: { ...POLLEN, n: 9 } },         // 六堆平原：开阔天光，最淡
-  cave_1: { tint: '#7d9ec2', tintA: 0.28, vig: { r: 138, a: 0.32, c: '6,12,16' }, motes: DUST },
-  cave_2: { tint: '#6f92c0', tintA: 0.34, vig: { r: 116, a: 0.46, c: '4,10,14' }, motes: DUST },   // 只靠磷光石照明，最暗
-  cave_3: { tint: '#8d7fc6', tintA: 0.30, vig: { r: 150, a: 0.28, c: '10,6,18' }, motes: { ...DUST, n: 9 } }, // 祭场：夜色
-  bogong: { tint: '#ffcf95', tintA: 0.24, vig: { r: 150, a: 0.20, c: '20,10,4' }, // 伯公庙：昏暗 + 香烟袅袅
+  village: { tint: '#ffd9a2', tintA: 0.16, motes: POLLEN, sun: OUT,               // 内埔庄：午后的暖调
+    vig: { r: 190, a: 0.16, c: '40,30,16' } },
+  overworld: { tint: '#ffe6bb', tintA: 0.11, motes: { ...POLLEN, n: 9 }, sun: OUT, // 六堆平原：开阔天光，最淡
+    vig: { r: 200, a: 0.14, c: '30,32,18' } },
+  cave_1: { tint: '#7d9ec2', tintA: 0.28, vig: { r: 138, a: 0.32, c: '6,12,16' }, motes: DUST, sun: CAVE },
+  cave_2: { tint: '#6f92c0', tintA: 0.34, vig: { r: 116, a: 0.46, c: '4,10,14' }, motes: DUST, sun: CAVE },   // 只靠磷光石照明，最暗
+  cave_3: { tint: '#8d7fc6', tintA: 0.30, vig: { r: 150, a: 0.28, c: '10,6,18' }, motes: { ...DUST, n: 9 }, sun: CAVE }, // 祭场：夜色
+  bogong: { tint: '#ffcf95', tintA: 0.24, vig: { r: 150, a: 0.20, c: '20,10,4' }, sun: HALL, // 伯公庙：昏暗 + 香烟袅袅
     motes: { n: 5, c: '255,224,180', a: [0.10, 0.20], vx: [-1, 1], vy: [-9, -5], amp: [2, 5] } },
   // 石城与古塚：这两张长期没有色调层，而它们是全项目瓦片种类最杂的两张——
   // 石砌墙、铺石、红毯、夯土、碎石、木地板挤在一起，没有一层统一色调压着，
@@ -32,12 +41,12 @@ export const MOOD = {
   // 色调要**够饱和**才压得住。正片叠底的效果 = 1-(1-c)×a：浅米色 #e8d6b0 ×0.20
   // 只压暗 6%，等于没上色（第一版就是这样，画面看起来跟没加一样）。
   // 这两张要靠色调把六七种地板收成一个空间，所以取到 22% 那一档——跟洞窟二层同级。
-  fort_ailiao: { tint: '#c9a05c', tintA: 0.34, vig: { r: 150, a: 0.26, c: '18,16,12' }, motes: DUST },
-  tomb_wanjin: { tint: '#6d86ad', tintA: 0.38, vig: { r: 120, a: 0.44, c: '6,8,14' }, motes: { ...DUST, n: 9 } },
-  house_elder: { tint: '#ffdca8', tintA: 0.20 },
-  house_hakka: { tint: '#ffdca8', tintA: 0.20 },
-  inn: { tint: '#ffdca8', tintA: 0.22 },
-  shop: { tint: '#ffdca8', tintA: 0.18 },
+  fort_ailiao: { tint: '#c9a05c', tintA: 0.34, vig: { r: 150, a: 0.26, c: '18,16,12' }, motes: DUST, sun: HALL },
+  tomb_wanjin: { tint: '#6d86ad', tintA: 0.38, vig: { r: 120, a: 0.44, c: '6,8,14' }, motes: { ...DUST, n: 9 }, sun: { ...HALL, col: [186, 210, 238] } },
+  house_elder: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
+  house_hakka: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
+  inn: { tint: '#ffdca8', tintA: 0.22, sun: HALL },
+  shop: { tint: '#ffdca8', tintA: 0.18, sun: HALL },
 };
 
 const mod = (v, n) => ((v % n) + n) % n;

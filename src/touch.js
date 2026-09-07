@@ -43,6 +43,14 @@ const HTML = `
   <div class="tp-s" data-a="mute">音</div>
 </div>`;
 
+// 调试按钮：只在网址带 ?debug 时挂上去。手机上没有键盘，H（全队回满）按不到——
+// 导演在手机上试玩时打完一场没法回血。正式游戏里这两个按钮一个都不会出现。
+const DEBUG_HTML = `
+<div class="tp tp-dbg">
+  <div class="tp-s" data-a="debugHeal">血</div>
+  <div class="tp-s" data-a="debugBattle">战</div>
+</div>`;
+
 const CSS = `
 /* 画面保持居中铺满（index.html 的 flex 居中），按键浮在它上面——
    横屏下没有黑边可以放按键了，见文件头。 */
@@ -79,6 +87,9 @@ const CSS = `
   border-radius:9px; font:500 14px/1 system-ui, sans-serif; color:rgba(226,214,170,0.75);
   background:rgba(20,34,28,0.32); border:1px solid rgba(214,190,120,0.34); }
 #tpad .tp-s.on { background:rgba(78,124,96,0.8); }
+/* 调试按钮挂在左上角，跟右上角的图/音分开——免得手忙脚乱按错 */
+#tpad .tp-dbg { left:max(10px, env(safe-area-inset-left)); top:calc(10px + env(safe-area-inset-top)); display:flex; gap:8px; }
+#tpad .tp-dbg .tp-s { color:rgba(232,176,120,0.75); border-color:rgba(200,140,80,0.45); }
 /* 竖屏提示：盖住整个屏幕。不做「竖屏也能玩」的第二套排版——见 relayout 那段 */
 #tprot { position:fixed; inset:0; z-index:9; display:none; align-items:center; justify-content:center;
   background:#0d1410; color:#e2d6aa; text-align:center; font:600 17px/1.9 system-ui, sans-serif; }
@@ -109,7 +120,8 @@ export function installTouch(game) {
 
   const pad = document.createElement('div');
   pad.id = 'tpad';
-  pad.innerHTML = HTML;
+  // ?debug 时多挂两个调试按钮（回血 / 强制遇敌）——手机上没键盘，H 和 B 按不到
+  pad.innerHTML = HTML + (new URLSearchParams(location.search).has('debug') ? DEBUG_HTML : '');
   document.body.appendChild(pad);
 
   const btns = [...pad.querySelectorAll('[data-a]')];

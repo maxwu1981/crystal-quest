@@ -16,6 +16,8 @@ import { NPC, pickVariant, applyVariant, drawShadow } from './npc.js';
 import { DIRS, lerp, clamp } from './grid.js';
 import { audio } from '../core/audio.js';
 import { MOOD, seedOf, makeMotes, renderAmbience } from './ambience.js';
+import { buildLightmap, drawLit, drawShade } from './lightmap.js';
+import { renderPostFx } from './postfx.js';
 import { renderMinimap, renderFullMap } from './minimap.js';
 import { addItem } from '../game/items.js';
 import { EndingScene } from '../title/EndingScene.js';
@@ -73,7 +75,10 @@ export class FieldScene {
     // 结果是两张与 cells 等长的「这一格再叠哪几张图」的表，渲染时零计算。
     const ter = buildTerrainFx(this.map, this.game.tiles, id, anim);
     for (const r of ter.seamList) list.push(r);   // 抠底合成图（树/水晶）也要跟着动，时间和别的动画瓦片一起推
+    // 方向光（长投影 / 立面 / 受光棱）也在这里烘一次，和地形过渡同一条规矩：
+    // 换地图时算完，逐帧只是两次 drawImage。见 lightmap.js。
     this.fx = { mood, anim, list, bw, bh, ovr: ter.ovr, shd: ter.shd, base: ter.base, obj: ter.obj, foamN: ter.foamN,
+      lm: buildLightmap(this.map, id, mood?.sun),
       motes: mood?.motes ? makeMotes(mood.motes, new RNG(seedOf(id)), bw, bh) : null };
   }
 
@@ -316,6 +321,9 @@ export class FieldScene {
         ctx.restore();
       }
     }
+    // 岩壁 / 墙 / 屋顶朝光那两条棱的受光边。画在角色**之前**——它属于场景的几何，
+    // 描到人身上就成了给人镶了道金边。
+    drawLit(this, ctx, camX, camY);
     // 角色按 y 排序绘制
     const leader = this.game.state.party[0];
     // 走路帧跟着位移走，不跟墙上时钟走。原本是 Math.floor(animT * 8) % 2，
@@ -332,7 +340,13 @@ export class FieldScene {
       for (const g of gear) drawArt(ctx, g, dx, dy);
     } });
     drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    // 长投影画在角色**之后**：站在墙影里的人本来就该跟着暗下去。
+    // 「人有没有被场景的光照到」正是「站在场景里」和「贴在场景上」的分界。
+    drawShade(this, ctx, camX, camY);
     renderAmbience(this, ctx, camX, camY, px, py, mw, mh);
+    // 镜头层（纵向光度渐变 + 上下两条移轴景深带）。**必须在 UI 之前**：
+    // 底下那几行的地图名条、小地图、摊开的全图糊掉就是 bug。
+    renderPostFx(this, ctx, mh);
     if (this.poisonT > 0) { ctx.fillStyle = 'rgba(120,40,160,0.35)'; ctx.fillRect(0, 0, W, H); }
     if (this.showMap) renderFullMap(this, ctx);           // 摊开全图时地名条与小地图都让位
     else if (this.nameT > 0 && map.name) {

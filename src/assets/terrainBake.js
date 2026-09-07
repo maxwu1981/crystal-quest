@@ -203,8 +203,31 @@ export function wetTile(mask, rng) {
 // 用漫水而不是单纯的颜色阈值，是因为树冠里也有绿 —— 阈值会把树冠打出洞，
 // 漫水只吃得到从外面连进来的那一片。
 // 抠出来的比例不在 10%~90% 之间就当抠坏了，直接放弃、原样画 —— 换一套美术也不会翻车。
+// 这张图本来就是透明底的吗（正式美术的宝箱、洋红抠底出来的物件瓦片都是）。
+// 判「有没有一个全透明像素」就够——满铺不透明的瓦片一个都没有。
+// 结果按图缓存：换一张地图会把同一张瓦片问上几百次，而读像素不便宜。
+const TRANSP = new WeakMap();
+export function hasTransparency(img) {
+  let v = TRANSP.get(img);
+  if (v !== undefined) return v;
+  const c = document.createElement('canvas');
+  c.width = c.height = PX;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.imageSmoothingEnabled = false;
+  g.drawImage(img, 0, 0, PX, PX);
+  let d;
+  try { d = g.getImageData(0, 0, PX, PX); } catch { TRANSP.set(img, false); return false; }
+  const p = d.data;
+  v = false;
+  for (let j = 3; j < p.length; j += 4) if (!p[j]) { v = true; break; }
+  TRANSP.set(img, v);
+  return v;
+}
 const NB4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 export function keyOutGround(img, tol = 18) {
+  // 本来就是透明底的不用抠，而且**必须不能抠**：透明像素的 RGB 是 0，
+  // 边框均色会算成黑，漫水就会顺着黑色把物件自己的描边一路吃掉。
+  if (hasTransparency(img)) return null;
   const c = document.createElement('canvas');
   c.width = c.height = PX;
   const g = c.getContext('2d', { willReadFrequently: true });
@@ -213,9 +236,6 @@ export function keyOutGround(img, tol = 18) {
   let d;
   try { d = g.getImageData(0, 0, PX, PX); } catch { return null; }   // file:// 打开时画布被污染，读不了
   const p = d.data;
-  // 本来就是透明底的（正式美术的宝箱就是）不用抠，而且**必须不能抠**：
-  // 透明像素的 RGB 是 0，边框均色会算成黑，漫水就会顺着黑色把箱子自己的描边一路吃掉。
-  for (let j = 3; j < p.length; j += 4) if (!p[j]) return null;
   const edge = (x, y) => x === 0 || y === 0 || x === PX - 1 || y === PX - 1;
   let r = 0, gg = 0, b = 0, k = 0;
   for (let y = 0; y < PX; y++) for (let x = 0; x < PX; x++) {
@@ -263,7 +283,9 @@ function shadowOval(g, a, rxK = 0.30) {
   }
 }
 function seamTile(ground, obj) {
-  const cut = keyOutGround(obj);
+  // 洋红抠底出来的物件瓦片自己就是透明底（tools/pixel.py 的 chroma_key，出图时抠掉的），
+  // 直接拿来贴；老那批满铺的（树/水晶/村落）才需要现场漫水抠一次。
+  const cut = hasTransparency(obj) ? obj : keyOutGround(obj);
   if (!cut) return null;
   return canvasPX(g => {
     g.drawImage(ground, 0, 0, PX, PX);

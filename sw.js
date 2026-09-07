@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 217 个文件，约 3.3 MB。
-const VERSION = 'a6d58fd05d56';
+// 共 224 个文件，约 3.3 MB。
+const VERSION = '4138a40127f0';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -130,11 +130,16 @@ const PRECACHE = [
   './data/items.json',
   './data/jobs.json',
   './data/lore.json',
+  './data/maps/altar_1.json',
+  './data/maps/altar_2.json',
+  './data/maps/altar_3.json',
   './data/maps/bogong.json',
   './data/maps/cave_1.json',
   './data/maps/cave_2.json',
   './data/maps/cave_3.json',
   './data/maps/fort_ailiao.json',
+  './data/maps/furnace_1.json',
+  './data/maps/furnace_2.json',
   './data/maps/gen_castle_1.json',
   './data/maps/gen_castle_2.json',
   './data/maps/gen_cave_1.json',
@@ -202,8 +207,10 @@ const PRECACHE = [
   './src/field/ShopScene.js',
   './src/field/ambience.js',
   './src/field/grid.js',
+  './src/field/lightmap.js',
   './src/field/minimap.js',
   './src/field/npc.js',
+  './src/field/postfx.js',
   './src/game/items.js',
   './src/game/jobskill.js',
   './src/game/party.js',
