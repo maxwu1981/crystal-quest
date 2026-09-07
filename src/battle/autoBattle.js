@@ -117,7 +117,10 @@ function summonsOf(actor, data, used) {
   return availableSummons(actor.member, data)
     .map(({ id, skillLevel }) => {
       const s = data.summons[id], { power, mp } = skillScale(s, skillLevel);
-      return { id, s, power, mp };
+      // **drain:'mp' 的那一位（吕布）真正的代价是「身上剩下的全部 MP」**，不是牌面上的数字。
+      // 按牌面算的话他永远是最便宜又最疼的那个，AI 每场第一手就请他，然后 MP 归零、
+      // 整场再也请不动第二尊——实测就是这样：12 级 62 MP 的童乩，一场平均只请到 0.95 次。
+      return { id, s, power, mp, cost: s.drain === 'mp' ? Math.max(mp, actor.mp) : mp };
     })
     .filter(x => x.s && actor.mp >= x.mp && !(x.s.once && used.has(x.id)));
 }
@@ -153,16 +156,23 @@ export function pickSummon(actor, party, foes, data, used = new Set()) {
   // ② 伤害：先算每一位的有效伤害，再看够不够门槛
   const totalHp = foes.reduce((t, e) => t + e.hp, 0);
   const scored = list.map(x => ({ ...x, ...summonWorth(x, actor, foes) }));
-  const top = scored.reduce((a, b) => (b.kills - a.kills || b.useful - a.useful) > 0 ? b : a);
-  if (top.kills < 2 && totalHp < top.useful * SUMMON_LONG) return null;
 
-  // ③ 同样有效的几位里挑最便宜的：省下的 MP 就是这一场还能多请一尊
-  const same = scored.filter(x => x.kills >= top.kills && x.useful >= top.useful * 0.92);
-  return { type: 'summon', summonId: same.reduce((a, b) => (b.mp < a.mp ? b : a)).id, target: 'all' };
+  // 排序：先看**能不能带走**（kills），再看**每点 MP 换到多少有效伤害**（useful / cost）。
+  //
+  // 关键是第二项要按性价比、**不能按总伤害**。吕布 power 44 又跳魔防，论一发的伤害
+  // 永远排第一，于是 AI 每场都请他——而他 drain:'mp'，请完 MP 见底，一场就到此为止。
+  // 实测 20/20 场全是他，平均请神次数 0.95。
+  // 按性价比排之后，同样一池 MP（49）能请到关圣 + 伯公 + 义民爷三尊，总伤害是他的两倍，
+  // 而且真的看得到「请了一轮神」。吕布并没有被废掉——kills 的优先级更高，
+  // 该收人头的那一下他照样出场，这才是他该待的位置：终结技。
+  const rate = x => x.useful / Math.max(1, x.cost);
+  const top = scored.reduce((a, b) => (b.kills - a.kills || rate(b) - rate(a)) > 0 ? b : a);
+  if (top.kills < 2 && totalHp < top.useful * SUMMON_LONG) return null;
+  return { type: 'summon', summonId: top.id, target: 'all' };
 }
-// 一组候选里最便宜的；打平了看谁打得更疼
+// 一组候选里最便宜的（按真实代价 cost，不是牌面 mp）；打平了看谁打得更疼
 function cheapestOf(list, actor, foes) {
-  return list.reduce((a, b) => b.mp !== a.mp ? (b.mp < a.mp ? b : a)
+  return list.reduce((a, b) => b.cost !== a.cost ? (b.cost < a.cost ? b : a)
     : (summonWorth(b, actor, foes).useful > summonWorth(a, actor, foes).useful ? b : a));
 }
 

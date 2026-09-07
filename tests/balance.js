@@ -172,7 +172,9 @@ function fight(data, level, enemyIds, seed, endgame, tangkiLv = 0) {
   const won = !!s.alive(s.enemies).length === false && s.alive(s.party).length > 0;
   const hpLoss = 1 - s.party.reduce((t, p) => t + p.hp, 0) / s.party.reduce((t, p) => t + p.maxHp, 0);
   const mpLoss = 1 - s.party.reduce((t, p) => t + p.mp, 0) / Math.max(1, s.party.reduce((t, p) => t + p.maxMp, 0));
-  return { won, rounds, hpLoss, mpLoss, dead: s.party.filter(p => !p.alive).length };
+  // 一场请了几尊。**这是導演真正在问的那个数**（他的原话是「一场只能请一尊」），
+  // 光看胜率和 MP 百分比看不出来——把它列成一栏，改召唤的数值前后一眼就能对。
+  return { won, rounds, hpLoss, mpLoss, dead: s.party.filter(p => !p.alive).length, summons: s.summonsUsed.size };
 }
 
 export async function run(data = null, n = 30) {
@@ -193,16 +195,16 @@ export async function run(data = null, n = 30) {
                    'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
-      const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0 };
+      const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0, summons: 0 };
       const rng = new RNG(1000 + level);
       for (let i = 0; i < n; i++) {
         const g = rng.weighted(z.groups, x => x.weight);
         const f = fight(data, level, g.enemies, 7 + i * 13 + level, z.endgame, z.tangki || 0);
-        r.fights++; r.wins += f.won; r.hpLoss += f.hpLoss; r.mpLoss += f.mpLoss; r.rounds += f.rounds; r.deaths += f.dead;
+        r.fights++; r.wins += f.won; r.hpLoss += f.hpLoss; r.mpLoss += f.mpLoss; r.rounds += f.rounds; r.deaths += f.dead; r.summons += f.summons;
       }
-      rows.push({ zone, level, winRate: Math.round(100 * r.wins / r.fights), hpLoss: Math.round(100 * r.hpLoss / r.fights), mpLoss: Math.round(100 * r.mpLoss / r.fights), rounds: +(r.rounds / r.fights).toFixed(1), deaths: +(r.deaths / r.fights).toFixed(2) });
+      rows.push({ zone, level, winRate: Math.round(100 * r.wins / r.fights), hpLoss: Math.round(100 * r.hpLoss / r.fights), mpLoss: Math.round(100 * r.mpLoss / r.fights), rounds: +(r.rounds / r.fights).toFixed(1), deaths: +(r.deaths / r.fights).toFixed(2), summons: +(r.summons / r.fights).toFixed(2) });
     }
   }
   return rows;
 }
-if (location.search.includes('balance')) run().then(rows => { document.body.innerHTML = `<pre>${['zone       lv  win% hp% mp% rounds deaths', ...rows.map(r => `${r.zone.padEnd(12)} ${String(r.level).padStart(2)}  ${String(r.winRate).padStart(3)} ${String(r.hpLoss).padStart(3)} ${String(r.mpLoss).padStart(3)}  ${String(r.rounds).padStart(5)}  ${r.deaths}`)].join('\n')}</pre>`; window.__balance = rows; });
+if (location.search.includes('balance')) run().then(rows => { document.body.innerHTML = `<pre>${['zone       lv  win% hp% mp% rounds deaths 请神', ...rows.map(r => `${r.zone.padEnd(12)} ${String(r.level).padStart(2)}  ${String(r.winRate).padStart(3)} ${String(r.hpLoss).padStart(3)} ${String(r.mpLoss).padStart(3)}  ${String(r.rounds).padStart(5)}  ${String(r.deaths).padEnd(5)} ${r.summons}`)].join('\n')}</pre>`; window.__balance = rows; });
