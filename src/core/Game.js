@@ -12,6 +12,14 @@ import { buildTiles } from '../assets/tiles.js';
 import { loadArt } from '../assets/art.js';
 import { buildEquipLayers } from '../assets/equip.js';
 import { ART, LOGICAL_W, LOGICAL_H } from './draw.js';
+
+// 按屏幕宽高比算逻辑宽度。夹在 256–448 之间：
+// 窄于 256 会切掉照 256 排的 UI；宽于 448 时战斗两侧空得太多，
+// 而且每多一列都要多画一遍地形（buildTerrainFx 是 O(w·h)）。
+function layoutWidth() {
+  const ar = (innerWidth || 256) / (innerHeight || 224);
+  return Math.max(LOGICAL_W, Math.min(448, Math.round(LOGICAL_H * ar / 2) * 2));
+}
 import { newGameState } from '../game/state.js';
 import { normalizeMember } from '../game/jobskill.js';
 import { FieldScene } from '../field/FieldScene.js';
@@ -24,10 +32,20 @@ const TITLE = '去屏東打怪';
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
-    canvas.width = LOGICAL_W * ART; canvas.height = LOGICAL_H * ART;
+    // **画面宽度跟着屏幕的宽高比走**，高度永远 224。
+    //
+    // 8:7 的画面放进 19.5:9 的手机横屏，等比缩放会留下 47% 的黑边——
+    // 导演要求铺满全屏。铺满只有三条路：拉伸（人会变胖）、裁掉上下（会切掉 UI）、
+    // 或者**让画面本身变宽，多显示一些世界**。第三条才是对的，也是这里做的。
+    //
+    // 走地图直接受益：FieldScene 的可视范围本来就按 game.W 算，宽了就多画几列。
+    // 战斗与菜单是照 256 宽排的版，它们**居中**显示（见 render 里的 OX），
+    // 两侧多出来的空间由背景自己铺满——不是黑边，是同一片风景继续往外延伸。
+    this.W = layoutWidth(); this.H = LOGICAL_H;
+    this.OX = Math.round((this.W - LOGICAL_W) / 2);   // 固定 256 宽的内容往右挪这么多才居中
+    canvas.width = this.W * ART; canvas.height = this.H * ART;
     this.ctx = canvas.getContext('2d');
     this.ctx.imageSmoothingEnabled = false;
-    this.W = LOGICAL_W; this.H = LOGICAL_H;
     this.input = new Input();
     this.scenes = new SceneStack();
     this.fade = { alpha: 0, dir: 0, speed: 4, color: '#000', onMid: null };
@@ -38,24 +56,17 @@ export class Game {
   }
 
   fitCanvas() {
-    // 显示尺寸按逻辑分辨率取整数倍，保证物理像素也是整数倍（不糊）。
-    //
-    // 但手机上整数倍会浪费大半个屏幕：390px 宽的手机算下来正好是 1 倍，
-    // 画面只占不到一半。所以整数倍算出来只有 1 倍、而实际能放下 1.3 倍以上时，
-    // 改用精确比例铺满——`image-rendering: pixelated` 仍然保证是硬边像素，
-    // 只是像素大小不再完全均匀。在手机上「铺满」比「绝对均匀」重要得多。
-    // 手机是**横屏**，而且按键是半透明浮在画面上的（见 src/touch.js），
-    // 所以不给按键预留空间——画面能占多大就占多大。
+    // 画布的**逻辑宽度**已经跟着屏幕宽高比算好了（见 constructor 的 layoutWidth），
+    // 所以这里只要等比放到铺满即可——不会再有黑边，也不会拉伸变形。
     // 桌面仍留 24px 给底部那行键盘提示。
     const touch = matchMedia('(pointer: coarse)').matches;
     const pad = touch ? 0 : 24;
-    const exact = Math.min(innerWidth / this.W, (innerHeight - pad) / this.H);
-    // 手机上一律用精确比例（不取整数倍）：横屏时画面按高度撑满，
-    // 8:7 的画面放在 19.5:9 的屏幕上左右会留黑边，按键正好浮在那两条边上。
-    const scale = touch ? exact : (exact < 2 && exact > 1.3 ? exact : Math.max(1, Math.floor(exact)));
+    const scale = Math.min(innerWidth / this.W, (innerHeight - pad) / this.H);
     this.canvas.style.width = Math.round(this.W * scale) + 'px';
     this.canvas.style.height = Math.round(this.H * scale) + 'px';
   }
+
+
 
   async boot() {
     this.data = await loadData();
@@ -141,9 +152,12 @@ export class Game {
 
   render(alpha, stats) {
     const ctx = this.ctx;
-    ctx.setTransform(ART, 0, 0, ART, 0, 0); // 之后所有绘制都用 256×224 逻辑坐标
+    // 顶层场景说自己会用满整幅宽度（走地图）就不偏移；照 256 排版的（战斗、菜单）
+    // 整体右移 OX 居中。一个属性解决，不必去改那 53 处写死的 256。
+    const ox = this.scenes.opaque()?.wide ? 0 : this.OX;
+    ctx.setTransform(ART, 0, 0, ART, ox * ART, 0);
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, this.W, this.H);
+    ctx.fillStyle = '#000'; ctx.fillRect(-ox, 0, this.W, this.H);
     this.scenes.render(ctx, alpha);
     const f = this.fade;
     if (f.mosaic && f.dir === 1) this.renderMosaic(ctx, f.alpha);

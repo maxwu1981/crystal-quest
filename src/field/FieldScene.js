@@ -42,6 +42,10 @@ export function parseMap(md) {
 }
 
 export class FieldScene {
+  // 走地图**用满整幅宽度**：屏幕越宽就多看见几列世界，不居中也不留边。
+  // 战斗与菜单是照 256 宽排的版，它们由 Game.render 的 OX 居中（见那里的注释）。
+  wide = true;
+
   constructor(game) {
     this.game = game; this.transparent = false; this.bgm = 'field'; this.animT = 0; this.nameT = 0; this.showMap = false;
     const m = game.state.map;

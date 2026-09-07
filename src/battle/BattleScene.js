@@ -11,8 +11,8 @@ import { PANEL_Y, PANEL_H, LEFT_W } from './hudBits.js';
 import { makeBackdrop } from './backdrop.js';
 import { actorRect, renderBattle, INTRO_T, DYING_T } from './render.js';
 import { settleVictory } from './victory.js';
+import { autoHeal } from '../game/autoheal.js';
 import { canUseOn } from '../game/items.js';
-import { persistentOnly } from '../game/status.js';
 import { iconGap } from '../menu/icons.js';
 // 童乩的「請神」：请得动谁、这一位这次多少 MP，全问数据层，战斗里不重新判一遍。
 import { availableSummons, skillScale } from '../game/jobskill.js';
@@ -277,12 +277,17 @@ export class BattleScene {
   }
   *defeatCo() { this.bgm = null; audio.sfx('defeat'); this.msg = '声音都没了…'; yield 1.4; this.msg = '声音都没了…\n\n（按确认键重新开始）'; yield 'confirm'; }
 
-  syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; a.member.status = persistentOnly(a.status); }
+  // **战斗结算后异常状态一律清空**（总监硬性规定）。
+  // 原本用 persistentOnly 留下中毒这类「持续型」，让它带进大地图继续掉血——
+  // 那是折磨玩家，不是难度：大地图上没有解毒的即时手段，玩家只能一边走一边看血条掉，
+  // 而这段时间里他什么决策都做不了。难度该在战斗里给，不该在跑图时收利息。
+  syncMember(a) { a.member.hp = a.hp; a.member.mp = a.mp; a.member.status = {}; }
   finish() {
     // 胜利短曲的音符是提前排进 Web Audio 的：玩家一路按确认冲过结算屏时，
     // 尾音会压在地图 BGM 上。退场时把它淡掉（等得完的人照样听得到整首）。
     audio.stopJingle();
     for (const a of this.party) this.syncMember(a);
+    if (this.won) autoHeal(this.game);
     if (this.won && this.opts.winFlag) this.game.state.flags[this.opts.winFlag] = true;
     this.game.fadeTo(() => this.game.scenes.pop());
   }

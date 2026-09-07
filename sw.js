@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 224 个文件，约 3.3 MB。
-const VERSION = '4138a40127f0';
+// 共 225 个文件，约 3.3 MB。
+const VERSION = 'dadce1775ab4';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -211,6 +211,7 @@ const PRECACHE = [
   './src/field/minimap.js',
   './src/field/npc.js',
   './src/field/postfx.js',
+  './src/game/autoheal.js',
   './src/game/items.js',
   './src/game/jobskill.js',
   './src/game/party.js',

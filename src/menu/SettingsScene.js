@@ -9,6 +9,8 @@ export const OPTIONS = [
   { key: 'battleMode', label: '交手方式', values: [['turn', '回合制'], ['atb', 'ATB']], desc: '回合制：全员下令后按速度结算。ATB：时间槽满了才能行动，敌人不等你。' },
   { key: 'autoBattle', label: '自动战斗', values: [[false, '关'], [true, '开']],
     desc: '开着就由 AI 替你下令：先救人再治疗，能打弱点就打弱点，普攻杀得死就不浪费 MP。战斗中按 Tab 或 Q 也能随时切换。' },
+  { key: 'autoHeal', label: '自动补血', values: [[true, '开'], [false, '关']],
+    desc: '打完一场自动把队伍治到八成血。手上有药就用药，没药也会补——跑图不该靠反复回村补给。' },
   { key: 'mute', label: '声音', values: [[false, '开'], [true, '关']], desc: '游戏中随时按 M 也能切换。' },
 ];
 

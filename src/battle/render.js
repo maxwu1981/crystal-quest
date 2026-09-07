@@ -201,7 +201,15 @@ export function renderBattle(scene, ctx) {
   const [sx, sy] = scene.fx.offset();
   const ghosts = [];                     // 被魔法笼罩的角色，特效画完再叠一层薄影
   ctx.save(); ctx.translate(sx, sy);
-  drawBackground(ctx, W, scene.backdrop, scene.time);
+  // **背景要画在屏幕坐标上，不跟着居中偏移走。**
+  // 战斗是照 256 宽排的版，Game.render 把整层右移了 OX 让它居中；
+  // 但背景该铺满整幅画布，不然屏幕越宽两侧露出的黑边越多
+  // （448 宽的手机上左右各露 96px——正是导演要消掉的那种黑边）。
+  // 所以先把偏移退掉，用真实宽度画完再退回来。
+  const ox = scene.game.OX || 0;
+  ctx.save(); ctx.translate(-ox, 0);
+  drawBackground(ctx, scene.game.W, scene.backdrop, scene.time);
+  ctx.restore();
   for (const e of scene.enemies) {
     if (!e.alive && !(e.dying > 0)) continue;
     const [x, y] = actorRect(scene, e);
