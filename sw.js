@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 192 个文件，约 2.8 MB。
-const VERSION = 'a39675717ad5';
+// 共 198 个文件，约 2.8 MB。
+const VERSION = '8835d86c68ca';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -53,6 +53,12 @@ const PRECACHE = [
   './assets/art/char_talisman_left_walk.png',
   './assets/art/char_talisman_up.png',
   './assets/art/char_talisman_up_walk.png',
+  './assets/art/char_tangki_down.png',
+  './assets/art/char_tangki_down_walk.png',
+  './assets/art/char_tangki_left.png',
+  './assets/art/char_tangki_left_walk.png',
+  './assets/art/char_tangki_up.png',
+  './assets/art/char_tangki_up_walk.png',
   './assets/art/char_woman_down.png',
   './assets/art/enemy_bat.png',
   './assets/art/enemy_bee.png',

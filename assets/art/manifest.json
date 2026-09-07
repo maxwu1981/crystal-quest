@@ -1,5 +1,6 @@
 {
   "characters": {
+    "tangki": {"down": "char_tangki_down.png", "down_walk": "char_tangki_down_walk.png", "left": "char_tangki_left.png", "up": "char_tangki_up.png", "left_walk": "char_tangki_left_walk.png", "up_walk": "char_tangki_up_walk.png"},
     "talisman": {
       "down": "char_talisman_down.png",
       "down_walk": "char_talisman_down_walk.png",
