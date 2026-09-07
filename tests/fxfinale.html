@@ -1,0 +1,216 @@
+<!doctype html><meta charset="utf-8"><title>八部齐至 · 演出预览</title>
+<!-- 【八部齐至】的静帧联系表。跟 tests/fxsummon.html 是同一个主意（把一次演出摊成一排静帧），
+     但**单独一个档**，因为这一招和那八位量级不同，摊在一起没法看：
+       ① 6.4 秒是单尊的三倍，八帧铺不下——这里分四行，一行一个段落；
+       ② 第三行的八帧**逐帧对准 actions.js 的结算点** settleAt(i,8)＝0.60+i×0.0375，
+          也就是伤害数字真正跳出来的那八个瞬间。属性有没有在换，看这一行就够了；
+       ③ 顶上多一条「八个母题」对照：认人靠剪影，剪影认不出来别的都白搭；
+       ④ 底下多一条闪光曲线——铁律是「一招只闪一次」，那就该看得见只有一个包。
+          做法照抄 tools/fx_headless.mjs：拿一个只记录不作画的假 ctx，
+          把「lighter ＋ 铺满整个战场 ＋ 纯色 fillRect」认出来当作 flash()，逐帧记 alpha。
+          （glow() 长得几乎一样，只有 fillStyle 是渐变对象——认错的话峰值会凭空多出 0.3。）
+     怪的半透明剪影照 render.js 的 VEIL 规则画，层次关系跟战斗里一致。
+     命令行那一份体检在 tools/fx_headless.mjs（jsc 跑，查 NaN 与闪光三条自律）。 -->
+<style>
+ body{background:#14100e;color:#cdbfa0;font:13px/1.6 system-ui,sans-serif;margin:16px}
+ h2{font-size:14px;margin:22px 0 6px;color:#e8d9b0}
+ h3{font-size:13px;margin:16px 0 4px;color:#bfae86;font-weight:600}
+ .el{color:#8f9aa6;font-weight:400}
+ canvas{background:#2a2118;display:block;image-rendering:pixelated;max-width:100%}
+ table{border-collapse:collapse;font:12px/1.5 monospace;margin:6px 0}
+ td,th{padding:1px 10px 1px 0;text-align:left}
+</style>
+<div id="out"></div>
+<script type="module">
+import { SUMMON_FX } from '../src/battle/summonFx.js';
+import { MOTIF, motif } from '../src/battle/summonKit.js';
+import { ELEMENTS } from '../src/battle/elements.js';
+import { ART } from '../src/core/draw.js';
+import { ENEMY_CENTERS, PANEL_Y } from '../src/battle/hudBits.js';
+
+class RNG { constructor(s){this.s=s>>>0||1}
+  next(){let x=this.s;x^=x<<13;x^=x>>>17;x^=x<<5;this.s=x>>>0;return this.s/4294967296}
+  int(a,b){return a+Math.floor(this.next()*(b-a+1))} }
+
+const W = 256, H = PANEL_Y, GAP = 3;
+const ID = new URLSearchParams(location.search).get('fx') || 'babu';
+const seed = +(new URLSearchParams(location.search).get('seed') || 7);
+const make = SUMMON_FX[ID];
+const out = document.getElementById('out');
+// 焦点跟 actions.js 的 ENEMY_FOCUS 一致（ENEMY_CENTERS 的正中）
+const FOCUS = [74, 96];
+
+// 降临顺序（＝八击顺序＝神位顺序），跟 summonFxFinale.js 的 EIGHT 同一张表
+const EIGHT = ['earth', 'wood', 'water', 'fire', 'metal', 'light', 'dark', 'wind'];
+const WHO = { earth: '伯公', wood: '观世音', water: '妈祖', fire: '关圣帝君',
+  metal: '吕布', light: '钟馗', dark: '义民爷', wind: '中坛元帅' };
+const MOTIF_CN = { earth: '田字', wood: '净瓶', water: '桅顶火', fire: '关刀',
+  metal: '戟', light: '乌纱帽翅', dark: '六面旗', wind: '火轮' };
+// actions.js 的 settleAt(i, hits) = 0.60 + i*(0.30/hits)
+const settleAt = (i, hits) => 0.60 + i * (0.30 / hits);
+
+const ROWS = [
+  ['起坛（一声锣，八个神位依序亮）＋ 组一「地上的三位」土→木→水',
+    [0.02, 0.07, 0.12, 0.17, 0.21, 0.25, 0.29, 0.33]],
+  ['组二「拿刀的两位」火→金　＋　组三「管鬼的两位」光→暗　＋　组四「点齐」風',
+    [0.35, 0.39, 0.43, 0.47, 0.51, 0.55, 0.58, 0.61]],
+  ['八击：每一帧就是 actions.js 的一个结算点，八种属性各一击（第八击＝合像）',
+    [0, 1, 2, 3, 4, 5, 6, 7].map(i => settleAt(i, 8))],
+  ['合像的余势 ＋ 收（灰落下，神位依序熄）',
+    [0.87, 0.89, 0.91, 0.93, 0.95, 0.97, 0.99, 1.0]],
+];
+
+// render.js 的 VEIL 表，跟 fxsummon.html 抄的是同一份
+const VEIL = [[0,1,0],[0.18,1,0],[0.44,0.55,0.46],[0.72,0.05,0],[1,1,0]];
+function veilAt(p) {
+  for (let i = 1; i < VEIL.length; i++) {
+    const [p1,b1,g1] = VEIL[i]; if (p > p1) continue;
+    const [p0,b0,g0] = VEIL[i-1]; const k = p1===p0 ? 0 : (p-p0)/(p1-p0);
+    return [b0+(b1-b0)*k, g0+(g1-g0)*k];
+  }
+  return [1,0];
+}
+function drawFoes(ctx, alpha, tint) {
+  if (alpha <= 0.004) return;
+  ctx.save(); ctx.globalAlpha = alpha;
+  for (const [cx, cy] of ENEMY_CENTERS) {
+    ctx.fillStyle = tint || '#8f9aa6';
+    ctx.fillRect(cx - 20, cy - 20, 40, 40);
+    if (!tint) { ctx.fillStyle = '#c8d2dc'; ctx.fillRect(cx - 11, cy - 8, 6, 5); ctx.fillRect(cx + 5, cy - 8, 6, 5); }
+  }
+  ctx.restore();
+}
+function drawParty(ctx) {
+  ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = '#6b7a86';
+  for (let i = 0; i < 4; i++) ctx.fillRect(204, 44 + i * 26, 16, 16);
+  ctx.restore();
+}
+function sheet(frames, label) {
+  const cv = document.createElement('canvas');
+  cv.width = (W * frames.length + GAP * (frames.length - 1)) * ART;
+  cv.height = H * ART;
+  cv.style.width = (cv.width / ART * 0.5) + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false; ctx.scale(ART, ART);
+  frames.forEach((p, c) => {
+    ctx.save(); ctx.translate(c * (W + GAP), 0);
+    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+    ctx.fillStyle = '#2a2118'; ctx.fillRect(0, 0, W, H);
+    const fx = make(FOCUS[0], FOCUS[1], new RNG(seed));
+    const [base, ghost] = veilAt(p);
+    drawParty(ctx); drawFoes(ctx, base);
+    ctx.save(); fx.render(ctx, p); ctx.restore();
+    drawFoes(ctx, ghost, null);
+    ctx.fillStyle = 'rgba(210,200,170,0.9)'; ctx.font = '7px monospace';
+    ctx.fillText(`p=${p.toFixed(3)}  ${(p * 6.4).toFixed(2)}s`, 3, 9);
+    if (label) { ctx.fillStyle = ELEMENTS[EIGHT[c]].color; ctx.fillText(label(c), 3, 18); }
+    ctx.restore();
+  });
+  return cv;
+}
+
+// ── 八个母题：认人靠剪影，剪影认不出来别的都白搭 ────────────────────────────
+{
+  const n = 8, cw = 64, ch = 76;
+  const cv = document.createElement('canvas');
+  cv.width = cw * n * ART; cv.height = ch * ART;
+  cv.style.width = (cw * n * 0.9) + 'px';
+  const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false; ctx.scale(ART, ART);
+  ctx.fillStyle = '#1b1512'; ctx.fillRect(0, 0, cw * n, ch);
+  EIGHT.forEach((el, i) => {
+    motif(ctx, el, cw * i + cw / 2, 32, 1.0, ELEMENTS[el].color, 1, 0, 0.6);
+    motif(ctx, el, cw * i + cw / 2, 64, 0.42, ELEMENTS[el].color, 0.85, 0, 0.6);
+    ctx.globalAlpha = 1; ctx.fillStyle = ELEMENTS[el].color; ctx.font = '7px monospace';
+    ctx.fillText(`${i + 1} ${ELEMENTS[el].cn} ${MOTIF_CN[el]}`, cw * i + 3, 9);
+    ctx.fillStyle = 'rgba(200,190,160,0.7)'; ctx.fillText(WHO[el], cw * i + 3, 74);
+  });
+  const h = document.createElement('h3');
+  h.innerHTML = '八个母题（上＝降临时的大像 1.0×，下＝坐回神位的 0.42×）　' +
+    '<span class="el">全部逐点抄自各自那一段，比例没改；画笔在 summonKit.js 的 MOTIF</span>';
+  out.append(h, cv);
+}
+
+// ── 四行联系表 ─────────────────────────────────────────────────────────────
+ROWS.forEach(([title, frames], r) => {
+  const h = document.createElement('h3'); h.textContent = title;
+  out.append(h, sheet(frames, r === 2 ? c => `${ELEMENTS[EIGHT[c]].cn} ${WHO[EIGHT[c]]}` : null));
+});
+
+// ── 闪光体检：只准有一个包 ─────────────────────────────────────────────────
+// 假 ctx，只记录不作画。认 flash() 的特征＝lighter ＋ 铺满战场 ＋ fillStyle 是纯色字符串
+function flashTrack() {
+  let a = 0, comp = 'source-over', fill = '', alpha = 1;
+  const st = [];
+  const noop = () => {};
+  const ctx = {
+    get globalAlpha() { return alpha; }, set globalAlpha(v) { alpha = v; },
+    get globalCompositeOperation() { return comp; }, set globalCompositeOperation(v) { comp = v; },
+    get fillStyle() { return fill; }, set fillStyle(v) { fill = v; },
+    strokeStyle: '', lineWidth: 1, lineCap: '',
+    save() { st.push([comp, fill, alpha]); },
+    restore() { const s = st.pop(); if (s) [comp, fill, alpha] = s; },
+    translate: noop, rotate: noop, scale: noop, beginPath: noop, closePath: noop,
+    stroke: noop, fill: noop, moveTo: noop, lineTo: noop, quadraticCurveTo: noop,
+    arc: noop, ellipse: noop, strokeRect: noop,
+    fillRect(x, y, w, h) {
+      if (x <= 0 && y <= 0 && w >= W && h >= H && comp === 'lighter' && typeof fill === 'string')
+        a = Math.max(a, alpha);
+    },
+    createRadialGradient: () => ({ addColorStop: noop }),
+    createLinearGradient: () => ({ addColorStop: noop }),
+  };
+  const fx = make(FOCUS[0], FOCUS[1], new RNG(seed));
+  const n = Math.round(fx.dur * 60), track = [];
+  for (let i = 0; i <= n; i++) { a = 0; fx.render(ctx, i / n); track.push(a); }
+  return { track, dur: fx.dur };
+}
+{
+  const { track, dur } = flashTrack();
+  const peak = Math.max(...track);
+  let bursts = 0, ramp = Infinity, i = 0;
+  while (i < track.length) {
+    if (track[i] <= 0.02) { i++; continue; }
+    let j = i; while (j < track.length && track[j] > 0.02) j++;
+    bursts++;
+    const s = track.slice(i, j), pk = Math.max(...s), at = s.indexOf(pk);
+    ramp = Math.min(ramp, (at + 1) / 60, (s.length - at) / 60);
+    i = j;
+  }
+  const cw = 512, ch = 90;
+  const cv = document.createElement('canvas');
+  cv.width = cw * 2; cv.height = ch * 2; cv.style.width = cw + 'px';
+  const ctx = cv.getContext('2d'); ctx.scale(2, 2);
+  ctx.fillStyle = '#1b1512'; ctx.fillRect(0, 0, cw, ch);
+  // 0.45 的上限线
+  ctx.strokeStyle = '#7a4a3a'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, ch - 10 - 0.45 * 66); ctx.lineTo(cw, ch - 10 - 0.45 * 66); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = '#ffe9b0'; ctx.lineWidth = 1.4; ctx.beginPath();
+  track.forEach((v, k) => { const px = k / (track.length - 1) * cw, py = ch - 10 - v * 66;
+    k ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  ctx.stroke();
+  // 八个结算点的刻度
+  ctx.strokeStyle = 'rgba(140,200,255,0.5)';
+  for (let k = 0; k < 8; k++) { const px = settleAt(k, 8) * cw;
+    ctx.beginPath(); ctx.moveTo(px, ch - 10); ctx.lineTo(px, ch - 4); ctx.stroke(); }
+  ctx.fillStyle = '#8f9aa6'; ctx.font = '9px monospace';
+  ctx.fillText('峰值上限 0.45', 4, ch - 12 - 0.45 * 66);
+  ctx.fillText('↑ 蓝刻度＝八个结算点 settleAt(i,8)', 4, ch - 1);
+
+  const ok = (v) => v ? '<b style="color:#7fd68a">通过</b>' : '<b style="color:#f08a7a">不合格</b>';
+  const h = document.createElement('h3'); h.textContent = '闪光体检（做法同 tools/fx_headless.mjs）';
+  const tb = document.createElement('table');
+  tb.innerHTML = `<tr><th>时长</th><th>闪光峰值</th><th>起落(秒)</th><th>闪几次</th></tr>
+    <tr><td>${dur.toFixed(1)}s / ${track.length} 帧</td>
+        <td>${peak.toFixed(3)} ${ok(peak <= 0.4501)}</td>
+        <td>${Number.isFinite(ramp) ? ramp.toFixed(3) : '—'} ${ok(!Number.isFinite(ramp) || ramp >= 0.0799)}</td>
+        <td>${bursts} ${ok(bursts <= 1)}</td></tr>`;
+  out.append(h, cv, tb);
+}
+
+// 属性对照挂在末尾，改配色的时候对着看
+const tail = document.createElement('h2');
+tail.innerHTML = '<span class="el">属性配色（elements.js 是唯一的真相来源）：' +
+  EIGHT.map(k => `<b style="color:${ELEMENTS[k].color}">${ELEMENTS[k].cn} ${k}</b>`).join('　') + '</span>';
+out.append(tail);
+</script>

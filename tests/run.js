@@ -6,7 +6,8 @@ import { loadData } from '../src/data/loader.js';
 import { parseMap } from '../src/field/FieldScene.js';
 import { addItem, removeItem, countItem, applyItem, equip, canEquip, canUseOn, campParty } from '../src/game/items.js';
 import { newGameState, loadGame, saveGame, SAVE_KEY } from '../src/game/state.js';
-import { memberSpells, jobLevel, grantJobExp, availableSummons, useSkill, skillScale,
+import { finaleReady, FINALE_ID,
+  memberSpells, jobLevel, grantJobExp, availableSummons, useSkill, skillScale,
   normalizeMember, skillLevelOf, summonUnlockLevel, summonOrder, jpForJobLevel, levelForUses,
   SKILL_MAX, SKILL_USES, SKILL_POWER, JP_PER_LEVEL, JP_PER_BATTLE, JP_ACT_BONUS } from '../src/game/jobskill.js';
 import { wrapText } from '../src/core/text.js';
@@ -80,6 +81,7 @@ async function measureSizes() {
 }
 
 const artRows = await measureArt();
+const artManifest = await fetch('/assets/art/manifest.json').then(r => r.ok ? r.json() : null).catch(() => null);
 const artSizes = await measureSizes();
 
 test('RNG 同种子可复现', () => {
@@ -392,7 +394,11 @@ test('HP/MP 按角色等级走：转到低血职业只截断不压死，倒下�
 
 test('請神按职业等级解锁：1 / 7 / 14 …每 +7 一位，关圣帝君第一个', () => {
   const order = summonOrder(data);
-  assert(order.length === Object.keys(data.summons).length, '八位一个都不能漏');
+  // 台阶只管那八位。【八部齐至】走的是另一条路（八尊全练满），
+  // 故意不占台阶上的格子——留在里面就掉到第九格 ＝ 职业 56 级。
+  const eight = Object.keys(data.summons).filter(id => id !== FINALE_ID);
+  assert(order.length === eight.length, `八位一个都不能漏：${order.length} vs ${eight.length}`);
+  assert(!order.includes(FINALE_ID), '八部齐至不该占台阶的格子');
   assert(order[0] === 'guangong', '关圣帝君必须是第一位');
   assert(new Set(order).size === order.length, '解锁顺序里有重复');
   for (const id of order) assert(data.summons[id], `解锁表里的 ${id} 在 summons.json 里不存在`);
@@ -523,6 +529,27 @@ function tangkiBattle(enemyIds, jobLv = 50, seed = 5) {
   actor.maxMp = actor.member.maxMp = 300; actor.mp = 300;  // 别让 MP 成为这几条的变量
   return { s, actor };
 }
+
+test('八部齐至：八尊全练满才开，不占职业等级那张表的格子', () => {
+  const m = jsMember('tangki', 12);
+  grantJobExp(m, jpForJobLevel(99), data);               // 职业等级拉满
+  const eight = summonOrder(data);
+  assert(eight.length === 8 && !eight.includes(FINALE_ID), `解锁表该只有八尊：${eight}`);
+  assert(!availableSummons(m, data).some(x => x.id === FINALE_ID), '还没练满就不该出现');
+  assert(!finaleReady(m, data), '一次没练就说 ready 了');
+  // 把八尊逐个练满；差最后一尊的最后一次时都不许开
+  for (const id of eight) {
+    for (let i = 0; i < SKILL_USES[SKILL_MAX] + 1; i++) useSkill(m, id);
+    const done = eight.indexOf(id) === eight.length - 1;
+    assert(finaleReady(m, data) === done, `练到 ${id} 时 ready 该是 ${done}`);
+  }
+  assert(availableSummons(m, data).some(x => x.id === FINALE_ID), '八尊全满了还不开');
+  // 练它自己不能成为它自己的解锁条件——判的是那八尊，不是「所有召唤」
+  const m2 = jsMember('tangki', 12);
+  grantJobExp(m2, jpForJobLevel(99), data);
+  for (let i = 0; i < 99; i++) useSkill(m2, FINALE_ID);
+  assert(!finaleReady(m2, data), '只练它自己不该解开它自己');
+});
 
 test('請神：扣 MP、打到敌方全体、一场只能请一次', () => {
   const { s, actor } = tangkiBattle(['goblin', 'goblin']);
@@ -760,6 +787,24 @@ test('神话装备的职业限制合法，且不会出现「拿得到但全队�
       `祭场宝箱 ${ev.id} 的 ${data.items[ev.item].name} 只有 ${jobs.join('/')} 能装，初始队伍拿了也用不了`);
   }
   assert(src.size, '一件可获得的道具都没有，收集逻辑坏了');
+});
+
+test('每个职业都取得到自己的精灵（含借图的），五处按 jobId 取图的地方才不会拿到 undefined', () => {
+  // 精灵是按 `${jobId}_${dir}_${frame}` 直接取的，转职预览、走地图、战斗、
+  // 胜利结算五处都这么取。少一个职业的图，光标一移到它上面就是 TypeError 当场崩——
+  // 童乩加进 jobs.json 那次正是如此，而 67 条测试全绿。
+  // 没画美术的职业用 jobs.json 的 `art` 借别人的（assets/art.js 末尾那段）。
+  if (!artManifest) return;                      // 还没生成正式美术就跳过
+  const chars = artManifest.characters || {};
+  const miss = [];
+  for (const id of Object.keys(data.jobs)) {
+    const src = data.jobs[id].art || id;         // art 指向谁就查谁
+    const v = chars[src];
+    if (!v) { miss.push(`${id}${data.jobs[id].art ? `（借 ${src}，但 ${src} 也没有图）` : ''}`); continue; }
+    // 至少要有一张基准图（down / left / up 任一），art.js 会从它派生出全部十三张
+    if (!(v.down || v.left || v.up)) miss.push(`${id}（${src} 没有基准视角）`);
+  }
+  assert(!miss.length, '这些职业取不到精灵：' + miss.join(' '));
 });
 
 test('正式美术：所有角色精灵一样高、尺寸一致（防止某个职业显得特别小）', () => {

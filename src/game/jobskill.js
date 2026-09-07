@@ -142,8 +142,21 @@ export const summonUnlockLevel = i => i <= 0 ? 1 : SUMMON_STEP * i;
 // 现在那个文件归别人管，所以先放这儿，并留退路：表里没列到的召唤按 summons.json 的键序接在后面。
 export const SUMMON_ORDER = ['guangong', 'bogong', 'yimin', 'lubu', 'guanyin', 'mazu', 'nezha', 'zhongkui'];
 
+// 【八部齐至】不走职业等级这条路，走的是**八尊全部练满**（导演拍板）。
+// 它必须排除在职业等级那张表之外：留在表里就掉到第九格 ＝ 职业 56 级，
+// 而那既不是设计要的条件，也远在玩家会去的范围之外。
+export const FINALE_ID = 'babu';
+export const isFinale = id => id === FINALE_ID;
+
+// 八尊是不是都到 5 级了。判的是**那八尊**，不是「所有召唤」——
+// 后者会把八部齐至自己也算进去，于是永远解不开（要解开它得先练它）。
+export function finaleReady(member, data) {
+  const eight = summonOrder(data).filter(id => !isFinale(id));
+  return eight.length > 0 && eight.every(id => skillLevelOf(member, id) >= SKILL_MAX);
+}
+
 export function summonOrder(data) {
-  const all = Object.keys(data?.summons || {});
+  const all = Object.keys(data?.summons || {}).filter(id => !isFinale(id));
   const out = SUMMON_ORDER.filter(id => all.includes(id));
   for (const id of all) if (!out.includes(id)) out.push(id);
   return out;
@@ -156,9 +169,11 @@ export function summonsAtJobLevel(level, data) {
 // 现在请得动的召唤：[{ id, skillLevel, mastered }]，按**现职**的职业等级过滤。
 // 只管职业等级这一道闸；剧情 flag（summons.json 的 unlock）那一道由调用方另外查。
 export function availableSummons(member, data) {
-  return summonOrder(data)
-    .filter((id, i) => jobLevel(member, member.jobId) >= summonUnlockLevel(i))
-    .map(id => { const skillLevel = skillLevelOf(member, id); return { id, skillLevel, mastered: skillLevel >= SKILL_MAX }; });
+  const list = summonOrder(data)
+    .filter((id, i) => jobLevel(member, member.jobId) >= summonUnlockLevel(i));
+  // 八尊全满才把终极那一招接在最后（见 finaleReady）
+  if (data?.summons?.[FINALE_ID] && finaleReady(member, data)) list.push(FINALE_ID);
+  return list.map(id => { const skillLevel = skillLevelOf(member, id); return { id, skillLevel, mastered: skillLevel >= SKILL_MAX }; });
 }
 
 // ── 存档兼容 ───────────────────────────────────────────────────────────────

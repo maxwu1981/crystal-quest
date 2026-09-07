@@ -29,7 +29,7 @@ const load = src => new Promise(res => { const im = new Image(); im.onload = () 
 
 export const icons = {}; // 神话装备造型：icons[itemIcon] = Image
 
-export async function loadArt(sprites, tiles, base = './assets/art/') {
+export async function loadArt(sprites, tiles, jobs = null, base = './assets/art/') {
   let m;
   try { const r = await fetch(base + 'manifest.json', { cache: 'no-store' }); if (!r.ok) return 0; m = await r.json(); } catch { return 0; }
   let n = 0;
@@ -55,6 +55,16 @@ export async function loadArt(sprites, tiles, base = './assets/art/') {
         : sprites[`${id}_${dir}_0`];
     }
     sprites[`${id}_downed`] = downed(sprites[`${id}_left_0`]); n++;
+  }
+  // 还没画美术的职业先借别人的图。**必须有**：精灵是按 `${jobId}_${dir}_${frame}`
+  // 直接取的，五处地方（转职预览、走地图、战斗、胜利结算）都这么取，
+  // 取不到就是 undefined，转职菜单光标一移到它上面当场崩。
+  // 有了自己的图之后，把 jobs.json 里那行 `art` 删掉即可，代码不用动。
+  for (const [id, job] of Object.entries(jobs || {})) {
+    if (!job.art || sprites[`${id}_down_0`]) continue;
+    for (const dir of ['down', 'up', 'left', 'right'])
+      for (const f of [0, 1, 2]) sprites[`${id}_${dir}_${f}`] = sprites[`${job.art}_${dir}_${f}`];
+    sprites[`${id}_downed`] = sprites[`${job.art}_downed`];
   }
   for (const [id, file] of Object.entries(m.enemies || {})) { const im = await load(base + file); if (im) { sprites['enemy_' + id] = im; n++; } }
   for (const [id, file] of Object.entries(m.tiles || {})) { const im = await load(base + file); if (im) { tiles[id] = im; n++; } }

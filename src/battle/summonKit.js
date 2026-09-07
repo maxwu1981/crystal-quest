@@ -125,3 +125,109 @@ export const inward = (rng, n, x, y, dist) => Array.from({ length: n }, () => {
   const a = rng.next() * 6.283, d = dist * (0.7 + rng.next() * 0.6);
   return { ax: x + Math.cos(a) * d, ay: y + Math.sin(a) * d * 0.7, d: rng.next() * 0.35, s: rng.int(1, 2) };
 });
+
+// ── 八个剪影母题（【八部齐至】用；单尊演出用不到，但画笔就该住在画笔档里）──────
+//
+// **不另画一套。** 认人靠剪影，而这八个形已经在各自那一段里立住了，
+// 【八部齐至】里再设计一遍等于把八位重新介绍一次——那正是它不该做的事。
+// 所以下面八个函数是**逐点抄回来**的，出处一一对应：
+//   earth 田字   ← summonFxAlly.bogong 的「田」（他把整个战场当成自己的田，这是那张田的缩本）
+//   wood  净瓶   ← summonFxAlly.guanyin 的 VASE 折线 + 那一枝杨柳
+//   water 桅顶火 ← summonFxAlly.mazu 的桅杆与顶上那一点，底下两道浪
+//   fire  关刀   ← summonFx.js 的 guandao()：杆 + 月牙刀身
+//   light 帽翅   ← summonFx.zhongkui 的乌纱帽（两只帽翅 + 帽体 + 头）
+//   wind  火轮   ← summonFx.nezha 的轮圈 + 沿缘那十条火舌
+//   dark  六面旗 ← summonFx.yimin 的六面（就用本档的 banner()）
+//   metal 戟     ← summonFx.lubu 的杆 + 枪尖 + 月牙小枝
+// 每个只做两件事：① 平移到以原点为中心；② 收成单色，好在缩到 0.4 倍时还认得出。
+// **比例一个都没改**——改了就不是同一位了。
+//
+// 键用的是**属性**而不是神名（八属性见 elements.js）。八位一人一种，两边一一对应，
+// 而「八种属性各一击」这句话在代码里就该长成 MOTIF[element] 的样子。
+// 签名统一 (ctx, col, ph)：ph 只有会动的两个用得上（旗在飘、轮在转）。
+export const MOTIF = {
+  earth(ctx, col) {                                   // 田：外框 + 一横一竖
+    const t = 1.6, R = 11; ctx.fillStyle = col;
+    ctx.fillRect(-R, -R, R * 2, t); ctx.fillRect(-R, R - t, R * 2, t);
+    ctx.fillRect(-R, -R, t, R * 2); ctx.fillRect(R - t, -R, t, R * 2);
+    ctx.fillRect(-R, -t / 2, R * 2, t); ctx.fillRect(-t / 2, -R, t, R * 2);
+  },
+  wood(ctx, col) {                                    // 净瓶：细颈、宽肩、收底，加一枝杨柳
+    poly(ctx, [[-1.6, -13], [-1.6, -7], [-5, -4], [-6.4, 2], [-5.4, 10], [-3.6, 13],
+      [3.6, 13], [5.4, 10], [6.4, 2], [5, -4], [1.6, -7], [1.6, -13]], col);
+    ctx.strokeStyle = col; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.moveTo(0, -13); ctx.quadraticCurveTo(7, -19, 3, -26); ctx.stroke();
+    for (let i = 0; i < 3; i++) {
+      const ly = -15 - i * 4, lx = 5 - i * 0.9;
+      poly(ctx, [[lx, ly], [lx + 3.2, ly + 1.6], [lx + 0.6, ly + 4]], col);
+    }
+  },
+  water(ctx, col) {                                   // 桅顶火：一根桅杆，顶上一点，底下两道浪
+    ctx.fillStyle = col; ctx.fillRect(-0.6, -13, 1.2, 30);
+    ctx.beginPath(); ctx.arc(0, -13, 3.6, 0, 6.29); ctx.fill();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.1;
+    for (let i = 0; i < 2; i++) {
+      const yy = 12 + i * 5; ctx.beginPath();
+      for (let k = 0; k <= 4; k++) {
+        const sx = -13 + k * 6.5, y2 = yy + (k % 2 ? -1.6 : 1.6);
+        k ? ctx.lineTo(sx, y2) : ctx.moveTo(sx, y2);
+      }
+      ctx.stroke();
+    }
+  },
+  fire(ctx, col) {                                    // 关刀：杆 + 月牙刀身（guandao() 的 L=26）
+    // 杆一定要够长。第一版 L=13，刀身跟杆一样高，读起来是「叶子插在棍上」不是关刀——
+    // guangong 那边杆长 128、刀身 26，刀是杆末端的一小片，比例得照那个来
+    const L = 26; ctx.save(); ctx.translate(-10.8, 26.5);
+    ctx.fillStyle = col; ctx.fillRect(-1.4, -L, 2.8, L);
+    poly(ctx, [[0, -L - 1], [4, -L - 11], [11, -L - 22], [20, -L - 27],
+      [23, -L - 18], [16, -L - 8], [5, -L - 2]], col);
+    ctx.restore();
+  },
+  light(ctx, col) {                                   // 乌纱帽的两只帽翅
+    poly(ctx, [[-14, -6], [-7, -6], [-7, -3], [-14, -3]], col);
+    poly(ctx, [[7, -6], [14, -6], [14, -3], [7, -3]], col);
+    poly(ctx, [[-7, 0], [-6, -10], [6, -10], [7, 0]], col);
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 4.5, 5, 0, 6.29); ctx.fill();  // 头，比帽小一号
+  },
+  wind(ctx, col, ph = 0) {                            // 火轮：轮圈 + 沿缘十条火舌
+    ctx.strokeStyle = col; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.ellipse(0, 0, 11, 7, 0, 0, 6.29); ctx.stroke();
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < 10; i++) {
+      const a = i * 0.628 + ph;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * 11, Math.sin(a) * 7);
+      ctx.lineTo(Math.cos(a) * 16, Math.sin(a) * 10);
+      ctx.stroke();
+    }
+  },
+  dark(ctx, col, ph = 0) {                            // 六面旗：一堆出事，各堆都要出人
+    // 间距要够宽。挤在一起读起来是栅栏不是六面旗——yimin 那边是「杆距 : 旗宽 ≈ 1.7」，
+    // 六面要各自看得出是一面，这个比例不能省
+    for (let i = 0; i < 6; i++) banner(ctx, -19 + i * 6.4, 9, 4.6, 18, ph + i, col, col);
+  },
+  metal(ctx, col) {                                   // 戟：杆 + 枪尖 + 月牙小枝
+    // 杆长 38（lubu 那边是 46）：小枝占杆的四分之一左右才读得出是戟上的小枝，
+    // 短杆会把小枝读成一面旗——那就跟义民爷撞了
+    const hh = 38; ctx.save(); ctx.translate(-5.5, 24.5);
+    ctx.fillStyle = col; ctx.fillRect(-1.2, -hh, 2.4, hh);
+    poly(ctx, [[-2, -hh], [0, -hh - 11], [2, -hh]], col);
+    poly(ctx, [[2, -hh + 6], [11, -hh + 2], [13, -hh + 9], [3, -hh + 12]], col);
+    ctx.restore();
+  },
+};
+
+// 把某个剪影摆到 (x,y)：s 缩放、rot 旋转、a 透明度、col 单色、ph 给会动的那两个。
+// 位置走 snap()（对齐物理像素网格，不是逻辑网格），否则缩放中的剪影会一格一格蹦。
+export function motif(ctx, kind, x, y, s, col, a = 1, rot = 0, ph = 0) {
+  const f = MOTIF[kind];
+  if (!f || a <= 0.004 || !(s > 0.02)) return;
+  ctx.save(); ctx.globalAlpha = Math.min(1, a);
+  ctx.translate(snap(x), snap(y));
+  if (rot) ctx.rotate(rot);
+  ctx.scale(s, s);
+  ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 1;
+  f(ctx, col, ph);
+  ctx.restore();
+}

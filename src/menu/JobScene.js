@@ -3,6 +3,7 @@ import { Menu } from '../ui/Menu.js';
 import { drawWindow, drawDivider, UI, fillWindowBg } from '../ui/Window.js';
 import { drawText, wrapText, LINE_H } from '../core/text.js';
 import { computeStats, changeJob, spellsFor, equipmentAfterJobChange } from '../game/party.js';
+import { memberSpells, jobLevel, summonsAtJobLevel } from '../game/jobskill.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W, portrait } from './common.js';
 import { audio } from '../core/audio.js';
 import { key } from '../touch.js';
@@ -63,11 +64,29 @@ export class JobScene {
     drawSprite(ctx, po.img, LEFT_W + 8, 8 + po.bob, 48);
     drawText(ctx, `${m.name}  Lv ${m.level}`, LEFT_W + 60, 12, { color: UI.text });
     drawText(ctx, `${this.jobs[m.jobId].name} → ${job.name}`, LEFT_W + 60, 12 + LINE_H, { color: UI.accent });
-    wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, 3).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: UI.dim }));
-    drawDivider(ctx, LEFT_W + 8, 102, 256 - LEFT_W - 16); // 职业说明与属性对照之间切一刀
-    const rows = [['HP', cur.maxHp, next.maxHp], ['MP', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['魔法', spellsFor(this.jobs[m.jobId], m.level).length, spellsFor(job, m.level).length]];
+    // 魔法那一行要算**承接之后**的数，不是新职业自己带的那几条。
+    // 写成 spellsFor(新职业) 的话，符仔仙 8 条转童乩会显示「魔法 8 → 0」，
+    // 玩家会以为技能全丢了——正好把承接这件事整个藏起来。
+    const magicNow = memberSpells(m, data).length;
+    const magicNext = new Set([...memberSpells(m, data), ...spellsFor(job, m.level)]).size;
+    // 請神只有会请的职业才显示这一行，免得给另外六个职业各挂一个恒为 0 的数字。
+    // 转到没练过的职业是 1 级（enterJob），所以预览用 max(1, 已有等级)。
+    const canSummon = j => (j.commands || []).includes('summon');
+    const summonsOf = (j, id) => canSummon(j) ? summonsAtJobLevel(Math.max(1, jobLevel(m, id)), data).length : 0;
+    const rows = [['HP', cur.maxHp, next.maxHp], ['MP', cur.maxMp, next.maxMp], ['攻击', cur.atk, next.atk], ['防御', cur.def, next.def], ['速度', cur.spd, next.spd], ['魔法', magicNow, magicNext]];
+    if (canSummon(job) || canSummon(this.jobs[m.jobId]))
+      rows.push(['請神', summonsOf(this.jobs[m.jobId], m.jobId), summonsOf(job, id)]);
+
+    // 多出請神这一行就放不下了：最后一行会压到下面「卸下 ○○」那句（188）。
+    // 让职业说明少一行来腾——说明是氛围，属性对照是玩家真正要比的东西。
+    // 属性对照的**末行位置固定**（173，正好在「卸下 ○○」那句 188 上面留两像素），
+    // 多一行就整体往上顶一行，说明相应少画一行并跟着上移。
+    const descN = rows.length > 6 ? 2 : 3;
+    const rowY0 = 108 - (rows.length - 6) * LINE_H, divY = rowY0 - 6;
+    wrapText(ctx, job.desc || '', 256 - LEFT_W - 16).slice(0, descN).forEach((l, i) => drawText(ctx, l, LEFT_W + 8, 64 + i * LINE_H, { color: UI.dim }));
+    drawDivider(ctx, LEFT_W + 8, divY, 256 - LEFT_W - 16); // 职业说明与属性对照之间切一刀
     rows.forEach(([k, a, b], i) => {
-      const y = 108 + i * LINE_H;
+      const y = rowY0 + i * LINE_H;
       drawText(ctx, k, LEFT_W + 8, y, { color: UI.dim }); drawText(ctx, String(a), LEFT_W + 72, y, { align: 'right', color: UI.dim });
       drawText(ctx, '→', LEFT_W + 80, y, { color: UI.dim }); drawText(ctx, String(b), LEFT_W + 124, y, { align: 'right', color: b > a ? UI.good : b < a ? UI.danger : UI.text });
     });

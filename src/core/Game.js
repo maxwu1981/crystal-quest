@@ -62,7 +62,8 @@ export class Game {
     this.rngFx = new RNG(99); // 纯装饰用（NPC 闲逛等），不影响战斗/遇敌
     this.sprites = buildSprites();
     this.tiles = buildTiles(new RNG(12345));
-    this.artCount = await loadArt(this.sprites, this.tiles); // 有 assets/art/ 正式美术就覆盖占位图
+    // 传 jobs 进去是为了「还没画美术的职业借别人的图」那一步（见 art.js 末尾）
+    this.artCount = await loadArt(this.sprites, this.tiles, this.data.jobs); // 有 assets/art/ 正式美术就覆盖占位图
     this.equipCount = buildEquipLayers(this.data.items); // 装备叠加层（穿上就看得见）
     this.state = newGameState(this.data);
     this.scenes.push(new TitleScene(this));

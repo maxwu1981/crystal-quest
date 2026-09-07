@@ -23,6 +23,7 @@
 import { W, FH, seg, pulse, ease, wash, flash, glow, ring, dot, poly, beam, banner, flame, gust, inward } from './summonKit.js';
 import { PARTY_X, PARTY_Y0, PARTY_DY } from './hudBits.js';
 import { FX_ALLY } from './summonFxAlly.js';
+import { FINALE_FX } from './summonFxFinale.js';
 
 // 关刀的剪影，画在原点朝上：杆往下、月牙刀身在上头。L 是杆长
 function guandao(ctx, L) {
@@ -396,4 +397,5 @@ const FX_ENEMY = {
 };
 
 // 八位合起来。形状与 SPELL_FX 一致，可以直接并进 effects.js 的 FX 表
-export const SUMMON_FX = { ...FX_ALLY, ...FX_ENEMY };
+// （八尊练满才解锁的【八部齐至】在 summonFxFinale.js，键 babu，一并汇总进来）
+export const SUMMON_FX = { ...FX_ALLY, ...FX_ENEMY, ...FINALE_FX };
