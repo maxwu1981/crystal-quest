@@ -71,7 +71,7 @@ export function makeBackdrop(game, opts = {}) {
     });
     // 立石：祭场围成一圈的石柱。后排（远景）矮而暗，前排（中景）中间高两边矮，
     // 两排一分，那一圈才是「围起来的」而不是「排成一列的」
-    bg.back = list(9, i => ({ x: i * 29 + rng.int(-5, 5), w: rng.int(6, 11), h: rng.int(8, 17) }));
+    bg.back = list(9, i => ({ x: i * 29 + rng.int(-5, 5), w: rng.int(6, 11), h: rng.int(12, 24) }));
     bg.stones = list(7, i => ({ x: [2, 30, 64, 106, 150, 194, 230][i] + rng.int(-3, 3), w: rng.int(10, 17), h: rng.int(20, 40) }));
     bg.grit = list(34, () => ({ x: rng.int(0, 254), y: rng.int(HZ.shrine + 2, PANEL_Y - 2), a: rng.int(4, 9) / 100 }));
   }
@@ -97,9 +97,9 @@ const TONE = {
 // bg 由 makeBackdrop 生成（缺省时退回通用背景），t 是战斗经过的秒数。
 // save/restore 包起来：背景改了 fillStyle / strokeStyle / lineWidth / 变换 / 合成模式，
 // 不能漏给后面画敌人的代码（restore 会把 globalAlpha 与 globalCompositeOperation 一起还原）。
-export function drawBackground(ctx, W, bg = null, t = 0) {
+export function drawBackground(ctx, W, bg = null, t = 0, panX = 0) {
   ctx.save();
-  paintScene(ctx, W, bg, t);
+  paintScene(ctx, W, bg, t, panX);
   const tone = TONE[bg?.kind];
   if (tone) {
     ctx.globalCompositeOperation = 'multiply';
