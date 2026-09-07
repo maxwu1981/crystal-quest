@@ -152,7 +152,7 @@ export class BattleScene {
     // 所以直接走 commit，不需要为它开第二条执行路径。
     // 决策不掷骰（期望值估算），所以同一局面永远给同一手，自动试玩的路线仍可复现。
     if (this.autoBattle) {
-      const act = decideAutoAction(actor, this.party, this.enemies, this.game.data, this.game.state.inventory || []);
+      const act = decideAutoAction(actor, this.party, this.enemies, this.game.data, this.game.state.inventory || [], this.summonsUsed);
       if (act) { this.phase = 'input'; this.commit(act); return; }
     }
     this.phase = 'input'; this.openMain();

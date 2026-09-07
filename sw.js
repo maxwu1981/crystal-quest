@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 225 个文件，约 3.3 MB。
-const VERSION = 'dadce1775ab4';
+// 共 230 个文件，约 3.3 MB。
+const VERSION = '6f20cdf4629c';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -154,6 +154,7 @@ const PRECACHE = [
   './data/maps/tomb_wanjin.json',
   './data/maps/village.json',
   './data/party.json',
+  './data/skills.json',
   './data/spells.json',
   './data/story.json',
   './data/summons.json',
@@ -172,6 +173,7 @@ const PRECACHE = [
   './src/battle/BattleScene.js',
   './src/battle/actions.js',
   './src/battle/actors.js',
+  './src/battle/afflict.js',
   './src/battle/ai.js',
   './src/battle/autoBattle.js',
   './src/battle/backdrop.js',
@@ -184,6 +186,8 @@ const PRECACHE = [
   './src/battle/hud.js',
   './src/battle/hudBits.js',
   './src/battle/render.js',
+  './src/battle/skillAction.js',
+  './src/battle/skillFx.js',
   './src/battle/spellFx.js',
   './src/battle/spellFxCold.js',
   './src/battle/spellFxSky.js',
@@ -212,6 +216,7 @@ const PRECACHE = [
   './src/field/npc.js',
   './src/field/postfx.js',
   './src/game/autoheal.js',
+  './src/game/battleskill.js',
   './src/game/items.js',
   './src/game/jobskill.js',
   './src/game/party.js',

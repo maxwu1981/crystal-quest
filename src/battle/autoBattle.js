@@ -15,6 +15,8 @@
 
 import * as F from './formulas.js';
 import { memberSkills, skillReady, skillShape } from '../game/battleskill.js';
+// 「請神」：请得动谁、这一位这次多少威力多少 MP，全问数据层，这里只当调用方
+import { availableSummons, skillScale } from '../game/jobskill.js';
 
 const LOW_HP = 0.30;        // 低于这个比例算"快死了"
 const REVIVE_FIRST = true;  // 有人倒下时优先救人（少一个人打就是少一份输出）
@@ -89,13 +91,88 @@ function pickTarget(actor, enemies) {
   return live.reduce((a, b) => (b.atk > a.atk ? b : a));                          // 否则先打最疼的
 }
 
+// ---------- 請神 ----------
+//
+// 八位一律 target:'enemy' + scope:'all'，所以估的是**对全场的总伤害**。
+// 挑的时候看三件事，按重要性排：
+//   ① 有没有人倒下 / 半血——妈祖能团体复活、观世音回 MP，那时它比伤害值钱
+//      （这就是导演说的「协同」：請神不只是一发大的，它同时在救场）
+//   ② 打得掉多少**用得上**的血：Σ min(伤害, 对方剩余 HP)。溢出的部分不算，
+//      否则一群 29 血的杂鱼会把最贵的那一尊骗出来
+//   ③ 同样有效的几位里挑**最便宜**的。请神是童乩的全部家当，
+//      省下来的 MP 就是这一场还能多请一尊
+//
+// 值不值得动用，两条**任取其一**：
+//   ① 这一发能一次带走不止一只——杂鱼战里請神的价值就在这儿
+//   ② 这一仗还长：全场剩血是这一发的 SUMMON_LONG 倍以上
+// 第二条是给 Boss 用的，而且**必须有**：乌火 1250 血，一尊神打一百多，
+// 按「打掉全场几分之几」判的话每一尊都不够格，童乩整场一发不放——
+// 而 Boss 战恰恰是請神最该出现的地方。第一版就栽在这里（模拟表上 mp 只掉 7%）。
+// 反过来，一只 29 血的魔神仔不值一尊神：kills 只有 1、剩血也不到 1.5 倍，两条都不成立。
+const SUMMON_LONG = 1.5;
+
+// 现在请得动、请得起、这一场还没请过的几位（[{ id, s, power, mp }]）
+function summonsOf(actor, data, used) {
+  if (!actor.member || !data.summons || !actor.commands?.includes('summon')) return [];
+  return availableSummons(actor.member, data)
+    .map(({ id, skillLevel }) => {
+      const s = data.summons[id], { power, mp } = skillScale(s, skillLevel);
+      return { id, s, power, mp };
+    })
+    .filter(x => x.s && actor.mp >= x.mp && !(x.s.once && used.has(x.id)));
+}
+
+// 一尊请下来对全场的**有效**伤害与顺带带走几只
+function summonWorth(x, actor, foes) {
+  let useful = 0, kills = 0;
+  for (const e of foes) {
+    const per = estMagic({ power: x.power, element: x.s.element }, actor, e) * (x.s.hits || 1);
+    useful += Math.min(per, e.hp);
+    if (per >= e.hp) kills++;
+  }
+  return { useful, kills };
+}
+
+/**
+ * 这一手该不该請神、請哪一位。返回 { type:'summon', summonId, target:'all' } 或 null。
+ * used 是「这一场已经请过的」（BattleScene.summonsUsed），不传就当没请过。
+ */
+export function pickSummon(actor, party, foes, data, used = new Set()) {
+  const list = summonsOf(actor, data, used);
+  if (!list.length || !foes.length) return null;
+  const live = alive(party);
+
+  // ① 救场优先：有人倒下就找带团体复活的那一尊，两个人以上半血以下就找带治疗的。
+  //    这一档**不看伤害门槛**——救人本身就值一回合。
+  const dead = party.filter(p => !p.alive).length;
+  const hurt = live.filter(p => hpRatio(p) < 0.5).length;
+  const rescue = dead ? list.filter(x => x.s.allyRevive)
+    : hurt >= 2 ? list.filter(x => x.s.allyHeal) : [];
+  if (rescue.length) return { type: 'summon', summonId: cheapestOf(rescue, actor, foes).id, target: 'all' };
+
+  // ② 伤害：先算每一位的有效伤害，再看够不够门槛
+  const totalHp = foes.reduce((t, e) => t + e.hp, 0);
+  const scored = list.map(x => ({ ...x, ...summonWorth(x, actor, foes) }));
+  const top = scored.reduce((a, b) => (b.kills - a.kills || b.useful - a.useful) > 0 ? b : a);
+  if (top.kills < 2 && totalHp < top.useful * SUMMON_LONG) return null;
+
+  // ③ 同样有效的几位里挑最便宜的：省下的 MP 就是这一场还能多请一尊
+  const same = scored.filter(x => x.kills >= top.kills && x.useful >= top.useful * 0.92);
+  return { type: 'summon', summonId: same.reduce((a, b) => (b.mp < a.mp ? b : a)).id, target: 'all' };
+}
+// 一组候选里最便宜的；打平了看谁打得更疼
+function cheapestOf(list, actor, foes) {
+  return list.reduce((a, b) => b.mp !== a.mp ? (b.mp < a.mp ? b : a)
+    : (summonWorth(b, actor, foes).useful > summonWorth(a, actor, foes).useful ? b : a));
+}
+
 // ---------- 决策主体 ----------
 
 /**
  * 给一个角色决定这回合做什么。返回值与玩家手动下的指令同形；
  * 返回 null 表示"没什么好做的"（调用方退回普攻）。
  */
-export function decideAutoAction(actor, party, enemies, data, inventory = []) {
+export function decideAutoAction(actor, party, enemies, data, inventory = [], summonsUsed = new Set()) {
   const foes = alive(enemies);
   if (!foes.length) return null;
   const spells = spellsOf(actor, data);
@@ -146,6 +223,12 @@ export function decideAutoAction(actor, party, enemies, data, inventory = []) {
     const slot = ITEM && findItem(inventory, [ITEM]);
     if (slot) return { type: 'item', itemId: slot.id, target: sick };
   }
+
+  // ---- 請神 ----
+  // 排在这里而不是更后面：它里面**自带一档救场**（有人倒下就找妈祖），
+  // 那一档要压过下面的输出比较；而它的伤害档有门槛卡着，不会抢走杂鱼战。
+  const summon = pickSummon(actor, party, foes, data, summonsUsed);
+  if (summon) return summon;
 
   // ---- ② 效率 ----
 

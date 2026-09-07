@@ -8,8 +8,10 @@ import { healFull, memberSpells } from '../src/game/party.js';
 import { makePartyActors, makeEnemyActors } from '../src/battle/actors.js';
 import { execute } from '../src/battle/actions.js';
 import { decideEnemyAction } from '../src/battle/ai.js';
-import { estSkill } from '../src/battle/autoBattle.js';
+import { estSkill, pickSummon } from '../src/battle/autoBattle.js';
 import { memberSkills, skillReady, skillShape, tickCooldowns } from '../src/game/battleskill.js';
+import { changeJob } from '../src/game/party.js';
+import { grantJobExp, jpForJobLevel } from '../src/game/jobskill.js';
 
 // 各等级默认装备（模拟玩家按金币逐步换装：出村青铜、洞窟前铁、深处钢）
 // 童乩（tangki）这一路跟符仔仙同装：都是后排、都用杖 + 袍，商店里也没有第三种
@@ -76,8 +78,20 @@ export function checkGear(data) {
     if (!ENDGAME[id]) throw new Error(`balance.js 的决战装备表缺少职业 ${id}`);
 }
 
-function scene(data, level, enemyIds, seed, endgame) {
+// 队伍里换一个童乩进来。**不这么做的话「請神」在这张表上完全不存在**——
+// party.json 是拳头师/山猎人/青草婆/符仔仙，一尊神都请不出来，
+// 改召唤的 MP 前后跑出来的数字会一模一样，看着像「改动没影响」。
+// 换掉的是符仔仙（同为后排、同一套装备），职业等级给到 jobLv 那一档决定请得动几位。
+function makeTangki(st, data, jobLv) {
+  const m = st.party.find(x => x.jobId === 'talisman') || st.party[st.party.length - 1];
+  changeJob(m, 'tangki', [], data);
+  grantJobExp(m, jpForJobLevel(jobLv), data);
+  return m;
+}
+
+function scene(data, level, enemyIds, seed, endgame, tangkiLv = 0) {
   const st = newGameState(data);
+  if (tangkiLv) makeTangki(st, data, tangkiLv);
   for (const m of st.party) { m.level = level; const [w, a] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: null }; healFull(m, data); }
   const s = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: false,
     // 桩要跟 Effects 的接口一致：少一个 shake，一出会心就抛「不是函数」；
@@ -85,6 +99,7 @@ function scene(data, level, enemyIds, seed, endgame) {
     // actions.js 的 attack() 每次命中都要拿目标尺寸给特效用（658f445「被魔法笼罩」那次加的），
     // 而这里的假场景没有画面、没有尺寸，回一个空对象即可（特效本来就是空实现）
     fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; }, size() { return {}; },
+    summonsUsed: new Set(),   // 一场每尊只能请一次（summons.json 的 once）；callSummon 会往里加
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
     alive: l => l.filter(a => a.alive),
     retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },
@@ -134,11 +149,15 @@ function decide(s, p) {
   const heals = usable.filter(id => sp[id].heal).sort((a, b) => sp[b].power - sp[a].power);
   if (hurt && heals.length) return { type: 'magic', spellId: heals[0], target: hurt };
   const attacks = usable.filter(id => sp[id].power > 0 && sp[id].target === 'enemy').sort((a, b) => sp[b].power * (sp[b].scope === 'all' ? enemies.length : 1) - sp[a].power * (sp[a].scope === 'all' ? enemies.length : 1));
+  // 請神走和自动战斗同一个挑法（autoBattle.pickSummon）：两边分头写一套，
+  // 表上调好的数字到了实机就不是那回事了
+  const summon = pickSummon(p, s.party, enemies, data, s.summonsUsed);
+  if (summon) return summon;
   if (attacks.length && (p.jobId === 'talisman' || p.jobId === 'peddler')) { const id = attacks[0]; return { type: 'magic', spellId: id, target: sp[id].scope === 'all' ? 'all' : weakest }; }
   return pickSkill(s, p, enemies) || { type: 'attack', target: weakest };
 }
-function fight(data, level, enemyIds, seed, endgame) {
-  const s = scene(data, level, enemyIds, seed, endgame);
+function fight(data, level, enemyIds, seed, endgame, tangkiLv = 0) {
+  const s = scene(data, level, enemyIds, seed, endgame, tangkiLv);
   let rounds = 0;
   while (s.alive(s.party).length && s.alive(s.enemies).length && rounds++ < 40) {
     const acts = [];
@@ -163,17 +182,22 @@ export async function run(data = null, n = 30) {
   const zones = { ...data.encounters,
     'boss(纯商店)':   { groups: [{ enemies: ['knight'], weight: 1 }] },
     'boss(顺路开箱)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath' },
-    'boss(全开箱)':   { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'full' } };
+    'boss(全开箱)':   { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'full' },
+    // 童乩那一路：队伍里换一个请神的进来，職業 21 级 ＝ 请得动前四位。
+    // 有这一行，改 summons.json 的 MP 才看得见后果
+    'boss(童乩)':     { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath', tangki: 21 },
+    'cave_deep(童乩)': { groups: [{ enemies: ['skeleton', 'darkslime'], weight: 2 }, { enemies: ['ghost', 'ghost', 'skeleton'], weight: 1 }], tangki: 21 } };
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
                    fort: [4, 5, 6, 7], tomb: [4, 5, 6, 7],          // 隘寮石城 / 万金古塚：跟 cave 同一档，用同一组等级才好对照
-                   'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8] };
+                   'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
+                   'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
       const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0 };
       const rng = new RNG(1000 + level);
       for (let i = 0; i < n; i++) {
         const g = rng.weighted(z.groups, x => x.weight);
-        const f = fight(data, level, g.enemies, 7 + i * 13 + level, z.endgame);
+        const f = fight(data, level, g.enemies, 7 + i * 13 + level, z.endgame, z.tangki || 0);
         r.fights++; r.wins += f.won; r.hpLoss += f.hpLoss; r.mpLoss += f.mpLoss; r.rounds += f.rounds; r.deaths += f.dead;
       }
       rows.push({ zone, level, winRate: Math.round(100 * r.wins / r.fights), hpLoss: Math.round(100 * r.hpLoss / r.fights), mpLoss: Math.round(100 * r.mpLoss / r.fights), rounds: +(r.rounds / r.fights).toFixed(1), deaths: +(r.deaths / r.fights).toFixed(2) });
