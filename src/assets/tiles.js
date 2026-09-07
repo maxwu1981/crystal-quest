@@ -52,7 +52,8 @@ function castShadow(ctx, rng, ground, speckA, speckB, core, penumbra, edge) {
   ctx.fillStyle = edge; for (let x = 0; x < TILE; x += 2) ctx.fillRect(x, 8, 1, 1);
 }
 
-const DRAW = {
+// 导出给测试用：「地图图例引用的瓦片都取得到」那条要拿它跟 manifest 合起来查
+export const DRAW = {
   grass(ctx, rng) { fill(ctx, '#5cb85c'); scatter(ctx, rng, 10, '#4e9f4e'); scatter(ctx, rng, 5, '#72c872'); },
   path(ctx, rng) { fill(ctx, '#d2b47a'); scatter(ctx, rng, 8, '#c19d5f'); scatter(ctx, rng, 3, '#e0c58f'); },
   tree(ctx, rng) {
@@ -203,6 +204,33 @@ const DRAW = {
     ctx.fillStyle = '#9c948b'; ctx.fillRect(2, 2, 2, 2); ctx.fillRect(8, 7, 3, 2); ctx.fillRect(12, 13, 2, 1);
     scatter(ctx, rng, 5, '#7a726a'); },
   bed(ctx) { DRAW.floor(ctx); ctx.fillStyle = '#5d4037'; ctx.fillRect(1, 0, 14, 16); ctx.fillStyle = '#1e88e5'; ctx.fillRect(2, 6, 12, 9); ctx.fillStyle = '#fafafa'; ctx.fillRect(3, 1, 10, 4); },
+
+  // ---- 迷宫瓦片的兜底 ----
+  // 这七张平时用的是 Gemini 出的 PNG（manifest.tiles）。这里的程序化版本是**兜底**：
+  // PNG 少一张就是 tiles[id] === undefined，画到那一格当场崩，而地图数据看起来完全正常。
+  // 所以每张正式美术都要在这里有一个能看的替身——难看没关系，不能没有。
+  stone_wall(ctx, rng) { fill(ctx, '#6f6a63'); ctx.fillStyle = '#3f3a35';
+    for (const y of [0, 5, 11]) ctx.fillRect(0, y, 16, 1);
+    for (const [y, xs] of [[0, [4, 11]], [5, [7]], [11, [3, 10]]]) for (const x of xs) ctx.fillRect(x, y, 1, 5);
+    scatter(ctx, rng, 4, '#807a72'); },
+  pillar(ctx, rng) { DRAW.flagstone(ctx, rng); ctx.fillStyle = '#cfc9bd'; ctx.fillRect(5, 1, 6, 14);
+    ctx.fillStyle = '#e8e2d6'; ctx.fillRect(6, 1, 1, 14); ctx.fillRect(9, 1, 1, 14);
+    ctx.fillStyle = '#a9a294'; ctx.fillRect(4, 0, 8, 2); ctx.fillRect(4, 14, 8, 2); },
+  carpet(ctx) { fill(ctx, '#a5231d'); ctx.fillStyle = '#c8302a'; ctx.fillRect(2, 0, 12, 16);
+    ctx.fillStyle = '#d8b24a'; ctx.fillRect(1, 0, 1, 16); ctx.fillRect(14, 0, 1, 16);
+    for (let y = 2; y < 16; y += 5) { ctx.fillRect(2, y, 1, 2); ctx.fillRect(13, y, 1, 2); } },
+  ore_vein(ctx, rng) { fill(ctx, '#3b3a3c'); scatter(ctx, rng, 6, '#4c4b4d');
+    ctx.fillStyle = '#1f6f68'; ctx.fillRect(2, 11, 4, 3); ctx.fillRect(6, 8, 4, 3); ctx.fillRect(10, 4, 4, 3);
+    ctx.fillStyle = '#3fbfae'; ctx.fillRect(3, 12, 2, 1); ctx.fillRect(7, 9, 2, 1); ctx.fillRect(11, 5, 2, 1); },
+  rubble(ctx, rng) { fill(ctx, '#8b7d6b'); scatter(ctx, rng, 8, '#7a6d5c');
+    ctx.fillStyle = '#9c968d'; for (const [x, y, w, h] of [[1, 9, 5, 4], [7, 11, 4, 3], [11, 6, 4, 4], [3, 3, 4, 3]]) ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#6d675f'; for (const [x, y] of [[1, 12], [7, 13], [11, 9], [3, 5]]) ctx.fillRect(x, y, 5, 1); },
+  throne(ctx, rng) { DRAW.flagstone(ctx, rng); ctx.fillStyle = '#6b4423'; ctx.fillRect(4, 1, 8, 14);
+    ctx.fillStyle = '#8a5a2e'; ctx.fillRect(3, 8, 10, 6); ctx.fillStyle = '#a5231d'; ctx.fillRect(5, 9, 6, 4);
+    ctx.fillStyle = '#d8b24a'; ctx.fillRect(6, 2, 4, 1); ctx.fillRect(5, 13, 6, 1); },
+  altar(ctx, rng) { DRAW.flagstone(ctx, rng); ctx.fillStyle = '#b8b2a6'; ctx.fillRect(2, 6, 12, 7);
+    ctx.fillStyle = '#8f8a80'; ctx.fillRect(2, 10, 12, 1); ctx.fillStyle = '#c98a2e'; ctx.fillRect(7, 4, 3, 2);
+    ctx.fillStyle = '#efe6cc'; ctx.fillRect(4, 3, 1, 3); ctx.fillRect(12, 3, 1, 3); },
 };
 
 export function buildTiles(rng) {

@@ -21,22 +21,22 @@
    "tile": "stairs_down"
   },
   "A": {
-   "tile": "counter",
+   "tile": "throne",
    "solid": true
   },
   "D": {
    "tile": "door"
   },
   "R": {
-   "tile": "mountain",
+   "tile": "rubble",
    "solid": true
   },
   "W": {
-   "tile": "wall",
+   "tile": "stone_wall",
    "solid": true
   },
   "X": {
-   "tile": "glowstone",
+   "tile": "ore_vein",
    "solid": true
   },
   "o": {

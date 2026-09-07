@@ -10,7 +10,7 @@ import { assert, test, data, artRows, artSizes, artManifest } from '../context.j
 import { MIRROR, NO_TOUCH } from '../../src/assets/terrain.js';
 import { U, u, us } from '../../src/assets/terrainBits.js';
 import { ART, snap } from '../../src/core/draw.js';
-import { TILE_FX } from '../../src/assets/tiles.js';
+import { TILE_FX, DRAW } from '../../src/assets/tiles.js';
 import { ELEMENTS, ELEMENT_IDS } from '../../src/battle/elements.js';
 import { ELEM_SHAPE, spellIcon } from '../../src/menu/icons.js';
 
@@ -149,6 +149,19 @@ test('每只怪都能取到自己的美术，没有指向不存在的图', () =>
     if (!(key in artSizes.enemies)) miss.push(`${id}${e.sprite ? `（借用 ${e.sprite}）` : ''}`);
   }
   assert(!miss.length, '这些怪取不到美术：' + miss.join(' '));
+});
+
+test('地图图例引用的瓦片都取得到：要么有程序化画法，要么有正式美术', () => {
+  // 瓦片是按名字取的（tiles[legend[ch].tile]），少一张就是 undefined，
+  // 画到那一格当场崩——而地图 JSON 看起来完全正常，图例里那一行也在。
+  // 新加迷宫瓦片时最容易漏：改了 legend 却忘了在 tiles.js 补兜底、或忘了登记 manifest。
+  const have = new Set([...Object.keys(DRAW), ...Object.keys(artManifest?.tiles || {})]);
+  const miss = new Set();
+  for (const [id, m] of Object.entries(data.maps)) {
+    for (const [ch, def] of Object.entries(m.legend || {}))
+      if (def.tile && !have.has(def.tile)) miss.add(`${id} 的 '${ch}' → ${def.tile}`);
+  }
+  assert(!miss.size, '这些瓦片取不到：' + [...miss].join('；'));
 });
 
 test('瓦片动画的循环周期不能太快（防闪）', () => {

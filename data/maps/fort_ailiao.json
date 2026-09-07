@@ -7,14 +7,14 @@
  },
  "legend": {
   ",": {
-   "tile": "floor",
+   "tile": "carpet",
    "encounter": true
   },
   ">": {
    "tile": "stairs_down"
   },
   "A": {
-   "tile": "counter",
+   "tile": "throne",
    "solid": true
   },
   "B": {
@@ -25,7 +25,7 @@
    "tile": "door"
   },
   "I": {
-   "tile": "wall",
+   "tile": "pillar",
    "solid": true
   },
   "T": {
@@ -33,7 +33,7 @@
    "solid": true
   },
   "W": {
-   "tile": "wall",
+   "tile": "stone_wall",
    "solid": true
   },
   "c": {
