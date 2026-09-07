@@ -44,8 +44,16 @@ const FRINGE = {
 // 「高物」：本身一律不接受任何叠加。值 > 0 的还会把影子投到邻格上（1 = 崖壁石墙，0.6 = 林子与家具）。
 // 值为 0 的是**孤零零站着的一格东西**（树、水晶、村落、洞口）：影子按格子铺会落成一个方框，
 // 而它们的轮廓是圆的，看着像站在方坑里。这类东西的影子跟着自己的轮廓走，烘进合成图（见 seamTile）。
-const CASTER = {
-  cave_wall: 1, mountain: 1, wall: 1, forest: 0.6, counter: 0.6, bed: 0.6,
+export const CASTER = {
+  // stone_wall 与 ore_vein 是 2026-09-08 补的，之前**漏在表外**。
+  // 后果不只是「少一道影子」——`inert` 是拿这张表判的（见下面那行），所以漏登记的墙
+  // 还会反过来接受地面那一套：崖影投在墙上、地面装饰（青苔、裂缝）长到墙面上。
+  // 隘寮石城整整 351 格是 stone_wall，而它和自家地板 flagstone 的明度差只有 10.9/255
+  // （墙 85,92,94 vs 地 105,101,97，ΔRGB 32/765）——本来就快分不出来了，
+  // 再少一道墙脚的影子，整张图就读不出哪里是路。导演那句「分不清哪些是路哪些是背景」
+  // 说的正是这张图：洞窟那两张的墙地明度差是 27，古塚是 67，都没有这个问题。
+  cave_wall: 1, stone_wall: 1, ore_vein: 1, mountain: 1, wall: 1,
+  forest: 0.6, counter: 0.6, bed: 0.6,
   tree: 0, crystal: 0, town: 0, cave_entrance: 0,
 };
 // 从来不接受任何叠加的瓦片。房子那一套在 tiles.js 里已经手工画好了从屋脊到墙脚的明暗序，
@@ -85,7 +93,7 @@ const OBJECT_GROUND = {
   idol: 'cave_floor',       // 'C' 神像：岩龛、圣所
 };
 // 抠底换地面的名单：老三张（满铺、现场漫水抠）+ 上面那批（出图就抠好了）
-const SEAMABLE = new Set(['tree', 'crystal', 'town', ...Object.keys(OBJECT_GROUND)]);
+export const SEAMABLE = new Set(['tree', 'crystal', 'town', ...Object.keys(OBJECT_GROUND)]);
 // 能当底铺的。carpet 也算：它是「地毯」不是物件，王座摆在中轴地毯尽头时，
 // 底就该是那条地毯而不是旁边的铺石。
 const GROUND = new Set(['grass', 'path', 'sand', 'cave_floor', 'flagstone', 'floor', 'forest', 'carpet']);
