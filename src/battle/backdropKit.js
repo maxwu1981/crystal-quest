@@ -82,3 +82,39 @@ export function vignette(ctx, W) {
   g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.62, 'rgba(0,0,0,0.10)'); g.addColorStop(1, 'rgba(0,0,0,0.34)');
   ctx.fillStyle = g; ctx.fillRect(-M, -M, W + M * 2, PANEL_Y + M * 2);
 }
+
+
+// ---- 透视地面 ----
+// 参考歧路旅人：它把镜头**压低**，让玩家「看进」场景里而不是「看到」场景上
+// （放弃俯视/等角）。于是地面是一块朝里退的斜面，站在画面上方的角色不是浮在天上，
+// 而是**站得更远**。我们没有 3D，但那块斜面的两个读法可以直接画出来：
+//   ① 横向分段「越近越大块」——同样宽的一条地，近处占的屏幕高度更多；
+//   ② 纵向的线朝**灭点**收拢——平行的畦沟在透视里会聚到地平线上一点。
+// 两条一起给，斜面就立起来了。
+
+// 把 [hz, bottom] 分成 n 段，返回 n+1 个 y。k 越大压缩得越狠（近处那段越大）。
+// t^k 而不是真透视除法：真除法在 hz 附近会挤成零高度，画出来是一条糊线；
+// 幂曲线可控、且末段仍有厚度。k=2 大致对应镜头下压约 30°。
+export function perspRows(hz, bottom, n, k = 2) {
+  const out = [];
+  for (let i = 0; i <= n; i++) out.push(hz + (bottom - hz) * (i / n) ** k);
+  return out;
+}
+
+// 朝灭点 (vx, hz) 收拢的竖线。i 从 -half 到 +half，在**地面最前沿**等距铺开，
+// 越往后越靠向灭点。这是斜面最强的读法——远景全是横线时，一组收拢的竖线一出来，
+// 「这块地在往前铺」就成立了。
+export function converge(ctx, hz, bottom, vx, spread, n, rgb, a = 0.5, wide = 1) {
+  const half = (n - 1) / 2;
+  for (let i = 0; i < n; i++) {
+    const fx = vx + (i - half) * spread;                 // 最前沿的落点
+    for (let y = Math.ceil(hz + 1); y < bottom; y++) {
+      const t = (y - hz) / (bottom - hz);                // 0 在地平线、1 在最前
+      // **必须朝地平线淡出**。等亮度画到底的话，十几条线会在灭点聚成一颗星，
+      // 整块地读作跑道而不是田——第一版就是这样。真实的空气透视里，
+      // 远处的沟本来就看不清；t^1.6 让它在中段就化掉，只有近处那几段是实的。
+      ctx.fillStyle = `rgba(${rgb},${(a * t ** 1.6).toFixed(3)})`;
+      ctx.fillRect(snap(vx + (fx - vx) * t * t), y, Math.max(wide, t * wide * 2), 1);
+    }
+  }
+}

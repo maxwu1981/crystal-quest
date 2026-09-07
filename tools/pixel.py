@@ -198,6 +198,34 @@ def posterize_luma(px, levels=8):
     return px
 
 
+def palette_of(px, cut=8):
+    """图里用到的所有不透明颜色。"""
+    return sorted({(px[i], px[i + 1], px[i + 2]) for i in range(0, len(px), 4) if px[i + 3] > cut})
+
+
+def snap_to_palette(px, pal):
+    """把每个像素吸附到调色板里最近的一色（RGB 欧氏距离，带缓存）。
+
+    **为什么需要**：缩小用的是面积平均，会在原本干净的色块之间插出一堆过渡色——
+    实测 88 色的角色母版派生完变成 669 色，怪物 69 → 1383。结果是角色
+    **既不够像素也不够精细，卡在中间**：像素画的锐利没了，又没到插画的精度。
+    吸附回母版自己的调色板，等于「用原来那几十种颜色重画一遍」——
+    边缘重新利落，而一个新颜色都没引入（比明度量化干净，那个只压掉一成）。
+    """
+    cache = {}
+    for i in range(0, len(px), 4):
+        if px[i + 3] <= 8:
+            continue
+        k = (px[i], px[i + 1], px[i + 2])
+        v = cache.get(k)
+        if v is None:
+            r, g, b = k
+            v = min(pal, key=lambda c: (c[0] - r) ** 2 + (c[1] - g) ** 2 + (c[2] - b) ** 2)
+            cache[k] = v
+        px[i], px[i + 1], px[i + 2] = v
+    return px
+
+
 def threshold_alpha(px, cut=128):
     for i in range(3, len(px), 4): px[i] = 255 if px[i] >= cut else 0
     return px

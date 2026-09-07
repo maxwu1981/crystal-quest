@@ -13,11 +13,17 @@
 // 美术精度是 ART 倍，于是背景反而比敌人糙一档；PX（一个物理像素有多宽）就是补这一档的。
 import { snap } from '../core/draw.js';
 import { K, LIGHT, SHAFT, M, PX, camOf, layer, grad, halo, band, fillAll, ridge,
-  RIDGE_FAR, RIDGE_NEAR, RIDGE_TAIWU, vignette } from './backdropKit.js';
+  RIDGE_FAR, RIDGE_NEAR, RIDGE_TAIWU, vignette, perspRows, converge } from './backdropKit.js';
 import { backdrops } from '../assets/art.js';
 import { PANEL_Y } from './hudBits.js';
 
-export const HZ = { plains: 100, cave: 112, deep: 120, shrine: 104 }; // 各背景的地平线（地面起始 y）
+// 各背景的地平线（地面起始 y）。**抬得很高是故意的**：
+// 战斗单位站在 y=44..132（队伍 44/70/96/122、敌人 62/82/114/132），
+// 地平线原本在 100，于是上面那半的人**浮在天上**——背景是柔和渐变时看不出来，
+// 换成画好的天空之后一眼就是错的。
+// 参考歧路旅人：它把镜头压低，让玩家「看进」场景而不是「看到」场景上，
+// 于是地面占了四分之三画幅，站在画面上方的角色不是浮着，是**站得更远**。
+export const HZ = { plains: 36, cave: 40, deep: 44, shrine: 38 };
 
 // 有正式美术就用整幅画替掉「天空 + 远景」这两层，中景近景照旧程序化。
 //
@@ -36,16 +42,22 @@ export const HZ = { plains: 100, cave: 112, deep: 120, shrine: 104 }; // 各背�
 // 第一版是让整幅铺满战场再裁上面 62%——那样母版自带的一条地面会露出来，
 // 跟程序化的地面接出一道硬边，正是「两种地面打架」。让画根本不带地面才是对的。
 // 没有美术就返回 false，调用方照旧走程序化那两层——PNG 少一张不该让背景消失。
+const PLATE_H = 120;      // 母版画的天空有多高（逻辑像素）；母版是它的 2 倍 512×240
 function plate(ctx, W, kind, cam, hz) {
   const im = backdrops[kind];
   if (!im) return false;
   layer(ctx, cam, K.sky, () => {
-    // **这一层开插值，全局是关的。** 母版 512×240 要放大约 3 倍才铺满战场，
+    // **只取画的下缘那一段，不要整幅挤进去。** 母版画的是 120 逻辑像素高的天空，
+    // 而地平线抬到 36 之后只剩 36 像素可用——整幅压进去等于把山和云全糊成几条线。
+    // 取靠近地平线的那 hz/PLATE_H 一段按原比例画，山就还是山。
+    // **这一层开插值，全局是关的。** 要放大约 3 倍才铺满战场，
     // 用最近邻会同时吃到两头的坏处：画本身是连续调（不是像素画），放大后
     // 既有绘画的糊、又有最近邻的方块边。开插值之后它就是一幅**高分辨率的背景**，
     // 前面站着低分辨率的角色——这正是 HD-2D 的核心对比（见 docs/HD2D方案.md）。
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(im, -M, -M, W + M * 2, hz + M);
+    const keep = Math.min(1, (hz + M) / PLATE_H);          // 用得上画的下缘几成
+    ctx.drawImage(im, 0, im.height * (1 - keep), im.width, im.height * keep,
+                  -M, -M, W + M * 2, hz + M);
     ctx.imageSmoothingEnabled = false;          // 还回去，后面几层还是像素画
   });
   return true;
@@ -98,16 +110,18 @@ function drawPlains(ctx, W, bg, t, cam) {
     }
   });
   layer(ctx, cam, K.near, () => {
-    // 水田三段：越近的一段越大块。田埂用「亮顶 + 暗面」两档分隔 ——
-    // 一条纯亮线是贴上去的，加一道暗面它才是一道**埂**
-    const bands = [[hz, '#5d7c3e'], [hz + 13, '#526f38'], [hz + 29, '#45632d']];
-    bands.forEach(([y, c], i) => band(ctx, W, y, (bands[i + 1]?.[0] ?? PANEL_Y + M) - y, c));
-    for (let i = 0; i < 3; i++) band(ctx, W, hz + 3 + i * 3, 1, 'rgba(214,220,182,0.18)'); // 最远那段还灌着水
+    // 水田：按透视分段，**越近的一段越大块**（perspRows 的 t^2）。
+    // 田埂用「亮顶 + 暗面」两档分隔——一条纯亮线是贴上去的，加一道暗面它才是一道**埂**。
+    const rows = perspRows(hz, PANEL_Y + M, 5);
+    const cols = ['#5f7e40', '#587739', '#516e34', '#496630', '#425c2a'];
+    for (let i = 0; i < rows.length - 1; i++) band(ctx, W, rows[i], rows[i + 1] - rows[i], cols[i]);
+    for (let i = 0; i < 3; i++) band(ctx, W, hz + 1 + i, 1, 'rgba(214,220,182,0.18)'); // 最远那段还灌着水
     ctx.fillStyle = 'rgba(255,226,168,0.32)';   // 日头正下方那一段反得最亮：水面认得出光源，这块地才算被同一盏灯照着
     for (let i = 0; i < 5; i++) ctx.fillRect(lx - 7 + (i % 2) * 3, hz + 2 + i * 2, 12 - i, 1);
-    for (const [y] of bands) { band(ctx, W, y, 1, '#948f5c'); band(ctx, W, y + 1, 1, 'rgba(34,52,24,0.42)'); }
-    ctx.fillStyle = 'rgba(36,60,26,0.5)';       // 畦沟：远景全是横线，近景补一组竖线，两种方向一对比才有「这块地在往前铺」
-    for (let i = 0; i < 11; i++) ctx.fillRect(-M + i * 26, hz + 30, 1, PANEL_Y - hz - 30 + M);
+    for (const y of rows.slice(1, -1)) { band(ctx, W, y, 1, '#948f5c'); band(ctx, W, y + 1, 1, 'rgba(34,52,24,0.42)'); }
+    // 畦沟朝灭点收拢：远景全是横线，一组**收拢**的竖线一加，这块地才真的在往前铺。
+    // 灭点取光源那个 x——光从哪来、地往哪退，说的是同一个空间。
+    converge(ctx, hz, PANEL_Y + M, lx, 26, 13, '36,60,26', 0.42);
     ctx.fillStyle = 'rgba(30,54,22,0.55)';
     for (const c of bg.crops) ctx.fillRect(c.x, c.y, 1, 2);   // 秧苗
     // 土沟：画面最下沿那道排水沟。沟口一条受光的亮边、沟里几乎全黑 ——
@@ -125,7 +139,7 @@ function drawPlains(ctx, W, bg, t, cam) {
 // 光：顶上一道裂缝漏下来的天光。外圈离地表还近才有这道光，再往里的「深处」一点自然光都没有 ——
 // 两层的差别不只是更暗，是光**换了来源**。
 function drawCave(ctx, W, bg, t, cam) {
-  const hz = HZ.cave;
+  const hz = HZ.cave, lx = SHAFT;
   const painted = plate(ctx, W, 'cave', cam, hz);   // 有正式美术就跳过下面的天空与远景
   if (!painted) layer(ctx, cam, K.sky, () => {
     // 岩壁：洞顶没光所以最黑，越靠地面越亮 —— 亮的是积水反上来的那点光。
@@ -169,6 +183,11 @@ function drawCave(ctx, W, bg, t, cam) {
     // 近处地面：湿石头。比岩壁亮一点，敌人脚下才有一条清楚的地平线
     ctx.fillStyle = grad(ctx, hz, PANEL_Y, '#3a3b3e', '#232426'); ctx.fillRect(-M, hz, W + M * 2, PANEL_Y - hz + M);
     band(ctx, W, hz, 2, 'rgba(0,0,0,0.35)');   // 岸边的暗线
+    // 湿石地的层理：跟着透视走，越近越疏。渐变一色到底的话，
+    // 地平线抬高之后那块地占了四分之三画幅，读起来是一张纸而不是一块地
+    ctx.fillStyle = 'rgba(0,0,0,0.16)';
+    for (const y of perspRows(hz, PANEL_Y + M, 5).slice(1, -1)) ctx.fillRect(-M, y, W + M * 2, 1);
+    converge(ctx, hz, PANEL_Y + M, lx, 32, 7, '150,170,180', 0.09);
     // 天光落地的那一摊亮：光有来处也得有去处，不然那束光是浮在半空的
     halo(ctx, 176, hz + 14, 48, [[0, 'rgba(190,216,226,0.14)'], [0.5, 'rgba(150,186,206,0.05)'], [1, 'rgba(140,180,200,0)']]);
     ctx.fillStyle = '#4a4d51';
@@ -240,8 +259,11 @@ function drawDeep(ctx, W, bg, t, cam) {
     ctx.fillStyle = grad(ctx, hz, PANEL_Y, '#232425', '#111112'); ctx.fillRect(-M, hz, W + M * 2, PANEL_Y - hz + M);
     band(ctx, W, hz, 1, 'rgba(120,200,186,0.07)');
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    for (let i = 1; i < 4; i++) ctx.fillRect(-M, hz + i * 9, W + M * 2, 1);
-    for (let i = 0; i < 9; i++) ctx.fillRect(i * 30 + (i % 2) * 12, hz + 1, 1, PANEL_Y - hz);
+    // 岩床的裂缝。原本是「每 9px 一条横线 + 9 条等距竖线」——那是照地平线在 120、
+    // 地面只有 32px 高调的；抬到 44 之后整块地铺满等距线，读作**网格**而不是岩石。
+    // 改成跟地面一起走透视：横缝按 perspRows（越近越疏），竖缝朝灭点收拢并淡出。
+    for (const y of perspRows(hz, PANEL_Y + M, 5).slice(1, -1)) ctx.fillRect(-M, y, W + M * 2, 1);
+    converge(ctx, hz, PANEL_Y + M, lx, 34, 7, '120,200,186', 0.10);
     // 地面积水的反光：每颗磷光石在湿石板上拖一道竖直的倒影，亮度跟本体一起呼吸，
     // 横向的碎光 7 秒一个来回。地面认得出光源，这层的光才是同一盏
     for (const s of bg.glow) {
@@ -274,6 +296,11 @@ function drawDeep(ctx, W, bg, t, cam) {
 // 夜空与月 → 稜线与后排立石 → 地面、月光与长影 → 前排立石 → 火塘。
 function drawShrine(ctx, W, bg, t, cam) {
   const hz = HZ.shrine, MX = LIGHT.shrine, MY = 24;
+  // 立石的**底座**：站在斜面上靠后一点的位置，不是站在地平线上。
+  // 原本写死在 hz（那时地平线在 104、地面只剩 48px，两者差不多）；
+  // 地平线抬到 38 之后再钉在 hz，石柱就整排飞到天上去了——而画里本来就有一圈立石。
+  // 这一排是**近处**那一圈：站在地面上，影子往前拖，玩家从中间打。
+  const SY = Math.round(hz + (PANEL_Y - hz) * 0.30);
   const painted = plate(ctx, W, 'shrine', cam, hz);   // 有正式美术就跳过下面的天空与远景
   if (!painted) layer(ctx, cam, K.sky, () => {
     fillAll(ctx, W, 0, hz, grad(ctx, 0, hz, '#06050f', '#100f24', '#251f3d'));
@@ -307,24 +334,29 @@ function drawShrine(ctx, W, bg, t, cam) {
   });
   layer(ctx, cam, K.near, () => {
     // 夯实的土地。上缘必须**刚好**落在地平线上（不能像 fillAll 那样往上溢，会啃掉远景稜线的下半截）
-    band(ctx, W, hz, PANEL_Y - hz + M, '#161425');
+    // 祭场的土面。原本一整块纯色——地平线抬高之后那块地占了四分之三画幅，
+    // 一色到底就是一张纸。按 perspRows 分段，越近越暗越大块，人才站得住
+    const rows = perspRows(hz, PANEL_Y + M, 4);
+    const cols = ['#1d1a30', '#191629', '#161425', '#12101f'];
+    for (let i = 0; i < rows.length - 1; i++) band(ctx, W, rows[i], rows[i + 1] - rows[i], cols[i]);
+    converge(ctx, hz, PANEL_Y + M, MX, 30, 9, '90,84,140', 0.16);
     halo(ctx, MX, hz + 8, 92, [[0, 'rgba(156,168,216,0.10)'], [0.55, 'rgba(140,150,200,0.035)'], [1, 'rgba(130,140,190,0)']]);
     // 月光在地上拉出的长影：石柱背着月的那一侧，影子往画面前方斜着铺开。
     // 一行一行画（不走路径），影子的边才是硬的 —— 和石柱本身同一种像素味。
     // 这是整张图里最像 FF6 的一笔：地上有影，「那些石头是立着的」这件事才成立
     ctx.fillStyle = 'rgba(4,3,12,0.42)';
     for (const m of bg.stones) {
-      const dir = m.x + m.w / 2 < MX ? -1 : 1, len = Math.min(PANEL_Y - hz, Math.round(m.h * 0.7) + 8);
+      const dir = m.x + m.w / 2 < MX ? -1 : 1, len = Math.min(PANEL_Y - SY, Math.round(m.h * 0.7) + 8);
       // 越往前（越靠画面下缘）离镜头越近，影子该**变宽**而不是收窄——收窄会读成一根钉子
-      for (let j = 0; j < len; j++) ctx.fillRect(snap(m.x + dir * j * 1.15), hz + j, m.w + (j >> 3), 1);
+      for (let j = 0; j < len; j++) ctx.fillRect(snap(m.x + dir * j * 1.15), SY + j, m.w + (j >> 3), 1);
     }
   });
   layer(ctx, cam, K.mid, () => {
     for (const m of bg.stones) {   // 立石：围成一圈的石柱。朝月亮那一侧留一条窄边光，其余全是剪影
-      ctx.fillStyle = '#191828'; ctx.fillRect(m.x, hz - m.h, m.w, m.h + 10);
+      ctx.fillStyle = '#191828'; ctx.fillRect(m.x, SY - m.h, m.w, m.h + 10);
       ctx.fillStyle = '#3d3a5c';
-      ctx.fillRect(m.x + m.w / 2 < MX ? m.x + m.w - PX * 3 : m.x, hz - m.h, PX * 3, m.h + 10);
-      ctx.fillStyle = '#2b2844'; ctx.fillRect(m.x, hz - m.h, m.w, 1);   // 顶面也吃得到月光
+      ctx.fillRect(m.x + m.w / 2 < MX ? m.x + m.w - PX * 3 : m.x, SY - m.h, PX * 3, m.h + 10);
+      ctx.fillStyle = '#2b2844'; ctx.fillRect(m.x, SY - m.h, m.w, 1);   // 顶面也吃得到月光
     }
   });
   layer(ctx, cam, K.near, () => {

@@ -98,6 +98,13 @@ def derive(name, art, dry=False, cur_art=None):
     # 母版已经抠好底、裁好框，这里只做等比缩小，不再走一遍抠底/描边
     out = pixel.downscale(w, h, px, (0, 0, w, h), tw, th)
     pixel.threshold_alpha(out)
+    # **缩完要吸附回母版的调色板。** 缩小是面积平均，会在原本干净的色块之间
+    # 插出一堆过渡色——实测 88 色的拳头师母版派生完变成 669 色，怪物 69 → 1383。
+    # 结果是角色**既不够像素也不够精细，卡在中间**。
+    # 吸附回母版自己那几十色，等于「用原来那些颜色重画一遍」：边缘重新利落，
+    # 而且一个新颜色都没引入。（先试过 posterize_luma，只压掉一成——
+    # 因为糊出来的是大量**相近但不同**的色，不是明暗层次，按明度分档抓不到。）
+    pixel.snap_to_palette(out, pixel.palette_of(px))
     if not dry:
         open(os.path.join(ART_DIR, name), 'wb').write(pixel.encode_png(tw, th, out))
     return f'{w}x{h} → {tw}x{th}'
