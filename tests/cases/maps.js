@@ -94,6 +94,24 @@ test('宝箱 id 唯一、内容合法；Boss/水晶事件合法；结局文本�
   }
   assert(ids.size >= 5, '宝箱太少'); assert(data.story.ending.lines.length > 5 && data.story.crystal.take.length);
 });
+// 传送的落点不能压在另一个传送格上——落地的那一刻会立刻再被传走，
+// 两张图之间来回弹，玩家按什么都出不来。可走性那条查不到这个：那一格是可走的。
+// 现有的每一对都是**错开一格**的（overworld(20,3) 下去落在 cave_1(1,17)，
+// 而回程的门在 cave_1(1,18)），新接的壇下与爐底也照这个来。
+test('传送的落点不能压在另一个传送格上，否则会来回弹出不来', () => {
+  const bad = [];
+  for (const [id, md] of Object.entries(data.maps)) {
+    for (const ev of md.events || []) {
+      if (ev.type !== 'warp') continue;
+      const tm = data.maps[ev.to.map];
+      if (!tm) continue;                       // 「目标存在」由另一条测试卡着
+      const onTop = (tm.events || []).some(e => e.type === 'warp' && e.x === ev.to.x && e.y === ev.to.y);
+      if (onTop) bad.push(`${id}(${ev.x},${ev.y}) → ${ev.to.map}(${ev.to.x},${ev.to.y})`);
+    }
+  }
+  assert(!bad.length, '这些传送落在另一个传送格上：\n    ' + bad.join('\n    '));
+});
+
 test('地图联通：从村子经楼梯能到最深处', () => {
   const seen = new Set(['village']), q = ['village'];
   while (q.length) { const id = q.pop(); for (const ev of data.maps[id].events || []) if (ev.type === 'warp' && !seen.has(ev.to.map)) { seen.add(ev.to.map); q.push(ev.to.map); } }

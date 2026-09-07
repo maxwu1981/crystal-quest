@@ -1,270 +1,281 @@
 {
- "name": "六堆平原",
- "encounterZone": "plains",
- "spawn": {
-  "x": 20,
-  "y": 28
- },
- "legend": {
-  "g": {
-   "tile": "grass",
-   "encounter": true
+  "name": "六堆平原",
+  "encounterZone": "plains",
+  "spawn": {
+    "x": 20,
+    "y": 28
   },
-  ",": {
-   "tile": "grass"
-  },
-  "p": {
-   "tile": "path",
-   "encounter": true
-  },
-  "b": {
-   "tile": "bridge"
-  },
-  "T": {
-   "tile": "tree",
-   "solid": true
-  },
-  "F": {
-   "tile": "forest",
-   "encounter": true
-  },
-  "M": {
-   "tile": "mountain",
-   "solid": true
-  },
-  "w": {
-   "tile": "water",
-   "solid": true
-  },
-  "S": {
-   "tile": "sand",
-   "encounter": true
-  },
-  "V": {
-   "tile": "town"
-  },
-  "E": {
-   "tile": "cave_entrance"
-  }
- },
- "rows": [
-  "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
-  "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
-  "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
-  "TMMgMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
-  "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
-  "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
-  "TgEMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
-  "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
-  "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
-  "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
-  "TggggTgFFFFFFFggggggpggggFFFFFFFFFFFgggT",
-  "TgggggggggFgggggggggpTggggFFFFFFFFFggggT",
-  "TggggggTggggggggggggpggggggFFFFFFFgggTgT",
-  "TSSSSSSSSSSSSSSSSSSSpSSSSSSSSSFSSSSSSSST",
-  "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
-  "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
-  "TSSSSSSSSSSSpppppppppSSSSSSSSSSSSSSSSSST",
-  "TgggggggFgTgpggggggggggggggggggggTTggggT",
-  "TggggFFFFFFFpgggggggggTggggggggggggggggT",
-  "TgggFFFFFFFFpggggggggggggggTggggSSSggggT",
-  "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
-  "TgggFEFFFFFFpggggggggggggggggSSwwwwwSSgT",
-  "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
-  "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
-  "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
-  "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
-  "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
-  "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
-  "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
-  "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
-  "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
-  "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
- ],
- "events": [
-  {
-   "x": 20,
-   "y": 29,
-   "type": "warp",
-   "to": {
-    "map": "village",
-    "x": 15,
-    "y": 1,
-    "facing": "down"
-   }
-  },
-  {
-   "x": 20,
-   "y": 3,
-   "type": "warp",
-   "to": {
-    "map": "cave_1",
-    "x": 1,
-    "y": 17,
-    "facing": "right"
-   }
-  },
-  {
-   "x": 2,
-   "y": 6,
-   "type": "warp",
-   "to": {
-    "map": "fort_ailiao",
-    "x": 13,
-    "y": 25,
-    "facing": "up"
-   }
-  },
-  {
-   "x": 5,
-   "y": 21,
-   "type": "warp",
-   "to": {
-    "map": "tomb_wanjin",
-    "x": 10,
-    "y": 29,
-    "facing": "up"
-   }
-  },
-  {
-   "id": "ow_gungnir",
-   "x": 1,
-   "y": 6,
-   "item": "gungnir",
-   "text": [
-    "山脚下有座塌掉的隘寮，石墙只剩半人高。",
-    "墙角斜插着一根枪，锈得看不出原样，枪尖却还是亮的。",
-    "寮门的木牌上刻着一个名字。不是汉字。"
-   ],
-   "type": "chest"
-  },
-  {
-   "id": "ow_jade",
-   "x": 5,
-   "y": 20,
-   "item": "jade_armor",
-   "text": [
-    "林子深处有一座无主的坟，坟前的石头被人扶正过。",
-    "不知道是谁扶的——这一带早就没人来了。",
-    "坟边的土松开一角，露出的衣料是玉片串的，一片也没锈。"
-   ],
-   "type": "chest"
-  },
-  {
-   "id": "ow_ouroboros",
-   "x": 1,
-   "y": 30,
-   "item": "ouroboros",
-   "text": [
-    "老田岸边有个废掉的圳口，石缝里卡着东西。",
-    "是个环。蛇头咬着自己的尾巴。",
-    "这条圳三百年没过水了，环却还是湿的。"
-   ],
-   "type": "chest"
-  },
-  {
-   "id": "ow_sandals",
-   "x": 37,
-   "y": 21,
-   "item": "winged_sandals",
-   "text": [
-    "湖边的沙上有一串脚印，走到水里就断了。",
-    "沙滩尽头搁着一双鞋，鞋跟上各生一片小翅膀。",
-    "沙是干的。鞋底沾的泥，不是这里的土。"
-   ],
-   "type": "chest"
-  },
-  {
-   "id": "ow_sampo",
-   "x": 38,
-   "y": 30,
-   "item": "sampo",
-   "text": [
-    "荒埔上立着一座石磨，磨盘比人还大，没有牲口拉得动。",
-    "磨眼里塞着一个小的，铜铸的，自己还在转。",
-    "磨出来的不是米，是细得像雾的金沙。"
-   ],
-   "type": "chest"
-  },
-  {
-   "id": "ow_nemean_hide",
-   "type": "chest",
-   "x": 36,
-   "y": 9,
-   "item": "nemean_hide",
-   "text": [
-    "山边的石头下压着一张兽皮，刀划过的痕迹全在皮的外面，一道也没进去。",
-    "皮底下压着一张纸，字被水泡烂了，只认得出一个「渡」字。"
-   ]
-  }
- ],
- "npcs": [
-  {
-   "id": "traveler",
-   "name": "赶路人",
-   "sprite": "man",
-   "x": 19,
-   "y": 24,
-   "dir": "down",
-   "dialogue": [
-    {
-     "if": "gameCleared",
-     "lines": [
-      "平原上安静多了。虎头蜂还是要小心。"
-     ]
+  "legend": {
+    "g": {
+      "tile": "grass",
+      "encounter": true
     },
-    {
-     "lines": [
-      "过了这条圳沟往北，就是罗经圈。",
-      "路会绕，你们跟着水声走就不会错。",
-      "还有——遇到虎头蜂就跑，不要打。"
-     ]
+    ",": {
+      "tile": "grass"
+    },
+    "p": {
+      "tile": "path",
+      "encounter": true
+    },
+    "b": {
+      "tile": "bridge"
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    },
+    "F": {
+      "tile": "forest",
+      "encounter": true
+    },
+    "M": {
+      "tile": "mountain",
+      "solid": true
+    },
+    "w": {
+      "tile": "water",
+      "solid": true
+    },
+    "S": {
+      "tile": "sand",
+      "encounter": true
+    },
+    "V": {
+      "tile": "town"
+    },
+    "E": {
+      "tile": "cave_entrance"
     }
-   ]
   },
-  {
-   "id": "waiting_mother",
-   "name": "等在洞口的阿婶",
-   "sprite": "woman",
-   "x": 19,
-   "y": 4,
-   "dir": "right",
-   "dialogue": [
+  "rows": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
+    "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
+    "TMMEMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
+    "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
+    "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
+    "TgEMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
+    "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
+    "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
+    "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
+    "TggggTgFFFFFFFggggggpggggFFFFFFFFFFFgggT",
+    "TgggggggggFgggggggggpTggggFFFFFFFFFggggT",
+    "TggggggTggggggggggggpggggggFFFFFFFgggTgT",
+    "TSSSSSSSSSSSSSSSSSSSpSSSSSSSSSFSSSSSSSST",
+    "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
+    "TwwwwwwwwwwwwwwwwwwwbwwwwwwwwwwwwwwwwwwT",
+    "TSSSSSSSSSSSpppppppppSSSSSSSSSSSSSSSSSST",
+    "TgggggggFgTgpggggggggggggggggggggTTggggT",
+    "TggggFFFFFFFpgggggggggTggggggggggggggggT",
+    "TgggFFFFFFFFpggggggggggggggTggggSSSggggT",
+    "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
+    "TgggFEFFFFFFpggggggggggggggggSSwwwwwSSgT",
+    "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
+    "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
+    "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
+    "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
+    "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
+    "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
+    "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
+    "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
+    "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  ],
+  "events": [
     {
-     "if": "gameCleared",
-     "lines": [
-      "转来的人𠊎一个一个去看过了。没有他。",
-      "杂货铺那本册子上，他的名还没画勾。",
-      "𠊎还是日日来这里坐。有一日他会自己行出来。"
-     ]
+      "x": 20,
+      "y": 29,
+      "type": "warp",
+      "to": {
+        "map": "village",
+        "x": 15,
+        "y": 1,
+        "facing": "down"
+      }
     },
     {
-     "unless": "gotPack",
-     "set": [
-      "gotPack"
-     ],
-     "give": {
-      "items": [
-       {
-        "id": "potion",
-        "qty": 2
-       }
+      "x": 20,
+      "y": 3,
+      "type": "warp",
+      "to": {
+        "map": "cave_1",
+        "x": 1,
+        "y": 17,
+        "facing": "right"
+      }
+    },
+    {
+      "x": 2,
+      "y": 6,
+      "type": "warp",
+      "to": {
+        "map": "fort_ailiao",
+        "x": 13,
+        "y": 25,
+        "facing": "up"
+      }
+    },
+    {
+      "x": 5,
+      "y": 21,
+      "type": "warp",
+      "to": {
+        "map": "tomb_wanjin",
+        "x": 10,
+        "y": 29,
+        "facing": "up"
+      }
+    },
+    {
+      "id": "ow_gungnir",
+      "x": 1,
+      "y": 6,
+      "item": "gungnir",
+      "text": [
+        "山脚下有座塌掉的隘寮，石墙只剩半人高。",
+        "墙角斜插着一根枪，锈得看不出原样，枪尖却还是亮的。",
+        "寮门的木牌上刻着一个名字。不是汉字。"
+      ],
+      "type": "chest"
+    },
+    {
+      "id": "ow_jade",
+      "x": 5,
+      "y": 20,
+      "item": "jade_armor",
+      "text": [
+        "林子深处有一座无主的坟，坟前的石头被人扶正过。",
+        "不知道是谁扶的——这一带早就没人来了。",
+        "坟边的土松开一角，露出的衣料是玉片串的，一片也没锈。"
+      ],
+      "type": "chest"
+    },
+    {
+      "id": "ow_ouroboros",
+      "x": 1,
+      "y": 30,
+      "item": "ouroboros",
+      "text": [
+        "老田岸边有个废掉的圳口，石缝里卡着东西。",
+        "是个环。蛇头咬着自己的尾巴。",
+        "这条圳三百年没过水了，环却还是湿的。"
+      ],
+      "type": "chest"
+    },
+    {
+      "id": "ow_sandals",
+      "x": 37,
+      "y": 21,
+      "item": "winged_sandals",
+      "text": [
+        "湖边的沙上有一串脚印，走到水里就断了。",
+        "沙滩尽头搁着一双鞋，鞋跟上各生一片小翅膀。",
+        "沙是干的。鞋底沾的泥，不是这里的土。"
+      ],
+      "type": "chest"
+    },
+    {
+      "id": "ow_sampo",
+      "x": 38,
+      "y": 30,
+      "item": "sampo",
+      "text": [
+        "荒埔上立着一座石磨，磨盘比人还大，没有牲口拉得动。",
+        "磨眼里塞着一个小的，铜铸的，自己还在转。",
+        "磨出来的不是米，是细得像雾的金沙。"
+      ],
+      "type": "chest"
+    },
+    {
+      "id": "ow_nemean_hide",
+      "type": "chest",
+      "x": 36,
+      "y": 9,
+      "item": "nemean_hide",
+      "text": [
+        "山边的石头下压着一张兽皮，刀划过的痕迹全在皮的外面，一道也没进去。",
+        "皮底下压着一张纸，字被水泡烂了，只认得出一个「渡」字。"
       ]
-     },
-     "lines": [
-      "你们也要入去？𠊎在这里等人。",
-      "𠊎个后生上个月入去，讲三日就转来。今日第二十九日。",
-      "他身上带一把钢剑，师傅新打的。看到剑，就是看到他。",
-      "这包药𠊎本来是留给他的。你们带上去，路上用得着。"
-     ]
     },
     {
-     "lines": [
-      "天暗以前出来。听到人叫，莫回头。",
-      "𠊎在这里等。风大，𠊎坐得住。"
-     ]
+      "x": 3,
+      "y": 3,
+      "type": "warp",
+      "to": {
+        "map": "furnace_1",
+        "x": 2,
+        "y": 12,
+        "facing": "right"
+      }
     }
-   ]
-  }
- ]
+  ],
+  "npcs": [
+    {
+      "id": "traveler",
+      "name": "赶路人",
+      "sprite": "man",
+      "x": 19,
+      "y": 24,
+      "dir": "down",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "平原上安静多了。虎头蜂还是要小心。"
+          ]
+        },
+        {
+          "lines": [
+            "过了这条圳沟往北，就是罗经圈。",
+            "路会绕，你们跟着水声走就不会错。",
+            "还有——遇到虎头蜂就跑，不要打。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "waiting_mother",
+      "name": "等在洞口的阿婶",
+      "sprite": "woman",
+      "x": 19,
+      "y": 4,
+      "dir": "right",
+      "dialogue": [
+        {
+          "if": "gameCleared",
+          "lines": [
+            "转来的人𠊎一个一个去看过了。没有他。",
+            "杂货铺那本册子上，他的名还没画勾。",
+            "𠊎还是日日来这里坐。有一日他会自己行出来。"
+          ]
+        },
+        {
+          "unless": "gotPack",
+          "set": [
+            "gotPack"
+          ],
+          "give": {
+            "items": [
+              {
+                "id": "potion",
+                "qty": 2
+              }
+            ]
+          },
+          "lines": [
+            "你们也要入去？𠊎在这里等人。",
+            "𠊎个后生上个月入去，讲三日就转来。今日第二十九日。",
+            "他身上带一把钢剑，师傅新打的。看到剑，就是看到他。",
+            "这包药𠊎本来是留给他的。你们带上去，路上用得着。"
+          ]
+        },
+        {
+          "lines": [
+            "天暗以前出来。听到人叫，莫回头。",
+            "𠊎在这里等。风大，𠊎坐得住。"
+          ]
+        }
+      ]
+    }
+  ]
 }

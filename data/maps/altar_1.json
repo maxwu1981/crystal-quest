@@ -1,179 +1,179 @@
 {
- "name": "壇下 · 頭層",
- "encounterZone": "altar",
- "spawn": {
-  "x": 10,
-  "y": 29
- },
- "legend": {
-  "#": {
-   "tile": "cave_wall",
-   "solid": true
-  },
-  ".": {
-   "tile": "cave_floor",
-   "encounter": true
-  },
-  "<": {
-   "tile": "stairs_up"
-  },
-  ">": {
-   "tile": "stairs_down"
-  },
-  "A": {
-   "tile": "altar",
-   "solid": true
-  },
-  "D": {
-   "tile": "arch_door"
-  },
-  "R": {
-   "tile": "seal_stone",
-   "solid": true
-  },
-  "W": {
-   "tile": "stone_wall",
-   "solid": true
-  },
-  "X": {
-   "tile": "ore_vein",
-   "solid": true
-  },
-  "o": {
-   "tile": "flagstone",
-   "encounter": true
-  }
- },
- "rows": [
-  "#####################",
-  "#####################",
-  "######WWWW>WWWW######",
-  "######ooXoooXoo######",
-  "######WoooooooW######",
-  "######WoooAoooW######",
-  "######WoooAoooW######",
-  "######ooXoooXoo######",
-  "###....WWWDWWWW######",
-  "###..####WoW#########",
-  "###.#####WoW#########",
-  "###.#####WoW#########",
-  "##..#####WRW#########",
-  "##..#####WoW#########",
-  "##..#####WoW#########",
-  "##..#####WoW#########",
-  "##.######WoW#########",
-  "#W.WWW#WWWDWWW#WWWWW#",
-  "#WoooWWWoooooWWWoooW#",
-  "#WoooDoDoooooDoDoooW#",
-  "#WoooWWWoooooWWWoooW#",
-  "#WWWWW#WoooooW#WWWWW#",
-  "#######WWWDWWW#######",
-  "#########WoW#########",
-  "#########WoW#########",
-  "#########ooo#########",
-  "#########WoW#########",
-  "#########WoW#########",
-  "#########WoW#########",
-  "#########WoW#########",
-  "#########W<W#########"
- ],
- "events": [
-  {
-   "x": 10,
-   "y": 2,
-   "type": "warp",
-   "to": {
-    "map": "altar_2",
+  "name": "壇下 · 頭層",
+  "encounterZone": "altar",
+  "spawn": {
     "x": 10,
-    "y": 29,
-    "facing": "down"
-   }
+    "y": 29
   },
-  {
-   "x": 10,
-   "y": 30,
-   "type": "warp",
-   "to": {
-    "map": "bogong",
-    "x": 6,
-    "y": 1,
-    "facing": "down"
-   }
+  "legend": {
+    "#": {
+      "tile": "cave_wall",
+      "solid": true
+    },
+    ".": {
+      "tile": "cave_floor",
+      "encounter": true
+    },
+    "<": {
+      "tile": "stairs_up"
+    },
+    ">": {
+      "tile": "stairs_down"
+    },
+    "A": {
+      "tile": "altar",
+      "solid": true
+    },
+    "D": {
+      "tile": "arch_door"
+    },
+    "R": {
+      "tile": "seal_stone",
+      "solid": true
+    },
+    "W": {
+      "tile": "stone_wall",
+      "solid": true
+    },
+    "X": {
+      "tile": "ore_vein",
+      "solid": true
+    },
+    "o": {
+      "tile": "flagstone",
+      "encounter": true
+    }
   },
-  {
-   "x": 18,
-   "y": 20,
-   "type": "chest",
-   "id": "altar_1_1",
-   "item": "antidote",
-   "qty": 3,
-   "text": [
-    "耳室是给活人放东西的，不是给死人用的。",
-    "东西还在，放东西的人不在。"
-   ]
-  },
-  {
-   "x": 3,
-   "y": 14,
-   "type": "chest",
-   "id": "altar_1_2",
-   "item": "hiether",
-   "qty": 2,
-   "text": [
-    "洞是从外面掏进来的，边上还留着凿子的斜口。",
-    "掏洞的人东西丢了一地，没带走。"
-   ]
-  },
-  {
-   "x": 3,
-   "y": 8,
-   "type": "chest",
-   "id": "altar_1_3",
-   "gold": 260,
-   "text": [
-    "石缝里卡着东西，不知道卡了多久。"
-   ]
-  },
-  {
-   "x": 6,
-   "y": 3,
-   "type": "chest",
-   "id": "altar_1_4",
-   "item": "phoenix",
-   "qty": 2,
-   "text": [
-    "壁龛里的陶俑面朝墙站着，一排十二个。",
-    "摆的人知道它们该朝哪边——朝里，不朝外。"
-   ]
-  },
-  {
-   "x": 14,
-   "y": 3,
-   "type": "chest",
-   "id": "altar_1_5",
-   "item": "guard_band",
-   "qty": 1
-  },
-  {
-   "x": 14,
-   "y": 7,
-   "type": "chest",
-   "id": "altar_1_6",
-   "gold": 380
+  "rows": [
+    "#####################",
+    "#####################",
+    "######WWWW>WWWW######",
+    "######ooXoooXoo######",
+    "######WoooooooW######",
+    "######WoooAoooW######",
+    "######WoooAoooW######",
+    "######ooXoooXoo######",
+    "###....WWWDWWWW######",
+    "###..####WoW#########",
+    "###.#####WoW#########",
+    "###.#####WoW#########",
+    "##..#####WRW#########",
+    "##..#####WoW#########",
+    "##..#####WoW#########",
+    "##..#####WoW#########",
+    "##.######WoW#########",
+    "#W.WWW#WWWDWWW#WWWWW#",
+    "#WoooWWWoooooWWWoooW#",
+    "#WoooDoDoooooDoDoooW#",
+    "#WoooWWWoooooWWWoooW#",
+    "#WWWWW#WoooooW#WWWWW#",
+    "#######WWWDWWW#######",
+    "#########WoW#########",
+    "#########WoW#########",
+    "#########ooo#########",
+    "#########WoW#########",
+    "#########WoW#########",
+    "#########WoW#########",
+    "#########WoW#########",
+    "#########W<W#########"
+  ],
+  "events": [
+    {
+      "x": 10,
+      "y": 2,
+      "type": "warp",
+      "to": {
+        "map": "altar_2",
+        "x": 10,
+        "y": 29,
+        "facing": "down"
+      }
+    },
+    {
+      "x": 10,
+      "y": 30,
+      "type": "warp",
+      "to": {
+        "map": "bogong",
+        "x": 6,
+        "y": 1,
+        "facing": "down"
+      }
+    },
+    {
+      "x": 18,
+      "y": 20,
+      "type": "chest",
+      "id": "altar_1_1",
+      "item": "antidote",
+      "qty": 3,
+      "text": [
+        "耳室是给活人放东西的，不是给死人用的。",
+        "东西还在，放东西的人不在。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "type": "chest",
+      "id": "altar_1_2",
+      "item": "hiether",
+      "qty": 2,
+      "text": [
+        "洞是从外面掏进来的，边上还留着凿子的斜口。",
+        "掏洞的人东西丢了一地，没带走。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 8,
+      "type": "chest",
+      "id": "altar_1_3",
+      "gold": 260,
+      "text": [
+        "石缝里卡着东西，不知道卡了多久。"
+      ]
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "type": "chest",
+      "id": "altar_1_4",
+      "item": "phoenix",
+      "qty": 2,
+      "text": [
+        "壁龛里的陶俑面朝墙站着，一排十二个。",
+        "摆的人知道它们该朝哪边——朝里，不朝外。"
+      ]
+    },
+    {
+      "x": 14,
+      "y": 3,
+      "type": "chest",
+      "id": "altar_1_5",
+      "item": "guard_band",
+      "qty": 1
+    },
+    {
+      "x": 14,
+      "y": 7,
+      "type": "chest",
+      "id": "altar_1_6",
+      "gold": 380
+    }
+  ],
+  "npcs": [],
+  "gen": {
+    "kind": "tomb",
+    "entry": [
+      10,
+      30
+    ],
+    "exit": [
+      10,
+      2
+    ],
+    "seed": 41,
+    "attempt": 0
   }
- ],
- "npcs": [],
- "gen": {
-  "kind": "tomb",
-  "entry": [
-   10,
-   30
-  ],
-  "exit": [
-   10,
-   2
-  ],
-  "seed": 41,
-  "attempt": 0
- }
 }

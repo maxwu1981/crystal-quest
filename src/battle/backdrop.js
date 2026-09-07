@@ -19,10 +19,19 @@ import { HZ, paintScene } from './backdropDraw.js';
 // 那条路没有正式美术、没有透视地面、地平线还停在 PANEL_Y-40，
 // 于是上半场的人整个浮在天上。而地图本身、遇敌表、测试全都正常，
 // 只有真的在那张图上打一场才看得出来。隘寮石城与万金古塚就这么漏了一整轮。
+// **新开一个遇敌区就要在这里登记**，漏了会静默退回通用背景：地平线停在旧位置、
+// 人浮在天上，而地图、遇敌表、测试全都正常（隘寮石城与万金古塚漏了一整轮）。
+// tests/cases/data.js 有一条专门卡这件事。
 const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_deep: 'deep',
-                  fort: 'cave', tomb: 'deep' };
+                  fort: 'cave', tomb: 'deep',
+                  // 壇下：伯公壇底下三层，越下越旧。头两层还是砌石的坛基，底层已经是生土
+                  altar: 'cave', altar_deep: 'deep',
+                  // 爐底：炉渣巷道，渣还没冷。采空区更深更黑
+                  furnace: 'cave', furnace_deep: 'deep' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
-                 fort_ailiao: 'cave', tomb_wanjin: 'deep' };
+                 fort_ailiao: 'cave', tomb_wanjin: 'deep',
+                 altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',
+                 furnace_1: 'cave', furnace_2: 'deep' };
 
 // 背景里的随机细节（星星、钟乳石、竹丛…）只能掷一次骰子：每帧重掷会变成一整片雪花。
 // 所以由 BattleScene 在 constructor 里调用本函数把结果存下来，render 只读不掷。

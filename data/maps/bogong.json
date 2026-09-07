@@ -20,11 +20,14 @@
       "tile": "counter",
       "solid": true,
       "counter": true
+    },
+    ">": {
+      "tile": "stairs_down"
     }
   },
   "rows": [
     "WWWWWWWWWW",
-    "WffffffffW",
+    "Wffff>fffW",
     "WfffCCfffW",
     "WffffffffW",
     "WffffffffW",
@@ -42,6 +45,17 @@
         "x": 11,
         "y": 13,
         "facing": "down"
+      }
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "type": "warp",
+      "to": {
+        "map": "altar_1",
+        "x": 10,
+        "y": 29,
+        "facing": "up"
       }
     }
   ],
