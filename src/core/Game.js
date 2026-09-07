@@ -12,6 +12,7 @@ import { loadArt } from '../assets/art.js';
 import { buildEquipLayers } from '../assets/equip.js';
 import { ART, LOGICAL_W, LOGICAL_H } from './draw.js';
 import { newGameState } from '../game/state.js';
+import { normalizeMember } from '../game/jobskill.js';
 import { FieldScene } from '../field/FieldScene.js';
 import { BattleScene } from '../battle/BattleScene.js';
 import { TitleScene } from '../title/TitleScene.js';
@@ -99,6 +100,8 @@ export class Game {
   newGame() { this.loadState(newGameState(this.data)); }
   loadState(state) {
     this.state = state;
+    // 读档的统一入口：旧存档在这里补齐 learned / jobLevels / skillLevels（loadGame 拿不到 data，这里拿得到）
+    for (const m of state.party || []) normalizeMember(m, this.data);
     audio.setMute(!!state.settings?.mute);
     this.scenes.clear();
     this.scenes.push(new FieldScene(this));

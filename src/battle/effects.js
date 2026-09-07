@@ -1,6 +1,7 @@
 // 战斗特效：纯渲染，不碰战斗逻辑。effects.add('fire', x, y) 即可。
 import { snap } from '../core/draw.js';
 import { SPELL_FX } from './spellFx.js';
+import { SUMMON_FX } from './summonFx.js';
 
 export class Effects {
   constructor(rng) { this.rng = rng; this.list = []; this.shakeT = 0; }
@@ -27,6 +28,13 @@ const FX = {
   // 属性魔法的演出在 spellFx.js（多段式、带全屏染色，1.2 秒左右）。
   // 这里保留的是「打击反馈」那一类：挥砍、命中、受击，每个 0.3 秒内说完一件事。
   ...SPELL_FX,
+  // 八位召唤的演出（summonFx.js + summonFxAlly.js，1.7–2.1 秒）。形状和 SPELL_FX 一致，
+  // 所以直接展开就能用 `fx.add('zhongkui', x, y)` 放。
+  // **这一行是「請神」看得见东西的前提**：effects.add 里是 `if (!make) return null`，
+  // 没登记的键会被**静默吞掉**——不报错、测试也照过，只是画面上什么都不发生
+  // （和这个档下面记的 spellFx 那次同一类坑）。
+  // 键名不与 SPELL_FX 相撞（八位都是神名），lint_modules.py 的 C 项会盯着这件事。
+  ...SUMMON_FX,
   // 命中的一瞬：一道月牙形冲击张开来，外加几点迸散的火星。
   // 原本是三条平行斜直线，读起来像划痕不像打击。
   slash: (x, y, rng, o = {}) => {

@@ -5,7 +5,10 @@ import { computeStats, grantExp } from '../src/game/party.js';
 import { loadData } from '../src/data/loader.js';
 import { parseMap } from '../src/field/FieldScene.js';
 import { addItem, removeItem, countItem, applyItem, equip, canEquip, canUseOn, campParty } from '../src/game/items.js';
-import { newGameState } from '../src/game/state.js';
+import { newGameState, loadGame, saveGame, SAVE_KEY } from '../src/game/state.js';
+import { memberSpells, jobLevel, grantJobExp, availableSummons, useSkill, skillScale,
+  normalizeMember, skillLevelOf, summonUnlockLevel, summonOrder, jpForJobLevel, levelForUses,
+  SKILL_MAX, SKILL_USES, SKILL_POWER, JP_PER_LEVEL, JP_PER_BATTLE, JP_ACT_BONUS } from '../src/game/jobskill.js';
 import { wrapText } from '../src/core/text.js';
 import { pickVariant, applyVariant } from '../src/field/npc.js';
 import { buyItem, sellItem } from '../src/game/shop.js';
@@ -125,7 +128,7 @@ test('升级：等级+1，maxHp 增加，HP 同步增加', () => {
   assert(computeStats(m, data).maxHp > before.maxHp); assert(m.hp === 10 + gains[0].hpUp);
 });
 test('职业引用的魔法与指令都存在', () => {
-  const cmds = new Set(['attack', 'magic', 'defend', 'item', 'flee']);
+  const cmds = new Set(['attack', 'magic', 'summon', 'defend', 'item', 'flee']);
   for (const [id, j] of Object.entries(data.jobs)) {
     for (const s of j.spells) { const sid = typeof s === 'string' ? s : s.id; assert(data.spells[sid], `${id} 引用了不存在的魔法 ${sid}`); if (typeof s !== 'string') assert(s.level >= 1, `${id}/${sid} level`); }
     for (const c of j.commands) assert(cmds.has(c), `${id} 未知指令 ${c}`);
@@ -184,9 +187,17 @@ test('道具数据完整；初始装备/背包引用存在且职业可装', () =
     if (it.jobs) for (const j of it.jobs) assert(data.jobs[j], `${id} 职业 ${j}`);
   }
 });
-test('存档往返：状态可 JSON 序列化且不丢字段', () => {
-  const s = newGameState(data), back = JSON.parse(JSON.stringify(s));
+test('存档往返：状态可 JSON 序列化且不丢字段（含职业/技能等级三件套）', () => {
+  const s = newGameState(data), talisman = s.party.find(m => m.jobId === 'talisman');
+  // 先在档上留下三种新数据：练过的技能、转过的职业、学过的魔法
+  useSkill(talisman, 'fire'); useSkill(talisman, 'fire'); useSkill(talisman, 'fire'); useSkill(talisman, 'fire');
+  grantJobExp(talisman, JP_PER_LEVEL * 3, data);
+  const back = JSON.parse(JSON.stringify(s));
   assert(JSON.stringify(back) === JSON.stringify(s)); assert(back.party[0].equipment.weapon === 'bronze_sword' && back.party[0].equipment.accessory === null); assert(back.inventory.length === 3);
+  const t2 = back.party.find(m => m.jobId === 'talisman');
+  assert(t2.learned.includes('fire') && t2.learned.includes('thunder'), `learned 没进存档：${JSON.stringify(t2.learned)}`);
+  assert(t2.jobLevels.talisman === 4 && t2.jobExp.talisman === JP_PER_LEVEL * 3, `jobLevels/jobExp 没进存档：${JSON.stringify(t2.jobLevels)}`);
+  assert(t2.skillLevels.fire === 2 && t2.skillUses.fire === 4, `skillLevels/skillUses 没进存档：${JSON.stringify(t2.skillLevels)}`);
 });
 
 test('地图事件与 NPC：传送目标存在且可走、NPC 站在可走格、对话/脚本格式正确', () => {
@@ -331,6 +342,144 @@ test('changeJob：卸下不能装的装备并堆回背包，HP 截断，预览�
   assert(strong > bare, `拿好武器(${strong}) 该强过空手(${bare})`);
   assert(computeStats({ ...monk, level: 8 }, d2).atk > bare, '武僧空手攻击应随等级成长');
 });
+// ── 职业等级 / 技能等级 / 承接（src/game/jobskill.js）──────────────────────
+const jsMember = (jobId, level = 1, extra = {}) =>
+  normalizeMember({ jobId, level, exp: 0, hp: 20, mp: 20, status: {}, equipment: {}, ...extra }, data);
+
+test('承接：转职之后旧职业的魔法还在，新职业的魔法加上来', () => {
+  const m = jsMember('talisman', 9);                     // 符仔仙 9 级：八条全会
+  const before = memberSpells(m, data);
+  assert(before.includes('fire') && before.includes('thundara'), `符仔仙 9 级该会 thundara：${before}`);
+  changeJob(m, 'herbwife', [], data);                    // 转青草婆
+  const after = memberSpells(m, data);
+  for (const id of before) assert(after.includes(id), `转职后掉了旧魔法 ${id}`);
+  assert(after.includes('cure') && after.includes('raise'), `新职业的魔法没加上来：${after}`);
+  assert(m.learned.includes('thundara'), 'learned 该把旧魔法钉住');
+  // 再转到没有 magic 指令的职业：魔法仍然记着（转回来就还能用），只是拳头师没得放
+  changeJob(m, 'boxer', [], data);
+  assert(memberSpells(m, data).includes('thundara'), '转成物理职业不该抹掉学过的魔法');
+  assert(!data.jobs.boxer.commands.includes('magic'), '拳头师本来就没有 magic 指令，会但放不出来');
+});
+
+test('职业等级：各职业分开记，转回旧职业等级还在，没练过的从 1 级起', () => {
+  const m = jsMember('talisman', 9);
+  assert(jobLevel(m, 'talisman') === 1 && jobLevel(m, 'herbwife') === 0, '现职 1 级，没练过的 0 级');
+  grantJobExp(m, JP_PER_LEVEL * 8, data);
+  assert(jobLevel(m, 'talisman') === 9, `符仔仙该 9 级：${jobLevel(m, 'talisman')}`);
+  changeJob(m, 'herbwife', [], data);
+  assert(jobLevel(m, 'herbwife') === 1, '转到没练过的职业从 1 级起');
+  assert(jobLevel(m, 'talisman') === 9, '旧职业等级不该被清掉');
+  grantJobExp(m, JP_PER_LEVEL * 2, data);                // 只加给现职
+  assert(jobLevel(m, 'herbwife') === 3 && jobLevel(m, 'talisman') === 9, 'JP 只该加给现在这个职业');
+  changeJob(m, 'talisman', [], data);
+  assert(jobLevel(m, 'talisman') === 9, '转回来练过的等级还在（练过的不会白练）');
+});
+
+test('HP/MP 按角色等级走：转到低血职业只截断不压死，倒下的人不会被转职救活', () => {
+  const m = jsMember('boxer', 12); healFull(m, data);
+  const boxerHp = computeStats(m, data).maxHp;
+  changeJob(m, 'talisman', [], data);
+  const s = computeStats(m, data);
+  assert(s.maxHp < boxerHp, '符仔仙该比拳头师血少，否则这条测不到东西');
+  assert(m.hp === s.maxHp && m.hp >= 1, `HP 该截到新上限而不是 0：${m.hp}/${s.maxHp}`);
+  // 职业等级不参与属性计算：把职业等级拉满，HP/MP 一点都不该动
+  grantJobExp(m, JP_PER_LEVEL * 48, data);
+  assert(jobLevel(m, 'talisman') === 49 && computeStats(m, data).maxHp === s.maxHp, 'HP 不该跟职业等级走');
+  const dead = jsMember('boxer', 12, { hp: 0 });
+  changeJob(dead, 'talisman', [], data);
+  assert(dead.hp === 0, '倒下的人不该因为转职就回到 1 点血');
+});
+
+test('請神按职业等级解锁：1 / 7 / 14 …每 +7 一位，关圣帝君第一个', () => {
+  const order = summonOrder(data);
+  assert(order.length === Object.keys(data.summons).length, '八位一个都不能漏');
+  assert(order[0] === 'guangong', '关圣帝君必须是第一位');
+  assert(new Set(order).size === order.length, '解锁顺序里有重复');
+  for (const id of order) assert(data.summons[id], `解锁表里的 ${id} 在 summons.json 里不存在`);
+  assert(summonUnlockLevel(0) === 1 && summonUnlockLevel(1) === 7 && summonUnlockLevel(7) === 49, '解锁台阶该是 1/7/…/49');
+  const m = jsMember('talisman', 9);
+  const ids = lv => { m.jobLevels.talisman = lv; return availableSummons(m, data).map(x => x.id); };
+  assert(ids(1).join() === 'guangong', `1 级只该有关圣帝君：${ids(1)}`);
+  assert(ids(6).join() === 'guangong', '6 级还请不动第二位');
+  assert(ids(7).join() === order.slice(0, 2).join(), `7 级该开第二位：${ids(7)}`);
+  assert(ids(14).length === 3 && ids(48).length === 7 && ids(49).length === 8, '14 级三位、49 级才八位齐');
+  const rec = availableSummons(m, data)[0];
+  assert(rec.skillLevel === 1 && rec.mastered === false, 'availableSummons 该带上技能等级与是否练满');
+});
+
+test('職業經驗：grantJobExp 逐级报解锁，一幕一大笔能把台阶跨过去', () => {
+  const m = jsMember('talisman', 9);
+  const g1 = grantJobExp(m, JP_PER_BATTLE, data);
+  assert(g1.length === 0, '一场一点 JP 不该立刻升级');
+  const g2 = grantJobExp(m, JP_PER_LEVEL * 6, data);
+  assert(g2.length === 6 && g2[0].level === 2 && g2[5].level === 7, `该逐级报 6 条：${JSON.stringify(g2.map(x => x.level))}`);
+  assert(g2[5].unlocked.join() === 'bogong' && g2[0].unlocked.length === 0, `7 级该报解锁伯公：${JSON.stringify(g2[5])}`);
+  assert(g2.every(x => x.jobId === 'talisman'), '记录要带上是哪个职业');
+  const before = jobLevel(m, 'talisman');
+  grantJobExp(m, JP_ACT_BONUS, data);                    // 六鎮物一幕的大笔 JP
+  assert(jobLevel(m, 'talisman') - before === Math.floor(JP_ACT_BONUS / JP_PER_LEVEL), '一幕该稳稳跨过三级多');
+  assert(jpForJobLevel(49) === JP_PER_LEVEL * 48, '第八位（钟馗）所需 JP 与曲线一致');
+});
+
+test('技能等级：用到满会升级，威力升 MP 降，满级那一步是双份', () => {
+  const m = jsMember('talisman', 9);
+  assert(skillLevelOf(m, 'fire') === 1, '没练过的技能是 1 级');
+  let last = null, ups = [];
+  for (let i = 0; i < SKILL_USES[SKILL_MAX] + 5; i++) { last = useSkill(m, 'fire'); if (last.leveled) ups.push([i + 1, last.level]); }
+  assert(ups.map(u => u[0]).join() === SKILL_USES.slice(2).join(), `升级点该落在 ${SKILL_USES.slice(2)}：${JSON.stringify(ups)}`);
+  assert(last.level === SKILL_MAX && last.mastered === true, '练满该封顶在 5 级并报 mastered');
+  assert(m.skillLevels.fire === SKILL_MAX && levelForUses(m.skillUses.fire) === SKILL_MAX, '等级与次数要对得上');
+  assert(skillLevelOf(m, 'ice') === 1, '练 fire 不该顺便把别的技能练起来');
+  assert(availableSummons(m, data).length >= 1 && availableSummons(m, data)[0].mastered === false, '召唤要各练各的');
+
+  // 曲线：威力单调升、MP 单调降，满级那一步比前面每一步都大
+  const base = data.summons.guangong, steps = [1, 2, 3, 4, 5].map(lv => skillScale(base, lv));
+  for (let i = 1; i < steps.length; i++) {
+    assert(steps[i].power > steps[i - 1].power, `威力该逐级升：${JSON.stringify(steps.map(x => x.power))}`);
+    assert(steps[i].mp <= steps[i - 1].mp, `MP 不该越练越贵：${JSON.stringify(steps.map(x => x.mp))}`);
+  }
+  const d = steps.map((x, i) => i ? x.power - steps[i - 1].power : 0);
+  assert(d[4] > d[3] && d[4] >= d[1] * 2 - 1, `满级那一步该明显大于前面：${JSON.stringify(d)}`);
+  assert(steps[4].power === Math.round(base.power * 1.5) && steps[4].power <= base.power * 1.5, '满级威力上限 ×1.5');
+  assert(steps[4].mp >= Math.ceil(base.mp * 0.8), 'MP 折扣不该超过两成——MP 是唯一的资源');
+  // 纯状态魔法（power 0）不该被抬起来；免费技能不该被抬出 MP
+  assert(skillScale(data.spells.protect, 5).power === 0, 'power 0 的纯状态魔法乘完还是 0');
+  assert(skillScale({ power: 10, mp: 0 }, 5).mp === 0, 'mp 0 的技能不该被抬成 1');
+  assert(skillScale(20, 1).power === 20 && skillScale(20, 5).power === 30, 'skillScale 也收纯数字');
+  assert(skillScale(base, 0).power === base.power && skillScale(base, 99).power === steps[4].power, '等级越界要夹住');
+});
+
+test('旧存档（没有 learned / jobLevels / skillLevels）读得进来且不掉东西', () => {
+  const prev = localStorage.getItem(SAVE_KEY);
+  try {
+    // 造一份「加这套系统之前」的存档：三个新字段一个都没有
+    const st = newGameState(data);
+    st.party.forEach(m => { m.level = 9; delete m.learned; delete m.jobLevels; delete m.jobExp; delete m.skillLevels; delete m.skillUses; });
+    st.party[3].jobId = 'talisman';
+    localStorage.setItem(SAVE_KEY, JSON.stringify(st));
+    assert(!('learned' in JSON.parse(localStorage.getItem(SAVE_KEY)).party[0]), '这份存档必须真的缺字段，否则测不到东西');
+
+    const back = loadGame(data);
+    assert(back, '旧存档该读得进来');
+    for (const m of back.party) {
+      assert(Array.isArray(m.learned) && m.jobLevels && m.jobExp && m.skillLevels && m.skillUses, `${m.name} 缺字段没补上`);
+      assert(jobLevel(m, m.jobId) === 1, `${m.name} 现职该补成 1 级`);
+      assert(memberSpells(m, data).length === spellsFor(data.jobs[m.jobId], 9).length, `${m.name} 魔法数量该和旧行为一致`);
+      assert(availableSummons(m, data).map(x => x.id).join() === 'guangong', '旧档进来先只有关圣帝君');
+    }
+    const t = back.party[3];
+    assert(t.learned.includes('thundara'), '读档时该把现职现等级该会的钉进 learned');
+    // 不给 data 也不能崩，而且魔法照样一条不少（memberSpells 是并集）
+    const bare = loadGame();
+    assert(bare && bare.party[3].learned.length === 0 && memberSpells(bare.party[3], data).includes('thundara'), 'loadGame() 不带 data 也不该掉魔法');
+    // 只有 skillLevels 没有 skillUses 的半旧存档：等级不能倒退
+    const half = { jobId: 'talisman', level: 9, exp: 0, hp: 5, mp: 5, status: {}, equipment: {}, skillLevels: { fire: 4 } };
+    normalizeMember(half, data);
+    assert(skillLevelOf(half, 'fire') === 4 && half.skillUses.fire === SKILL_USES[4], '半旧存档的技能等级不该倒退');
+    assert(useSkill(half, 'fire').level === 4, '补上的次数要接得上，不该一用就跳级');
+  } finally { if (prev === null) localStorage.removeItem(SAVE_KEY); else localStorage.setItem(SAVE_KEY, prev); }
+});
+
 test('魔法 / 道具 / 敌人数据字段合法', () => {
   for (const [id, sp] of Object.entries(data.spells)) {
     assert(['enemy', 'ally'].includes(sp.target) && ['single', 'all'].includes(sp.scope), `${id} target/scope`);
@@ -362,6 +511,62 @@ function fakeBattle(partyJobs, enemyIds, seed = 5) {
     run(a) { const co = execute(this, a); let n = 0; while (!co.next().done && n++ < 100); return this.msg; } };
   return scene;
 }
+// 請神的三条。数据层那几条测的是「能不能请」，这三条测的是**请下来之后真的发生了什么**——
+// 中间隔着 callSummon 整条协程（扣 MP、八段结算、我方附带效果、drain、技能熟练度），
+// 那才是玩家真正看到的东西。少了这一层，「解锁台阶对不对」全绿也可能一发都放不出来。
+function tangkiBattle(enemyIds, jobLv = 50, seed = 5) {
+  const s = fakeBattle(['talisman'], enemyIds, seed);
+  const actor = s.party[0];
+  changeJob(actor.member, 'tangki', [], data);
+  grantJobExp(actor.member, jpForJobLevel(jobLv), data);   // 八位全开
+  actor.jobId = 'tangki';
+  actor.maxMp = actor.member.maxMp = 300; actor.mp = 300;  // 别让 MP 成为这几条的变量
+  return { s, actor };
+}
+
+test('請神：扣 MP、打到敌方全体、一场只能请一次', () => {
+  const { s, actor } = tangkiBattle(['goblin', 'goblin']);
+  const sm = data.summons.guangong, hp0 = s.enemies.map(e => e.hp), mp0 = actor.mp;
+  s.run({ actor, type: 'summon', summonId: 'guangong', target: 'all' });
+  assert(s.msg.includes(sm.name) && s.msg.includes(sm.skill), `该报出神名与绝招：${s.msg}`);
+  assert(actor.mp < mp0, `MP 没扣：${mp0} → ${actor.mp}`);
+  s.enemies.forEach((e, i) => assert(e.hp < hp0[i], `第 ${i} 只没挨打：${hp0[i]} → ${e.hp}`));
+  // 第二次：同一尊请不动了，而且不该再扣 MP
+  const mp1 = actor.mp, hp1 = s.enemies.map(e => e.hp);
+  s.run({ actor, type: 'summon', summonId: 'guangong', target: 'all' });
+  assert(actor.mp === mp1, '被挡下来还扣了 MP');
+  s.enemies.forEach((e, i) => assert(e.hp === hp1[i], '被挡下来还打了人'));
+});
+
+test('請神：职业等级不够的请不动；MP 不够也请不动', () => {
+  const { s, actor } = tangkiBattle(['goblin'], 1);        // 职业 1 级：只开第一位
+  const later = summonOrder(data)[3];                      // 第四位要到职业 21 级
+  const hp0 = s.enemies[0].hp;
+  s.run({ actor, type: 'summon', summonId: later, target: 'all' });
+  assert(s.msg.includes('请不动'), `等级不够该被挡：${s.msg}`);
+  assert(s.enemies[0].hp === hp0, '请不动却打到了人');
+  actor.mp = 0;
+  s.run({ actor, type: 'summon', summonId: summonOrder(data)[0], target: 'all' });
+  assert(s.msg.includes('MP 不足'), `MP 不够该被挡：${s.msg}`);
+});
+
+test('請神：我方附带效果、吕布的 MP 归零、用一次算一次熟练度', () => {
+  // 用耐打的怪（knight = 乌火，1250 HP）：小怪会被前一尊直接打死，而没有活着的目标时 callSummon 会提前返回、
+  // 连 MP 都不扣——那样测出来的「MP 没归零」是测试自己造的假象，不是 bug
+  const { s, actor } = tangkiBattle(['knight']);
+  // 观世音：我方全体回 HP。先把人打伤，否则回满看不出来
+  const ally = s.party[0]; ally.hp = 1;
+  s.run({ actor, type: 'summon', summonId: 'guanyin', target: 'all' });
+  assert(ally.hp > 1, `观音该回血：${ally.hp}`);
+  // 吕布：drain mp —— 放完施术者 MP 见底
+  actor.mp = actor.maxMp;
+  s.run({ actor, type: 'summon', summonId: 'lubu', target: 'all' });
+  assert(actor.mp === 0, `吕布放完 MP 该归零：${actor.mp}`);
+  // 熟练度：上面三尊各请过一次（关圣帝君没请，留作对照）
+  assert(actor.member.skillUses?.lubu >= 1, '用过的技能该记熟练度');
+  assert(!(actor.member.skillUses?.guangong > 0), '没请过的不该有熟练度');
+});
+
 test('行动协程：催眠 → 睡着跳过 → 物理攻击打醒；毒每回合掉血；净化解毒；防护减伤', () => {
   const s = fakeBattle(['talisman', 'herbwife'], ['goblin']);
   const [bm, wm] = s.party, gob = s.enemies[0];

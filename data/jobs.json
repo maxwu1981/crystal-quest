@@ -261,5 +261,37 @@
         "level": 9
       }
     ]
+  },
+  "tangki": {
+    "name": "童乩",
+    "desc": "神明借的那副身体。请下来的时候，讲话的不是他。",
+    "base": {
+      "hp": 22,
+      "mp": 16,
+      "str": 2,
+      "agi": 5,
+      "int": 9,
+      "vit": 5,
+      "acc": 8,
+      "eva": 9
+    },
+    "growth": {
+      "hp": 4.4,
+      "mp": 4.2,
+      "str": 0.4,
+      "agi": 1.0,
+      "int": 1.8,
+      "vit": 0.9,
+      "acc": 1.2,
+      "eva": 1.1
+    },
+    "commands": [
+      "attack",
+      "summon",
+      "defend",
+      "item",
+      "flee"
+    ],
+    "spells": []
   }
 }

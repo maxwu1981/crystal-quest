@@ -14,8 +14,24 @@ import { settleVictory } from './victory.js';
 import { canUseOn } from '../game/items.js';
 import { persistentOnly } from '../game/status.js';
 import { iconGap } from '../menu/icons.js';
+// 童乩的「請神」：请得动谁、这一位这次多少 MP，全问数据层，战斗里不重新判一遍。
+import { availableSummons, skillScale } from '../game/jobskill.js';
 
-const CMD = { attack: '攻击', magic: '魔法', defend: '防御', item: '道具', flee: '逃跑' };
+const CMD = { attack: '攻击', magic: '魔法', summon: '請神', defend: '防御', item: '道具', flee: '逃跑' };
+
+// 請神菜单的条目：这个角色**当前**请得动的几位，请过的 / 请不起的灰掉。
+// 谁请得动由 availableSummons 决定（职业等级那一道闸在数据层），这里只叠两件
+// 战斗自己才知道的事：MP 够不够、这一场是不是已经请过了（summons.json 的 once）。
+//
+// 抽成纯函数是为了**测得到**：BattleScene 要画布、要音频、要战斗背景，headless 起不来，
+// 而「列出哪几位、哪几位该灰掉」恰恰是这段里最该有测试的一块。
+export function summonItems(actor, data, used = new Set(), gap = '') {
+  return availableSummons(actor.member, data).map(({ id, skillLevel }) => {
+    const s = data.summons[id], { mp } = skillScale(s, skillLevel);
+    return { label: gap + s.name, value: id, right: mp,
+      disabled: actor.mp < mp || (s.once && used.has(id)) };
+  });
+}
 
 export class BattleScene {
   constructor(game, enemyIds, opts = {}) {
@@ -39,6 +55,9 @@ export class BattleScene {
     this.current = null; this.menu = null; this.sub = null; this.target = null;
     this.co = null; this.coDone = null; this.wait = 0;
     this.escaped = false; this.won = false;
+    // 請神：一场战斗每尊只能请一次（summons.json 的 once）。战斗结束就跟着场景一起丢掉，
+    // 所以它不进 game.state——下一场又是干净的一张桌子。
+    this.summonsUsed = new Set();
   }
   get rng() { return this.game.rng; }
   get all() { return [...this.party, ...this.enemies]; }
@@ -138,7 +157,15 @@ export class BattleScene {
     else if (cmd === 'defend') this.commit({ type: 'defend' });
     else if (cmd === 'flee') this.commit({ type: 'flee' });
     else if (cmd === 'magic') this.openMagic();
+    else if (cmd === 'summon') this.openSummon();
     else if (cmd === 'item') this.openItems();
+  }
+  // 八位一律 target:'enemy' + scope:'all'，所以选完不必再选目标，直接下令。
+  openSummon() {
+    const items = summonItems(this.current, this.game.data, this.summonsUsed, iconGap());
+    if (!items.length) items.push({ label: '（请不动谁）', disabled: true });
+    this.sub = 'summon'; this.target = null;
+    this.menu = this.menuAt(items, it => this.commit({ type: 'summon', summonId: it.value, target: 'all' }), () => this.openMain());
   }
   openMagic() {
     const a = this.current, sp = this.game.data.spells;

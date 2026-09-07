@@ -240,6 +240,9 @@ export function renderBattle(scene, ctx) {
     // 战斗中最需要「扫一眼就知道这是什么」的地方，反而一直只有光秃秃的文字。
     const data = scene.game.data;
     if (scene.sub === 'magic') drawMenuIcons(ctx, scene.menu, it => it.value ? spellIcon(data.spells[it.value]) : null, 10);
+    // 請神走同一枚属性图标：八位一人一种属性，图标就是「这一位打的是什么」。
+    // spellIcon 只看 element / heal，summons.json 那八条正好同形，不必另做一套。
+    else if (scene.sub === 'summon') drawMenuIcons(ctx, scene.menu, it => it.value ? spellIcon(data.summons[it.value]) : null, 10);
     else if (scene.sub === 'item') drawMenuIcons(ctx, scene.menu, it => it.value ? itemIcon(it.value, data.items[it.value]) : null, 10);
   }
   else if (scene.msg) wrapMsg(ctx, scene.msg, LEFT_W - 16).slice(-MSG_LINES).forEach((l, i) => drawText(ctx, l, 8, PANEL_Y + 8 + i * LINE_H, { color: UI.text }));

@@ -43,11 +43,15 @@ export function elementMultiplier(target, element) {
   return 1;
 }
 
-export function magicDamage(power, caster, target, element, rng) {
+// pierce：跳过 mdef 那一次「有几率减半」的判定。给召唤用的
+// （义民爷「他们拿的是刀」、吕布「一箭穿过整条阵线」——刀与箭不吃魔防）。
+// 写成选项而不是另开一个函数，是为了让召唤和普通魔法走**同一条**结算路径：
+// 属性倍率、int/2、免疫为 0、至少 1 点这几条只有一份。
+export function magicDamage(power, caster, target, element, rng, { pierce = false } = {}) {
   const base = rng.int(power, power * 2) + Math.floor((caster.int || 0) / 2);
   const mult = elementMultiplier(target, element);
   let damage = Math.floor(base * mult);
-  if (mult > 0 && rng.chance(clamp((target.mdef || 0) / 100, 0, 0.5))) damage = Math.floor(damage / 2);
+  if (!pierce && mult > 0 && rng.chance(clamp((target.mdef || 0) / 100, 0, 0.5))) damage = Math.floor(damage / 2);
   return { damage: mult === 0 ? 0 : Math.max(1, damage), mult };
 }
 
