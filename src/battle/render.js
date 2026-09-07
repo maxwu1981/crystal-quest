@@ -91,6 +91,15 @@ export function drawDissolve(ctx, img, x, y, vis) {
 // 敌人待机浮动：全静止的怪看起来是贴纸，FF6 的怪都在很轻微地「呼吸」。
 // 只有 ±1 逻辑像素、周期 2.6–3.0 秒，并按队列序号错开相位与周期——
 // 一起同步上下会立刻变成「在抖」，这里宁可含蓄到几乎看不出来。
+// 被魔法笼罩期间把角色压成半透明，像**隔着火焰/雷光看过去**。
+// 火本身也是半透明的（spellFx.js 的 LAYERS.a），两层叠起来才是「人在火里若隐若现」；
+// 只让火透、角色不透的话，读作「火贴在角色前面」，是一张贴纸而不是一团火。
+// 下限 0.45：还留得住轮廓——演出再花，玩家也得始终看得清自己在打谁、谁在挨打。
+// 最后 0.35 秒线性收回不透明，避免特效一结束角色「啪」地跳回来。
+export function veilAlpha(a) {
+  return a.veil > 0 ? 0.45 + 0.55 * Math.max(0, 1 - a.veil / 0.35) : 1;
+}
+
 // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
 export function idleBob(scene, e) {
   if (!e.alive || e.flash > 0) return 0;
@@ -139,7 +148,9 @@ export function renderBattle(scene, ctx) {
       drawDissolve(ctx, spr, x - Math.round(14 * (1 - p) ** 2), y, p);
       ctx.globalAlpha = 1; continue;
     }
+    ctx.globalAlpha = veilAlpha(e);
     drawHit(ctx, spr, x + lungeOffset(e), y + idleBob(scene, e), hitTint(e));
+    ctx.globalAlpha = 1;
   }
   for (const p of scene.party) {
     const [x, y] = actorRect(scene, p);
@@ -151,8 +162,10 @@ export function renderBattle(scene, ctx) {
     const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
     const dx = x - lungeOffset(p), dy = y - cheer + faintSink(scene, p);
     const tint = hitTint(p);
+    ctx.globalAlpha = veilAlpha(p);      // 敌人对我方放魔法时，同样要透出人来
     drawHit(ctx, scene.game.sprites[key], dx, dy, tint);
     if (p.alive) for (const g of layersFor(p.member, 'left')) drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
+    ctx.globalAlpha = 1;
   }
   scene.fx.render(ctx);
   if (scene.phase === 'input' && scene.sub === 'target') {

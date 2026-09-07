@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8"><title>特效预览</title>
+<!-- 特效逐帧预览。
+     为什么要有：战斗里一个魔法只闪 1.2 秒，靠肉眼在实战中判断「底部有没有切线」
+     「火有没有罩住怪」根本看不清——火焰那条横切线就是这么漏过去的。
+     这里把一次演出摊成一排静帧，每帧都停在那儿随便看。
+     左边那只灰怪是**按 render.js 的 veil 规则**画的半透明剪影，
+     所以这里看到的层次关系跟战斗里一致。 -->
+<style>
+ body{background:#14100e;color:#cdbfa0;font:13px/1.6 system-ui,sans-serif;margin:16px}
+ h2{font-size:14px;margin:22px 0 6px;color:#e8d9b0}
+ .row{display:flex;gap:6px;flex-wrap:wrap}
+ figure{margin:0}figcaption{font-size:11px;color:#7d7361;text-align:center}
+ canvas{background:#2a2118;display:block;image-rendering:pixelated}
+</style>
+<div id="out"></div>
+<script type="module">
+import { SPELL_FX } from '../src/battle/spellFx.js';
+import { ART } from '../src/core/draw.js';
+
+// 和游戏一致的确定性随机（掷骰顺序变了图就变了，预览必须可复现）
+class RNG { constructor(s){this.s=s>>>0||1}
+  next(){let x=this.s;x^=x<<13;x^=x>>>17;x^=x<<5;this.s=x>>>0;return this.s/4294967296}
+  int(a,b){return a+Math.floor(this.next()*(b-a+1))} }
+
+const W = 256, H = 152;                  // 战场范围（面板以上），和 spellFx 的 FH 一致
+const CX = 100, CY = 82;                 // ENEMY_CENTERS[1]
+let SIZES = { 小怪:[36,36], 一般:[48,48], 大怪:[76,80] };
+let FRAMES = [0.10, 0.24, 0.32, 0.45, 0.60, 0.78, 0.92];
+// ?big=48 只画这一个尺寸、四帧，铺满宽度看细节（截图工具没法裁剪放大，只好这样看）
+const BIG = new URLSearchParams(location.search).get('big');
+
+// render.js 的 veil 曲线，一模一样抄过来（改了那边这里也要改）
+const veilAlpha = left => left > 0 ? 0.45 + 0.55 * Math.max(0, 1 - left / 0.35) : 1;
+
+function drawFoe(ctx, w, h, alpha) {
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = '#8f9aa6';
+  ctx.fillRect(CX - w/2, CY - h/2, w, h);
+  ctx.fillStyle = '#c8d2dc';                                  // 两只眼，方便看透不透
+  ctx.fillRect(CX - w*0.22, CY - h*0.18, w*0.14, h*0.12);
+  ctx.fillRect(CX + w*0.08, CY - h*0.18, w*0.14, h*0.12);
+  ctx.restore();
+}
+
+// 一个效果 = 一张**联系表**：横向是时间、纵向是目标大小，全画进同一块 canvas。
+// 分成几十个 <canvas> 的话截图要滚屏，而截图工具在窗格隐藏时滚不动——
+// 一张图一次看完，调参的循环才转得快。
+// ?fx=fire 只看某一个；不带参数看全部。
+const only = new URLSearchParams(location.search).get('fx');
+const out = document.getElementById('out');
+const GAP = 3;
+if (BIG) { const n = +BIG; SIZES = { [`${n}px`]: [n, n] }; FRAMES = [0.32, 0.45, 0.62, 0.85]; }
+
+for (const [kind, make] of Object.entries(SPELL_FX)) {
+  if (only && kind !== only) continue;
+  const sizes = Object.entries(SIZES);
+  const cv = document.createElement('canvas');
+  cv.width  = (W * FRAMES.length + GAP * (FRAMES.length - 1)) * ART;
+  cv.height = (H * sizes.length + GAP * (sizes.length - 1)) * ART;
+  cv.style.width = BIG ? '100%' : (cv.width / ART * 0.72) + 'px';   // 显示尺寸只影响观感，像素是 ART 倍的
+  cv.style.height = 'auto';
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(ART, ART);
+  sizes.forEach(([label, [w, h]], r) => {
+    FRAMES.forEach((p, c) => {
+      ctx.save();
+      ctx.translate(c * (W + GAP), r * (H + GAP));
+      ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+      ctx.fillStyle = '#2a2118'; ctx.fillRect(0, 0, W, H);
+      const fx = make(CX, CY, new RNG(7), { w, h });
+      drawFoe(ctx, w, h, veilAlpha(fx.dur * (1 - p)));
+      ctx.save(); fx.render(ctx, p); ctx.restore();
+      ctx.fillStyle = 'rgba(200,190,160,0.85)';
+      ctx.font = '7px monospace';
+      ctx.fillText(`${label} p=${p}`, 3, 9);
+      ctx.restore();
+    });
+  });
+  const head = document.createElement('h2');
+  head.textContent = `${kind}　横=时间 ${FRAMES.join(' / ')}　纵=目标大小`;
+  out.append(head, cv);
+}
+</script>

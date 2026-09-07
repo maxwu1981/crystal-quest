@@ -8,10 +8,13 @@
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "background_color": "#08100d",
   "theme_color": "#1a2d25",
-  "categories": ["games", "entertainment"],
+  "categories": [
+    "games",
+    "entertainment"
+  ],
   "icons": [
     {
       "src": "./assets/icon-192.png",

@@ -346,7 +346,11 @@ test('魔法 / 道具 / 敌人数据字段合法', () => {
 function fakeBattle(partyJobs, enemyIds, seed = 5) {
   const st = newGameState(data); st.party = st.party.filter(m => partyJobs.includes(m.jobId)); st.party.forEach(m => { m.level = 12; healFull(m, data); });
   const scene = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: true,
-    fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; },   // 桩要跟 Effects 的接口一致
+    // 桩要跟 BattleScene / Effects 的接口一致。少一个方法，协程跑到那一行就 TypeError——
+    // 这几条测试的价值正在于此（size() 这次就是这么被抓出来的），
+    // 所以 actions.js 那边**不要**写成 scene.size?.(t) 把它绕过去。
+    fx: { add() {}, shake() {} }, popup() {},
+    center() { return [0, 0]; }, size() { return { w: 48, h: 48 }; },
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
     alive(l) { return l.filter(a => a.alive); },
     retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },

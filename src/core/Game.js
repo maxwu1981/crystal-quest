@@ -39,10 +39,15 @@ export class Game {
     // 画面只占不到一半。所以整数倍算出来只有 1 倍、而实际能放下 1.3 倍以上时，
     // 改用精确比例铺满——`image-rendering: pixelated` 仍然保证是硬边像素，
     // 只是像素大小不再完全均匀。在手机上「铺满」比「绝对均匀」重要得多。
+    // 手机是**横屏**，而且按键是半透明浮在画面上的（见 src/touch.js），
+    // 所以不给按键预留空间——画面能占多大就占多大。
+    // 桌面仍留 24px 给底部那行键盘提示。
     const touch = matchMedia('(pointer: coarse)').matches;
-    const pad = touch ? this.touchPad || 0 : 24;     // 触控时底部要给虚拟按键留位置
+    const pad = touch ? 0 : 24;
     const exact = Math.min(innerWidth / this.W, (innerHeight - pad) / this.H);
-    const scale = exact < 2 && exact > 1.3 ? exact : Math.max(1, Math.floor(exact));
+    // 手机上一律用精确比例（不取整数倍）：横屏时画面按高度撑满，
+    // 8:7 的画面放在 19.5:9 的屏幕上左右会留黑边，按键正好浮在那两条边上。
+    const scale = touch ? exact : (exact < 2 && exact > 1.3 ? exact : Math.max(1, Math.floor(exact)));
     this.canvas.style.width = Math.round(this.W * scale) + 'px';
     this.canvas.style.height = Math.round(this.H * scale) + 'px';
   }

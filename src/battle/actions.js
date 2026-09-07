@@ -93,7 +93,8 @@ function* attack(scene, actor, a) {
   if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
   // 打在敌人身上是白色月牙，打在自己人身上是红色冲击环——一眼要能分出挨打的是谁
   const impact = actor.element ? (ELEMENT_FX[actor.element] || 'slash') : (t.side === 'party' ? 'hurt' : 'slash');
-  scene.fx.add(impact, ...scene.center(t), { dir: face });
+  if (actor.element) t.veil = 1.2;                       // 附魔武器同样要透出目标
+  scene.fx.add(impact, ...scene.center(t), { dir: face, ...scene.size(t) });
   if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
   scene.damage(t, r.damage, { physical: true, crit: r.crit });   // crit 只用来决定伤害数字的样式，不参与结算
@@ -119,7 +120,38 @@ function* castSpell(scene, actor, a) {
   scene.msg = `${actor.name} 施放了 ${sp.name}！`;
   scene.fx.add('cast', ...scene.center(actor), { color: sp.target === 'ally' ? '#9fd8c8' : '#c9a8e8' });
   audio.sfx('magic'); yield 0.45;
+  // 全体攻击魔法：**所有目标同时演**，不是一只一只轮着来。
+  // 逐个演的话四只敌人要等 3.4 秒，第二遍开始玩家就只是在等；
+  // 而且「一发全体魔法」的观感本来就是一次盖满全场，不是连放四次同样的动画。
+  // 治疗/复活/纯状态不走这条：那几种的看点在「谁被治到了」，逐个报反而清楚。
+  const volley = targets.length > 1 && sp.power > 0 && !sp.heal && !sp.cure && !sp.revive;
+  if (volley) { yield* spellVolley(scene, actor, sp, targets); return; }
   for (const t of targets) yield* spellOn(scene, actor, sp, t);
+}
+
+// 全体攻击魔法的一次齐射。伤害数字由每个目标头上的 popup 各自交代
+// （FF6 也是这么做的），消息窗只留一句总结——窗口只显示最后几行，
+// 四只敌人各报一行的话，连「施放了地狱火」那句都会被挤掉。
+function* spellVolley(scene, actor, sp, targets) {
+  const kind = ELEMENT_FX[sp.element] || 'spark';
+  for (const t of targets) {
+    t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
+    scene.fx.add(kind, ...scene.center(t), scene.size(t));
+  }
+  audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
+  yield 0.45;                                  // 等火焰爆开的那一下再结算
+  let best = 1, worst = 1, downed = [];
+  for (const t of targets) {
+    const r = F.magicDamage(sp.power, actor, t, sp.element, scene.rng);
+    scene.damage(t, r.damage);
+    best = Math.max(best, r.mult); worst = Math.min(worst, r.mult);
+    if (!t.alive) downed.push(t.name);
+    else if (sp.status && r.mult > 0) inflict(scene, t, sp.status);
+  }
+  if (best > 1) scene.msg += '\n效果拔群！';
+  else if (worst === 0) scene.msg += '\n完全无效…';
+  yield 0.7;
+  if (downed.length) { scene.msg += `\n${downed.join('、')} 倒下了`; yield 0.5; }
 }
 
 function* spellOn(scene, actor, sp, t) {
@@ -146,8 +178,14 @@ function* spellOn(scene, actor, sp, t) {
     scene.msg += ok ? `\n${t.name} ${STATUS[sp.status].buff ? '获得了' : ''}${STATUS[sp.status].name}${STATUS[sp.status].buff ? '' : '了'}` : `\n${t.name} 没有效果`;
     yield 0.7; return;
   }
-  scene.fx.add(ELEMENT_FX[sp.element] || 'spark', ...scene.center(t)); audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
-  yield 0.25;
+  // veil：特效期间目标画成半透明，像**隔着火焰/雷光看过去**。
+  // 时长跟特效同步（属性魔法 1.2s，其余 0.3s），由 BattleScene.update 递减。
+  t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
+  scene.fx.add(ELEMENT_FX[sp.element] || 'spark', ...scene.center(t), scene.size(t));
+  audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
+  // 0.45 而不是 0.25：属性魔法的演出在 p≈0.35 才爆开（spellFx.js 的「爆」段），
+  // 结算太早的话伤害数字先跳出来、火后到，看着像两件事
+  yield ELEMENT_FX[sp.element] ? 0.45 : 0.25;
   const r = F.magicDamage(sp.power, actor, t, sp.element, rng);
   scene.damage(t, r.damage);
   if (r.mult > 1) scene.msg += '\n效果拔群！'; else if (r.mult === 0) scene.msg += '\n完全无效…'; else if (r.mult < 1) scene.msg += '\n效果不佳…';

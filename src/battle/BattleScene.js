@@ -60,6 +60,7 @@ export class BattleScene {
     this.fx.update(dt);
     this.popups = this.popups.filter(p => (p.t -= dt) > 0);
     for (const a of this.all) { if (a.flash > 0) a.flash -= dt; if (a.lunge > 0) a.lunge -= dt; if (a.dying > 0) a.dying -= dt; }
+    for (const a of this.all) if (a.veil > 0) a.veil -= dt;   // 被魔法笼罩：见 render.js 的半透明处理
     switch (this.phase) {
       // 登场演出按确认可跳过：自动试玩靠连按确认推战斗，任何演出都不能是「只能等」
       case 'intro': if ((this.timer -= dt) <= 0 || input.justPressed('confirm')) this.phase = 'idle'; break;
@@ -211,6 +212,9 @@ export class BattleScene {
     return pool.length ? this.rng.pick(pool) : null;
   }
   center(a) { const [x, y, w, h] = actorRect(this, a); return [x + w / 2, y + h / 2]; }
+  // 目标的画面尺寸。魔法特效要**按目标大小**来演——同一团火罩在史莱姆和罩在
+  // боss 身上不能一样大，小怪会被淹掉、大怪则只烧到肚子。传给 fx.add 当 opts。
+  size(a) { const [, , w, h] = actorRect(this, a); return { w, h }; }
 
   damage(t, dmg, { physical = false, crit = false } = {}) {
     t.hp = Math.max(0, t.hp - dmg); t.flash = 0.3;

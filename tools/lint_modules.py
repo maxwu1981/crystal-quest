@@ -10,10 +10,15 @@
      没被换成 `scene`（机械替换找的是 `this.`，这两处后面没有点），
      模块作用域里 `this` 是 undefined，55 条测试仍然全绿。
 
-两项检查是**互补**的，缺一不可：
+三项检查是**互补**的，缺一不可：
   A. 「import 进来的名字，目标模块真的导出了吗」——链接期错误，浏览器会报
   B. 「用到的名字，本文件真的绑定过吗」——**运行期**错误，只有执行到才报，
      也就是上面两次踩坑的那一类。B 才是这个工具存在的理由。
+  C. 「`{ ...SRC, foo }` 里的 foo 把 SRC.foo 盖掉了吗」——**静默**错误，连报都不报。
+     ③ effects.js 写成 `const FX = { ...SPELL_FX, /*…*/ fire, thunder, ice, poison, dark }`，
+        对象字面量后写的键覆盖先写的，于是 spellFx.js 那套新写的多段式魔法演出
+        一次都没播过。测试全绿、控制台干净、A 和 B 也都通过（两边都是合法定义），
+        只有把游戏跑起来盯着那一帧看才会发现。
 
 用法：
   python3 tools/lint_modules.py          # 全项目
@@ -141,6 +146,38 @@ def bound_names(src):
     return n
 
 
+def object_consts(src):
+    """`const NAME = { … };` → {NAME: (顶层键集合, 字面量原文)}。
+    只认顶层键（深度 1）：嵌套对象里的键跟覆盖与否无关。"""
+    out = {}
+    for m in re.finditer(r'^(?:export\s+)?const\s+(\w+)\s*=\s*\{', src, re.M):
+        i = src.index('{', m.end() - 1)
+        depth, j = 0, i
+        while j < len(src):
+            if src[j] == '{':
+                depth += 1
+            elif src[j] == '}':
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        body = src[i + 1:j]
+        keys, spreads, d = set(), [], 0
+        for line in body.split('\n'):
+            if d == 0:
+                k = re.match(r'\s*(?:\.\.\.(\w+)|([A-Za-z_$][\w$]*)\s*:|([A-Za-z_$][\w$]*)\s*[,}])', line)
+                if k:
+                    if k.group(1):
+                        spreads.append(k.group(1))
+                    else:
+                        keys.add(k.group(2) or k.group(3))
+            d += line.count('{') + line.count('[') + line.count('(')
+            d -= line.count('}') + line.count(']') + line.count(')')
+            d = max(0, d)
+        out[m.group(1)] = (keys, spreads)
+    return out
+
+
 def walk_js():
     for base in SCAN:
         for cur, dirs, files in os.walk(os.path.join(ROOT, base)):
@@ -166,7 +203,8 @@ def main():
     for v in exp.values():
         all_exports |= v
 
-    bad_a, bad_b, n_imp = [], [], 0
+    objs = {p: object_consts(clean[p]) for p in raw}
+    bad_a, bad_b, bad_c, n_imp = [], [], [], 0
     for p, s in raw.items():
         for names, rel in imports_of(s):
             tgt = os.path.normpath(os.path.join(os.path.dirname(p), rel))
@@ -187,7 +225,25 @@ def main():
                 bad_b.append(f'{os.path.relpath(p, ROOT)} 调用了 {nm}()，'
                              f'但本文件既没 import 也没声明它')
 
-    ok = not bad_a and not bad_b
+        # C：`{ ...SRC, foo: … }` 里 foo 把 SRC.foo 盖掉了。
+        # SRC 从哪来都行——本文件声明的，或从别的模块 import 的。
+        for name, (keys, spreads) in objs[p].items():
+            for src_name in spreads:
+                src_keys = objs[p].get(src_name, (None, None))[0]
+                if src_keys is None:                      # 不在本文件，去 import 的来源找
+                    for names, rel in imports_of(raw[p]):
+                        if src_name not in names:
+                            continue
+                        tgt = os.path.normpath(os.path.join(os.path.dirname(p), rel))
+                        if tgt in objs and src_name in objs[tgt]:
+                            src_keys = objs[tgt][src_name][0]
+                if not src_keys:
+                    continue
+                for k in sorted(keys & src_keys):
+                    bad_c.append(f'{os.path.relpath(p, ROOT)} 的 {name} 里，'
+                                 f'`{k}` 盖掉了 ...{src_name} 展开进来的同名键')
+
+    ok = not bad_a and not bad_b and not bad_c
     if not a.quiet or not ok:
         print(f'扫描 {len(raw)} 个模块 / {n_imp} 个导入名')
         print('  A 导入的名字目标模块有没有导出：' + ('通过' if not bad_a else f'{len(bad_a)} 处'))
@@ -196,6 +252,10 @@ def main():
         print('  B 用到的名字有没有 import（测试查不出、只有跑到才炸的那一类）：'
               + ('通过' if not bad_b else f'{len(bad_b)} 处'))
         for x in bad_b:
+            print('      ' + x)
+        print('  C 展开进来的键有没有被后面的同名键盖掉（连错都不报的那一类）：'
+              + ('通过' if not bad_c else f'{len(bad_c)} 处'))
+        for x in bad_c:
             print('      ' + x)
     sys.exit(0 if ok else 1)
 
