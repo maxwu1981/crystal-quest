@@ -1,5 +1,6 @@
 // 战斗特效：纯渲染，不碰战斗逻辑。effects.add('fire', x, y) 即可。
 import { snap } from '../core/draw.js';
+import { SPELL_FX } from './spellFx.js';
 
 export class Effects {
   constructor(rng) { this.rng = rng; this.list = []; this.shakeT = 0; }
@@ -15,6 +16,9 @@ export class Effects {
 }
 
 const FX = {
+  // 属性魔法的演出在 spellFx.js（多段式、带全屏染色，1.2 秒左右）。
+  // 这里保留的是「打击反馈」那一类：挥砍、命中、受击，每个 0.3 秒内说完一件事。
+  ...SPELL_FX,
   // 命中的一瞬：一道月牙形冲击张开来，外加几点迸散的火星。
   // 原本是三条平行斜直线，读起来像划痕不像打击。
   slash: (x, y, rng, o = {}) => {

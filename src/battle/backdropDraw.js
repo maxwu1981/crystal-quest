@@ -1,0 +1,392 @@
+// 战斗背景的「写景」半边：一套背景分几层、每层跟镜头动多少、光从哪来。
+//
+// 从 backdrop.js 拆出来——加上远近分层之后那个文件必破 400 行的上限。缝切在「选景」与「写景」
+// 之间，因为两边改动的理由完全是两回事：那边改是因为**内容**变了（新地图、新的随机细节），
+// 这边改是因为**画法**变了（配色、加细节、调纵深）。依赖单向：backdrop.js → 这里，绕不成环。
+// 地平线表 HZ 也放这边：它是「画」出来的常量（决定每层画到哪儿为止），掷骰那边只是顺手
+// 拿它当随机范围的上下界——常量跟着「谁定义它」走，箭头才不会掉头（hudBits.js 同一个道理）。
+//
+// **关于 ART**：这里所有坐标都是**逻辑**像素（256×224）——ctx 进来时 Game.render 已经
+// setTransform(ART,0,0,ART,0,0) 缩放过了，所以这些常量**不需要** terrainBits.js 那套
+// u() / us() 换算：那套是给「按物理像素烘焙瓦片」的代码用的，在这里套上去等于把整幅背景
+// 放大 ART/2 倍。唯一该跟着 ART 走的是**细纹的宽度**——背景一直按整逻辑像素画，而精灵的
+// 美术精度是 ART 倍，于是背景反而比敌人糙一档；PX1（一个物理像素有多宽）就是补这一档的。
+import { snap, ART } from '../core/draw.js';
+import { PANEL_Y } from './hudBits.js';
+
+export const HZ = { plains: 100, cave: 112, deep: 120, shrine: 104 }; // 各背景的地平线（地面起始 y）
+
+// ---- 远近分层 ----
+// 战斗画面本身不滚动，唯一能推动镜头的是震屏：renderBattle 在画背景之前已经
+// ctx.translate(fx.offset()) 过一次，整幅画跟着镜头一起跳 ±2px。
+// 真实的远近该是「远处几乎不动、近处比镜头动得还多一点」，所以每层在那之上**再补一次**
+// 反向位移：系数 1 = 跟着镜头，<1 = 远，>1 = 近，0 = 完全钉在屏幕上（暗角用）。
+// 只有震屏进得来：角色出手的 lungeOffset 只挪那一个精灵、没进镜头变换，背景这边够不着。
+const K = { sky: 0.12, far: 0.38, mid: 0.72, near: 1.16 };
+// 光源的 x：「受光 / 背光两档」全靠同一条判据 —— 朝着这个 x 的那一面提亮，背面压暗。
+// 表里没有 cave，是因为洞窟那盏是从顶上裂缝斜射进来的**平行光**：
+// 平行光没有「位置」，两档退化成「一律左脸受光」，判据直接写死在 drawCave 里。
+const LIGHT = { plains: 158, deep: 128, shrine: 150 };
+const SHAFT = 128;    // 洞窟顶上那道裂缝的 x（光束从这里往右下斜着落）
+const M = 6;          // 铺满整幅的填充往外多画这么多：震屏 ±2px、近层还要再多 0.3px，不留边会露黑条
+const PX1 = 1 / ART;  // 一个物理像素
+
+// 震屏偏移：Game.render 每帧 setTransform(ART,0,0,ART,0,0) 起手，基准变换是纯缩放、
+// 不含平移，所以当前矩阵的平移量 ÷ 缩放量，就正好是 renderBattle 刚 translate 进去的那两个数。
+// 拿它当镜头，就不必改 render.js 的签名（那边另有人在改，动不得）。
+const camOf = ctx => { const m = ctx.getTransform?.(); return m && m.a ? [m.e / m.a, m.f / m.d] : [0, 0]; };
+// snap 而不是 round：ART=6 时对齐到物理像素，位移的最小步长是 1/6 逻辑像素 ——
+// 边缘仍然是硬的，但远层不会因为四舍五入又和近层一起整格跳（那就白分层了）。
+function layer(ctx, cam, k, fn) {
+  ctx.save(); ctx.translate(snap((k - 1) * cam[0]), snap((k - 1) * cam[1]));
+  fn(); ctx.restore();
+}
+
+// ---- 画笔 ----
+const grad = (ctx, y0, y1, ...cs) => {           // 竖直渐变，色标均分
+  const g = ctx.createLinearGradient(0, y0, 0, y1);
+  cs.forEach((c, i) => g.addColorStop(i / (cs.length - 1), c));
+  return g;
+};
+function halo(ctx, x, y, r, stops) {             // 一团光晕；最外一档必须收到全透明，否则会切出一个方框
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  for (const [p, c] of stops) g.addColorStop(p, c);
+  ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+}
+const band = (ctx, W, y, h, style) => { ctx.fillStyle = style; ctx.fillRect(-M, y, W + M * 2, h); };
+const fillAll = (ctx, W, y, h, style) => band(ctx, W, y - M, h + M * 2, style);
+
+// 用竖条填山棱线：路径填充会抗锯齿，把像素味糊掉，一列一列画才是硬边。
+// edge 给「受光 / 背光两档」：坡面朝着光源就描一道亮边，背着光描一道暗边。
+// 判据只要两个符号 —— 高度沿 x 的增减、光源在哪一侧，两者相反就是迎光面。
+// 「一座山有正面也有背面」是这三张外景里最省事、也最见效的一笔。
+function ridge(ctx, W, base, pts, color, edge = null, step = 2) {
+  let prev = null, cur = null;
+  const use = c => { if (c !== cur) ctx.fillStyle = cur = c; };  // 同色不重设：一道稜线要填一百多次
+  for (let x = -M; x < W + M; x += step) {
+    let h = pts[pts.length - 1][1];
+    if (x <= pts[0][0]) h = pts[0][1];
+    else for (let i = 1; i < pts.length; i++) {
+      const [x1, h1] = pts[i], [x0, h0] = pts[i - 1];
+      if (x <= x1) { h = Math.round(h0 + (h1 - h0) * (x - x0) / (x1 - x0)); break; }
+    }
+    use(color); ctx.fillRect(x, base - h, step, h + M);
+    if (edge && prev !== null) { const lit = (h - prev) * (edge.lx - x) < 0; use(lit ? edge.lit : edge.dark); ctx.fillRect(x, base - h, step, lit ? 2 : 1); }
+    prev = h;
+  }
+}
+const RIDGE_FAR = [[0, 20], [26, 30], [58, 16], [88, 34], [118, 22], [150, 38], [186, 20], [214, 30], [256, 18]];
+const RIDGE_NEAR = [[0, 10], [34, 16], [70, 8], [104, 18], [140, 10], [176, 20], [210, 9], [256, 14]];
+const RIDGE_TAIWU = [[0, 14], [40, 26], [76, 18], [110, 40], [146, 24], [184, 34], [222, 16], [256, 22]];
+
+// ---- 六堆平原：黄昏的水田 ----
+// 天与低日 → 大武山系两道稜线 → 竹围与芒草 → 水田、田埂与土沟。
+function drawPlains(ctx, W, bg, t, cam) {
+  const hz = HZ.plains, lx = LIGHT.plains;
+  layer(ctx, cam, K.sky, () => {
+    fillAll(ctx, W, 0, hz, grad(ctx, 0, hz, '#4f7893', '#93aa9f', '#dfc189'));
+    // 日头压在地平线上，只留一团暖雾 —— 真画个圆日会跟敌人抢视线，
+    // 而「光从哪来」有这团雾就够了：底下三层的亮边全朝着它。
+    halo(ctx, lx, hz - 2, 66, [[0, 'rgba(255,228,168,0.30)'], [0.42, 'rgba(255,198,128,0.12)'], [1, 'rgba(255,180,110,0)']]);
+    // 云：整层极慢横移（0.8px/秒，一场仗飘过一个身位）。底面被低日烤暖、顶面还是冷的 ——
+    // 两档一分，一条横线才有厚度。取模的边界放在画面外 100px，换行的那一下没人看得见
+    for (const c of bg.clouds) {
+      const x = snap(((c.x + t * 0.8 + 100) % (W + 200)) - 100);
+      ctx.fillStyle = 'rgba(250,246,236,0.15)'; ctx.fillRect(x, c.y, c.w, 2);
+      ctx.fillStyle = 'rgba(255,206,150,0.22)'; ctx.fillRect(x + 6, c.y + 2, c.w - 16, 1);
+    }
+  });
+  layer(ctx, cam, K.far, () => {
+    ridge(ctx, W, hz - 7, RIDGE_FAR, '#7b8ea3', { lx, lit: '#a8a49f', dark: '#5e7288' }); // 空气透视：远的一道更淡更蓝
+    band(ctx, W, hz - 13, 8, 'rgba(236,208,164,0.17)');                                   // 山脚的暖霾，把两道稜线隔开
+    ridge(ctx, W, hz, RIDGE_NEAR, '#4c684f', { lx, lit: '#7d8a4c', dark: '#39523f' });
+  });
+  layer(ctx, cam, K.mid, () => {
+    // 竹围：客家庄外圈那道刺竹，既挡风也挡贼，是六堆地景的招牌。
+    // 迎光的一侧描一条窄边光 —— 同一丛竹子于是有了正面和背面
+    for (const b of bg.bamboo) {
+      for (let k = 0; k < b.n; k++) {
+        const bx = b.x + k * 3, top = hz - b.h + Math.abs(k - (b.n >> 1)) * 3;
+        ctx.fillStyle = '#2b4229'; ctx.fillRect(bx, top, 1, b.h + 5);
+        ctx.fillStyle = '#3a5a33'; ctx.fillRect(bx - 1, top - 2, 3, 3);
+      }
+      ctx.fillStyle = 'rgba(226,196,132,0.28)';
+      ctx.fillRect(b.x + b.n * 3 / 2 < lx ? b.x + b.n * 3 - 1 : b.x - 1, hz - b.h, PX1 * 3, b.h + 5);
+    }
+    // 芒草：秋天的六堆，田埂上全是这个。穗子越靠近落日越透 —— 逆光的草是白的，背光的是灰的。
+    // 风让整片极慢地倒向同一边（6 秒一个来回、最多歪 1px），慢到只当「这地方有风」
+    const sway = Math.sin(t * (Math.PI * 2) / 6);
+    ctx.fillStyle = '#3b482a';
+    for (const r of bg.reeds) ctx.fillRect(r.x, hz - r.h + 2, PX1 * 2, r.h + 4);
+    for (const r of bg.reeds) {
+      const d = Math.abs(r.x - lx), dx = snap(sway * r.s);
+      ctx.fillStyle = d < 46 ? '#e8d3a0' : d < 112 ? '#bba97c' : '#8d855f';
+      ctx.fillRect(r.x + dx - 1, hz - r.h, 3, 2); ctx.fillRect(r.x + dx, hz - r.h - 2, 1, 2);
+    }
+  });
+  layer(ctx, cam, K.near, () => {
+    // 水田三段：越近的一段越大块。田埂用「亮顶 + 暗面」两档分隔 ——
+    // 一条纯亮线是贴上去的，加一道暗面它才是一道**埂**
+    const bands = [[hz, '#5d7c3e'], [hz + 13, '#526f38'], [hz + 29, '#45632d']];
+    bands.forEach(([y, c], i) => band(ctx, W, y, (bands[i + 1]?.[0] ?? PANEL_Y + M) - y, c));
+    for (let i = 0; i < 3; i++) band(ctx, W, hz + 3 + i * 3, 1, 'rgba(214,220,182,0.18)'); // 最远那段还灌着水
+    ctx.fillStyle = 'rgba(255,226,168,0.32)';   // 日头正下方那一段反得最亮：水面认得出光源，这块地才算被同一盏灯照着
+    for (let i = 0; i < 5; i++) ctx.fillRect(lx - 7 + (i % 2) * 3, hz + 2 + i * 2, 12 - i, 1);
+    for (const [y] of bands) { band(ctx, W, y, 1, '#948f5c'); band(ctx, W, y + 1, 1, 'rgba(34,52,24,0.42)'); }
+    ctx.fillStyle = 'rgba(36,60,26,0.5)';       // 畦沟：远景全是横线，近景补一组竖线，两种方向一对比才有「这块地在往前铺」
+    for (let i = 0; i < 11; i++) ctx.fillRect(-M + i * 26, hz + 30, 1, PANEL_Y - hz - 30 + M);
+    ctx.fillStyle = 'rgba(30,54,22,0.55)';
+    for (const c of bg.crops) ctx.fillRect(c.x, c.y, 1, 2);   // 秧苗
+    // 土沟：画面最下沿那道排水沟。沟口一条受光的亮边、沟里几乎全黑 ——
+    // 前景压着一个近到看得清明暗面的东西，后面三层才退得出去
+    band(ctx, W, PANEL_Y - 12, 1, 'rgba(228,206,150,0.20)');
+    band(ctx, W, PANEL_Y - 11, 11 + M, 'rgba(18,30,14,0.42)');
+    ctx.fillStyle = 'rgba(12,22,10,0.85)';      // 沟边的芒草：只长在画面两侧最边上，敌我的脚都不在那儿
+    for (const g of bg.tufts) for (let k = 0; k < 5; k++)
+      ctx.fillRect(g.x + k * 2, PANEL_Y - g.h + Math.abs(k - 2) * 4, PX1 * 3, g.h);
+  });
+}
+
+// ---- 罗经圈外圈：湿岩壁、积水湖与那座断桥 ----
+// 深处的黑 → 后方的湖与断桥 → 岩层、钟乳石与石笋 → 近处地面、碎石与积水 → 那束天光。
+// 光：顶上一道裂缝漏下来的天光。外圈离地表还近才有这道光，再往里的「深处」一点自然光都没有 ——
+// 两层的差别不只是更暗，是光**换了来源**。
+function drawCave(ctx, W, bg, t, cam) {
+  const hz = HZ.cave;
+  layer(ctx, cam, K.sky, () => {
+    // 岩壁：洞顶没光所以最黑，越靠地面越亮 —— 亮的是积水反上来的那点光。
+    // 岩石本身几乎不带彩（和地图里的 cave_wall #221d1d 同一个思路）：底色接近中性灰，
+    // 冷是区域色调那一层给的。原本这里是饱和暖褐，光靠 multiply 压不成冷灰 —— 正片叠底只能压暗，压不掉红。
+    fillAll(ctx, W, 0, hz, grad(ctx, 0, hz, '#101011', '#232426', '#3a3b3e'));
+    halo(ctx, 208, 74, 60, [[0, 'rgba(150,182,196,0.09)'], [1, 'rgba(120,150,170,0)']]);   // 更深处的一点漫光，暗示洞还在往里
+  });
+  layer(ctx, cam, K.far, () => {
+    // 后方积水湖：只占右半边，左边留一块实心岩壁 —— 构图不对称才有纵深
+    ctx.fillStyle = grad(ctx, 92, hz + 2, '#0e1a1e', '#1e343c');
+    ctx.fillRect(108, 92, W - 108 + M, hz - 90);
+    ctx.fillStyle = 'rgba(140,186,196,0.11)';
+    for (let i = 0; i < 4; i++) ctx.fillRect(120 + i * 30, 96 + (i % 2) * 3, 18 - i * 2, 1);
+    // 断桥：架在湖上的木桥，中间断掉的那一截就是玩家在外围绕路的理由
+    ctx.fillStyle = '#1d1713';
+    ctx.fillRect(126, 94, 30, 3); ctx.fillRect(178, 94, 30, 3);
+    for (const [x, h] of [[130, 12], [152, 10], [182, 10], [204, 13]]) ctx.fillRect(x, 97, 2, h);
+    ctx.fillStyle = '#42341f'; // 桥面朝上那道亮边：天光正落在这儿
+    ctx.fillRect(126, 94, 30, 1); ctx.fillRect(178, 94, 30, 1);
+  });
+  layer(ctx, cam, K.mid, () => {
+    const wave = s => x => s.y + Math.round(Math.sin((x + s.p) * 0.05) * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';        // 岩层：几条起伏的横带，暗示层积岩
+    for (const s of bg.strata) { const f = wave(s); for (let x = -M; x < W + M; x += 6) ctx.fillRect(x, f(x), 6, s.h); }
+    ctx.fillStyle = 'rgba(152,182,190,0.07)';  // 每层上缘一道受光边，细到一个物理像素
+    for (const s of bg.strata) { const f = wave(s); for (let x = -M; x < W + M; x += 6) ctx.fillRect(x, f(x) - PX1 * 2, 6, PX1 * 2); }
+    ctx.fillStyle = 'rgba(120,140,140,0.06)';  // 壁上一道道渗水痕
+    for (const s of bg.seep) ctx.fillRect(s.x, s.y, PX1 * 4, s.h);
+    // 钟乳石 / 石笋：一个从顶上垂下来、一个从地里长上去，两头对着咬，洞才有高度。
+    // 本体和受光边各走一遍（颜色只设两次）—— 逐条切换 fillStyle 是这段唯一会吃掉毫秒的地方
+    const taper = (o, k) => Math.max(1, o.w - Math.round(k * o.w / o.h));
+    ctx.fillStyle = '#141517';
+    for (const d of bg.drips) for (let k = 0; k < d.h; k++) { const w = taper(d, k); ctx.fillRect(d.x - (w >> 1), k, w, 1); }
+    for (const s of bg.spikes) for (let k = 0; k < s.h; k++) { const w = taper(s, k); ctx.fillRect(s.x - (w >> 1), hz + 2 - k, w, 1); }
+    ctx.fillStyle = 'rgba(158,188,198,0.15)';  // 天光是从左上斜下来的平行光，所以一律左脸受光
+    for (const d of bg.drips) for (let k = 0; k < d.h; k++) ctx.fillRect(d.x - (taper(d, k) >> 1), k, PX1 * 2, 1);
+    for (const s of bg.spikes) for (let k = 0; k < s.h; k++) ctx.fillRect(s.x - (taper(s, k) >> 1), hz + 2 - k, PX1 * 2, 1);
+  });
+  layer(ctx, cam, K.near, () => {
+    // 近处地面：湿石头。比岩壁亮一点，敌人脚下才有一条清楚的地平线
+    ctx.fillStyle = grad(ctx, hz, PANEL_Y, '#3a3b3e', '#232426'); ctx.fillRect(-M, hz, W + M * 2, PANEL_Y - hz + M);
+    band(ctx, W, hz, 2, 'rgba(0,0,0,0.35)');   // 岸边的暗线
+    // 天光落地的那一摊亮：光有来处也得有去处，不然那束光是浮在半空的
+    halo(ctx, 176, hz + 14, 48, [[0, 'rgba(190,216,226,0.14)'], [0.5, 'rgba(150,186,206,0.05)'], [1, 'rgba(140,180,200,0)']]);
+    ctx.fillStyle = '#4a4d51';
+    for (const r of bg.rocks) { ctx.fillRect(r.x, r.y, r.w, 2); ctx.fillRect(r.x + 1, r.y - 1, r.w - 2, 1); }
+    ctx.fillStyle = 'rgba(170,196,206,0.16)';
+    for (const r of bg.rocks) ctx.fillRect(r.x, r.y - 1, PX1 * 3, 3);
+    // 地上的积水：形状不动，只有反光在极慢地横移（约 11 秒一个来回、最多 6px）——
+    // 会晃眼的东西一律不要，只允许「慢到几乎看不出在动」的程度
+    for (const p of bg.pools) {
+      for (let k = 0; k < 6; k++) {
+        const w = p.w - Math.abs(k - 2.5) * 6;
+        ctx.fillStyle = k === 0 ? '#425253' : '#14252a'; // 上缘一条亮边，水面才立得起来
+        ctx.fillRect(p.x + Math.round((p.w - w) / 2), p.y + k, Math.round(w), 1);
+      }
+      const drift = Math.round(Math.sin(t * 0.55 + p.ph) * (p.w * 0.16));
+      ctx.fillStyle = `rgba(160,205,212,${(0.16 + 0.06 * Math.sin(t * 0.9 + p.ph * 1.7)).toFixed(3)})`;
+      ctx.fillRect(p.x + 6 + drift, p.y + 2, (p.w >> 1) - 2, 1);
+      ctx.fillRect(p.x + 10 - drift, p.y + 4, (p.w >> 2), 1);
+    }
+    ctx.fillStyle = '#161719';   // 两侧的落石：把画面框住，也遮掉空荡荡的角落
+    ctx.fillRect(-M, PANEL_Y - 16, 20, 22 + M); ctx.fillRect(6, PANEL_Y - 22, 10, 28 + M);
+    ctx.fillRect(W - 16, PANEL_Y - 20, 20 + M, 26 + M); ctx.fillRect(W - 26, PANEL_Y - 12, 12, 18 + M);
+    ctx.fillStyle = 'rgba(150,178,190,0.10)';
+    ctx.fillRect(6, PANEL_Y - 22, PX1 * 3, 28); ctx.fillRect(W - 26, PANEL_Y - 12, PX1 * 3, 18);
+  });
+  // 光束最后画：它是**体积**，在所有东西的前面（连两侧的落石也该被它照到一点）。
+  // 用斜切变换一次填出整束，不必逐行画 —— 这是全文件唯一允许边缘发虚的地方，一束光本来就没有硬边。
+  // 亮度 4.6 秒一个来回、只在 ±14% 之间浮动：洞里有风，光柱里的浮尘在飘
+  layer(ctx, cam, K.mid, () => {
+    ctx.transform(1, 0, 0.34, 1, 0, 0);
+    ctx.globalAlpha = 0.86 + 0.14 * Math.sin(t * (Math.PI * 2) / 4.6);
+    ctx.fillStyle = grad(ctx, -M, hz + 30, 'rgba(206,228,238,0.14)', 'rgba(178,210,224,0.05)', 'rgba(150,190,212,0)');
+    ctx.fillRect(SHAFT - 8, -M, 16, hz + 36);
+  });
+}
+
+// ---- 罗经圈深处：只有磷光照明 ----
+// 最深的黑与罗盘花 → 墙里的磷光矿脉 → 两侧石柱与磷光石本体 → 石板地与地面的倒影。
+function drawDeep(ctx, W, bg, t, cam) {
+  const hz = HZ.deep, lx = LIGHT.deep;
+  layer(ctx, cam, K.sky, () => {
+    fillAll(ctx, W, 0, PANEL_Y, grad(ctx, 0, PANEL_Y, '#08080a', '#181a1b', '#2a2c2d'));
+    // 罗盘花：后墙上一圈圈同心刻痕加放射线，罗经圈就是这么得名的。
+    // 对比压到几乎看不见，只当墙的质地 —— 真画清楚了会跟敌人抢视线
+    ctx.strokeStyle = 'rgba(122,204,188,0.05)'; ctx.lineWidth = PX1 * 3;
+    const cx = 128, cy = 82;
+    for (const r of [22, 40, 60, 82, 108]) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+    for (let i = 0; i < 12; i++) {
+      const a = i * Math.PI / 6;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 22, cy + Math.sin(a) * 22);
+      ctx.lineTo(cx + Math.cos(a) * 108, cy + Math.sin(a) * 108); ctx.stroke();
+    }
+  });
+  layer(ctx, cam, K.far, () => {
+    // 磷光矿脉：光是从墙**里面**长出来的。脉络本身几乎不亮，靠外面一层晕撑起来 ——
+    // 有了脉络，那几颗磷光石才不像凭空摆的，而是这条矿脉冒出头的地方
+    for (const v of bg.veins) {
+      const k = 0.62 + 0.38 * Math.sin(t * (Math.PI * 2) / v.period + v.phase);
+      ctx.beginPath(); ctx.moveTo(v.pts[0][0], v.pts[0][1]);
+      for (let i = 1; i < v.pts.length; i++) ctx.lineTo(v.pts[i][0], v.pts[i][1]);
+      ctx.lineWidth = 3; ctx.strokeStyle = `rgba(66,146,138,${(v.a * k).toFixed(3)})`; ctx.stroke();
+      ctx.lineWidth = PX1 * 4; ctx.strokeStyle = `rgba(158,232,214,${(v.a * 2.2 * k).toFixed(3)})`; ctx.stroke();
+    }
+    for (const g of bg.grit) { ctx.fillStyle = `rgba(150,200,190,${g.a})`; ctx.fillRect(g.x, g.y, 1, 1); }
+  });
+  layer(ctx, cam, K.near, () => {
+    // 地面：这一层的地是铺过石板的（地图里就是 flagstone），画几道接缝把「人工凿出来」讲清楚
+    ctx.fillStyle = grad(ctx, hz, PANEL_Y, '#232425', '#111112'); ctx.fillRect(-M, hz, W + M * 2, PANEL_Y - hz + M);
+    band(ctx, W, hz, 1, 'rgba(120,200,186,0.07)');
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    for (let i = 1; i < 4; i++) ctx.fillRect(-M, hz + i * 9, W + M * 2, 1);
+    for (let i = 0; i < 9; i++) ctx.fillRect(i * 30 + (i % 2) * 12, hz + 1, 1, PANEL_Y - hz);
+    // 地面积水的反光：每颗磷光石在湿石板上拖一道竖直的倒影，亮度跟本体一起呼吸，
+    // 横向的碎光 7 秒一个来回。地面认得出光源，这层的光才是同一盏
+    for (const s of bg.glow) {
+      const k = 0.5 + 0.5 * Math.sin(t * (Math.PI * 2) / s.period + s.phase);
+      const y0 = Math.max(hz, s.y + 2), wob = snap(Math.sin(t * 0.9 + s.phase) * 1.5);
+      ctx.fillStyle = grad(ctx, y0, PANEL_Y + 4, `rgba(150,228,210,${(0.10 + 0.05 * k).toFixed(3)})`, 'rgba(110,190,180,0)');
+      ctx.fillRect(s.x - 2, y0, 4, PANEL_Y - y0 + 4);
+      ctx.fillRect(s.x - 5 + wob, y0 + 6, 10, PX1 * 3); ctx.fillRect(s.x - 4 - wob, y0 + 13, 8, PX1 * 3);
+    }
+  });
+  layer(ctx, cam, K.mid, () => {
+    ctx.fillStyle = '#0b0b0c';  // 两侧的石柱：把画面框住，也提醒这里是人工凿出来的
+    ctx.fillRect(-M, -M, 16 + M, PANEL_Y + M * 2); ctx.fillRect(W - 14, -M, 18 + M, PANEL_Y + M * 2);
+    ctx.fillStyle = 'rgba(120,196,184,0.09)';   // 朝着中间（磷光那边）的内侧受光，外侧全黑
+    ctx.fillRect(12, -M, PX1 * 4, PANEL_Y + M * 2); ctx.fillRect(W - 14 - PX1 * 4, -M, PX1 * 4, PANEL_Y + M * 2);
+    // 磷光石：唯一的光源，冷蓝绿。亮度按各自 3.4–5.2 秒的周期缓慢起伏，振幅小到只像在呼吸
+    for (const s of bg.glow) {
+      const k = 0.5 + 0.5 * Math.sin(t * (Math.PI * 2) / s.period + s.phase), a = 0.11 + 0.05 * k;
+      halo(ctx, s.x, s.y, s.r, [[0, `rgba(150,235,214,${(a * 1.8).toFixed(3)})`],
+        [0.45, `rgba(88,178,168,${(a * 0.75).toFixed(3)})`], [1, 'rgba(60,140,130,0)']]);
+      ctx.fillStyle = `rgba(172,232,220,${(0.46 + 0.16 * k).toFixed(3)})`; // 结晶本体
+      ctx.fillRect(s.x - 1, s.y - s.c, 2, s.c);
+      ctx.fillStyle = s.x < lx ? 'rgba(126,206,192,0.75)' : 'rgba(80,150,144,0.7)'; // 朝中间的一面更亮
+      ctx.fillRect(s.x - 3, s.y - (s.c - 2), 1, s.c - 2); ctx.fillRect(s.x + 2, s.y - (s.c - 3), 1, s.c - 3);
+    }
+  });
+}
+
+// ---- 大武山祭场：夜、立石、星空，最终战的仪式感 ----
+// 夜空与月 → 稜线与后排立石 → 地面、月光与长影 → 前排立石 → 火塘。
+function drawShrine(ctx, W, bg, t, cam) {
+  const hz = HZ.shrine, MX = LIGHT.shrine, MY = 24;
+  layer(ctx, cam, K.sky, () => {
+    fillAll(ctx, W, 0, hz, grad(ctx, 0, hz, '#06050f', '#100f24', '#251f3d'));
+    ctx.save(); ctx.transform(1, 0, 0.9, 1, -46, 0);   // 银河：斜穿过去的一条淡带。夜空只有点没有面就太空，这条带子把星星串起来
+    ctx.fillStyle = grad(ctx, 0, hz, 'rgba(150,160,220,0)', 'rgba(160,170,228,0.055)', 'rgba(140,150,210,0)');
+    ctx.fillRect(24, -M, 44, hz + M * 2); ctx.restore();
+    // 星：每颗自己的周期（2.2–4.8 秒）与相位，明暗差只有 0.16–0.22，慢到像在呼吸而不是在闪
+    for (const s of bg.stars) {
+      const a = s.base + s.amp * Math.sin(t * (Math.PI * 2) / s.period + s.phase);
+      ctx.fillStyle = `rgba(226,234,255,${a.toFixed(3)})`;
+      ctx.fillRect(s.x, s.y, 1, 1);
+      if (s.big) { // 亮星多描四个邻点，看起来大一圈，不必真的画成 2px 方块
+        ctx.fillStyle = `rgba(226,234,255,${(a * 0.4).toFixed(3)})`;
+        ctx.fillRect(s.x - 1, s.y, 1, 1); ctx.fillRect(s.x + 1, s.y, 1, 1);
+        ctx.fillRect(s.x, s.y - 1, 1, 1); ctx.fillRect(s.x, s.y + 1, 1, 1);
+      }
+    }
+    // 月：挂在敌我之间那块空档上，也给立石的边光和地上的长影一个来源
+    halo(ctx, MX, MY, 24, [[0, 'rgba(200,214,240,0.17)'], [1, 'rgba(200,214,240,0)']]);
+    ctx.fillStyle = '#c9d3e8';
+    for (let k = -6; k <= 6; k++) { const w = Math.round(Math.sqrt(Math.max(0, 36 - k * k))); ctx.fillRect(MX - w, MY + k, w * 2, 1); }
+    ctx.fillStyle = 'rgba(120,134,168,0.5)';
+    for (let k = -6; k <= 2; k++) { const w = Math.round(Math.sqrt(Math.max(0, 36 - k * k))); ctx.fillRect(MX - w + 1, MY + k, 3, 1); } // 月面的暗部
+  });
+  layer(ctx, cam, K.far, () => {
+    ridge(ctx, W, hz - 9, RIDGE_TAIWU, '#0d0c1a', { lx: MX, lit: '#242142', dark: '#0a0915' }); // 大武山的稜线：朝月那一面有一线月光
+    band(ctx, W, hz - 15, 8, 'rgba(150,132,196,0.06)');   // 山脚下的夜雾，把稜线和祭场分开
+    ridge(ctx, W, hz, RIDGE_NEAR, '#0a0914', { lx: MX, lit: '#1a1934', dark: '#07060f' });      // 近一道山脊，压在祭场后面
+    ctx.fillStyle = '#100f1d';   // 后排的小立石：更矮更暗，站在地平线上。围成的那一圈于是有了前后
+    for (const m of bg.back) ctx.fillRect(m.x, hz - m.h, m.w, m.h + M);
+  });
+  layer(ctx, cam, K.near, () => {
+    // 夯实的土地。上缘必须**刚好**落在地平线上（不能像 fillAll 那样往上溢，会啃掉远景稜线的下半截）
+    band(ctx, W, hz, PANEL_Y - hz + M, '#161425');
+    halo(ctx, MX, hz + 8, 92, [[0, 'rgba(156,168,216,0.10)'], [0.55, 'rgba(140,150,200,0.035)'], [1, 'rgba(130,140,190,0)']]);
+    // 月光在地上拉出的长影：石柱背着月的那一侧，影子往画面前方斜着铺开。
+    // 一行一行画（不走路径），影子的边才是硬的 —— 和石柱本身同一种像素味。
+    // 这是整张图里最像 FF6 的一笔：地上有影，「那些石头是立着的」这件事才成立
+    ctx.fillStyle = 'rgba(4,3,12,0.42)';
+    for (const m of bg.stones) {
+      const dir = m.x + m.w / 2 < MX ? -1 : 1, len = Math.min(PANEL_Y - hz, Math.round(m.h * 0.7) + 8);
+      for (let j = 0; j < len; j++) ctx.fillRect(snap(m.x + dir * j * 1.15), hz + j, Math.max(2, m.w - (j >> 2)), 1);
+    }
+  });
+  layer(ctx, cam, K.mid, () => {
+    for (const m of bg.stones) {   // 立石：围成一圈的石柱。朝月亮那一侧留一条窄边光，其余全是剪影
+      ctx.fillStyle = '#191828'; ctx.fillRect(m.x, hz - m.h, m.w, m.h + 10);
+      ctx.fillStyle = '#3d3a5c';
+      ctx.fillRect(m.x + m.w / 2 < MX ? m.x + m.w - PX1 * 3 : m.x, hz - m.h, PX1 * 3, m.h + 10);
+      ctx.fillStyle = '#2b2844'; ctx.fillRect(m.x, hz - m.h, m.w, 1);   // 顶面也吃得到月光
+    }
+  });
+  layer(ctx, cam, K.near, () => {
+    for (const g of bg.grit) { ctx.fillStyle = `rgba(180,170,210,${g.a})`; ctx.fillRect(g.x, g.y, 2, 1); }
+    ctx.fillStyle = '#2b2740';   // 地上摆成一圈的祭石：火塘的边
+    for (let i = 0; i < 13; i++) {
+      const a = Math.PI * (i / 12);
+      ctx.fillRect(snap(128 - Math.cos(a) * 74), snap(136 + Math.sin(a) * 9), 4, 2);
+    }
+    // 火塘里剩下的一点炭：出火熄掉之后就只剩这个了。5.5 秒一次的极暗起伏
+    const k = 0.5 + 0.5 * Math.sin(t * (Math.PI * 2) / 5.5);
+    halo(ctx, 128, 136, 44, [[0, `rgba(214,124,58,${(0.065 + 0.035 * k).toFixed(3)})`], [1, 'rgba(214,124,58,0)']]);
+  });
+}
+
+// ---- 通用背景：认不出地图时的退路 ----
+// 也分了三层，好让「调试强制遇敌」看到的东西和正式背景是同一种语汇
+function drawFallback(ctx, W, cam) {
+  layer(ctx, cam, K.sky, () => fillAll(ctx, W, 0, PANEL_Y, grad(ctx, 0, PANEL_Y, '#232a33', '#3b4038', '#565a48')));
+  layer(ctx, cam, K.far, () => ridge(ctx, W, PANEL_Y - 40, RIDGE_NEAR, '#3f4a38', { lx: 158, lit: '#5c6742', dark: '#333c2c' }));
+  layer(ctx, cam, K.near, () => {
+    band(ctx, W, PANEL_Y - 40, 40 + M, '#4a5138'); band(ctx, W, PANEL_Y - 40, 2, '#39402c');
+    for (let i = 0; i < 5; i++) band(ctx, W, PANEL_Y - 36 + i * 7, 1, 'rgba(200,190,150,0.06)');
+  });
+}
+
+// 暗角：地图那边有暗角托底，战斗画面一直没有，所以四角总是「亮着但空着」。
+// 压下来之后，中间那条视觉走廊（敌人—火塘—我方）自己就浮出来了。
+function vignette(ctx, W) {
+  const g = ctx.createRadialGradient(128, 84, 44, 128, 84, 178);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.62, 'rgba(0,0,0,0.10)'); g.addColorStop(1, 'rgba(0,0,0,0.34)');
+  ctx.fillStyle = g; ctx.fillRect(-M, -M, W + M * 2, PANEL_Y + M * 2);
+}
+const PAINT = { plains: drawPlains, cave: drawCave, deep: drawDeep, shrine: drawShrine };
+
+// 把一套背景画出来。cam（震屏偏移）在这里读一次，分给每一层 —— 调用方不必知道它存在。
+// 暗角用系数 0：镜头晃、暗角不晃 —— 它是镜片，不是景。
+export function paintScene(ctx, W, bg, t) {
+  const cam = camOf(ctx), fn = PAINT[bg?.kind];
+  if (fn) fn(ctx, W, bg, t, cam); else drawFallback(ctx, W, cam);
+  layer(ctx, cam, 0, () => vignette(ctx, W));
+}

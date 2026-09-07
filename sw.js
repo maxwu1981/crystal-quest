@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 169 个文件，约 2.5 MB。
-const VERSION = '2a4798c72d08';
+// 共 171 个文件，约 2.6 MB。
+const VERSION = 'f50f6801b16e';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -136,11 +136,13 @@ const PRECACHE = [
   './src/battle/ai.js',
   './src/battle/autoBattle.js',
   './src/battle/backdrop.js',
+  './src/battle/backdropDraw.js',
   './src/battle/effects.js',
   './src/battle/formulas.js',
   './src/battle/hud.js',
   './src/battle/hudBits.js',
   './src/battle/render.js',
+  './src/battle/spellFx.js',
   './src/battle/victory.js',
   './src/core/Game.js',
   './src/core/Input.js',
