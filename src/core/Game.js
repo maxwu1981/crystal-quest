@@ -11,14 +11,18 @@ import { buildSprites } from '../assets/sprites.js';
 import { buildTiles } from '../assets/tiles.js';
 import { loadArt } from '../assets/art.js';
 import { buildEquipLayers } from '../assets/equip.js';
-import { ART, LOGICAL_W, LOGICAL_H } from './draw.js';
+import { ART, LOGICAL_W, LOGICAL_H, MAX_W } from './draw.js';
 
-// 按屏幕宽高比算逻辑宽度。夹在 256–448 之间：
-// 窄于 256 会切掉照 256 排的 UI；宽于 448 时战斗两侧空得太多，
-// 而且每多一列都要多画一遍地形（buildTerrainFx 是 O(w·h)）。
-function layoutWidth() {
-  const ar = (innerWidth || 256) / (innerHeight || 224);
-  return Math.max(LOGICAL_W, Math.min(448, Math.round(LOGICAL_H * ar / 2) * 2));
+// 按屏幕宽高比算逻辑宽度。夹在 256–576 之间：
+// 窄于 256 会切掉照 256 排的 UI；576 是 2.57:1，比市面上最长的手机（21:9 ≈ 2.33）还宽，
+// 所以这个上限实际上碰不到——**它存在只是为了兜住异常的 innerWidth，不是为了裁掉手机**。
+//
+// 上限原本是 448（＝2:1）。19.5:9 的 iPhone 横屏要 486 才够，于是两侧各留 32px 黑边——
+// 导演在手机上看到的黑框就是这么来的。宽一点要多画几列地形（buildTerrainFx 是 O(w·h)），
+// 448→486 是 +8%，换掉黑边值得。
+export function layoutWidth(ar) {
+  const r = ar || (innerWidth || 256) / (innerHeight || 224);
+  return Math.max(LOGICAL_W, Math.min(MAX_W, Math.round(LOGICAL_H * r / 2) * 2));
 }
 import { newGameState } from '../game/state.js';
 import { normalizeMember } from '../game/jobskill.js';
@@ -51,19 +55,50 @@ export class Game {
     this.fade = { alpha: 0, dir: 0, speed: 4, color: '#000', onMid: null };
     this.debug = new URLSearchParams(location.search).has('debug');
     this.fitCanvas();
-    window.addEventListener('resize', () => this.fitCanvas());
+    const refit = () => this.fitCanvas();
+    window.addEventListener('resize', refit);
+    // 转屏那一下，iOS Safari 会先派一个 resize、而那一刻 innerWidth/innerHeight
+    // 有时还是转之前的数——只听 resize 就会按旧尺寸算一次然后停在那儿。
+    // 补一次延后的重算（touch.js 量按钮矩形也是同一个做法，200ms）。
+    window.addEventListener('orientationchange', () => setTimeout(refit, 200));
+    // Safari 的地址栏收起 / 展开只改 visualViewport，不一定派 window 的 resize；
+    // 不跟这个的话画面下方会露出一条。没有这个 API 的浏览器直接跳过。
+    window.visualViewport?.addEventListener('resize', refit);
     window.addEventListener('keydown', () => audio.ensure()); // 浏览器要求用户交互后才能出声
   }
 
   fitCanvas() {
-    // 画布的**逻辑宽度**已经跟着屏幕宽高比算好了（见 constructor 的 layoutWidth），
-    // 所以这里只要等比放到铺满即可——不会再有黑边，也不会拉伸变形。
-    // 桌面仍留 24px 给底部那行键盘提示。
     const touch = matchMedia('(pointer: coarse)').matches;
-    const pad = touch ? 0 : 24;
-    const scale = Math.min(innerWidth / this.W, (innerHeight - pad) / this.H);
-    this.canvas.style.width = Math.round(this.W * scale) + 'px';
-    this.canvas.style.height = Math.round(this.H * scale) + 'px';
+    const pad = touch ? 0 : 24;                 // 桌面留 24px 给底部那行键盘提示
+    const vw = Math.max(1, innerWidth), vh = Math.max(1, innerHeight - pad);
+
+    // ① 逻辑宽度**每次都跟着当前屏幕重算**。
+    //    原本只在 constructor 里算一次，于是手机一转屏，画布还是竖屏那会儿的 256 宽，
+    //    塞进 19.5:9 的横屏里两侧就是一大片黑。所有会改变可视区的事件
+    //    （resize / orientationchange / visualViewport）都收敛到这一个方法。
+    const w = layoutWidth(vw / vh);
+    if (w !== this.W) {
+      this.W = w;
+      this.OX = Math.round((w - LOGICAL_W) / 2);
+      this.canvas.width = w * ART;              // 会把 2d context 的状态清空，所以下面要重设
+      this.ctx.imageSmoothingEnabled = false;
+      // game.W 是每帧现读的（战斗背景、地图可视范围、光照贴图都是），
+      // 所以改了立刻生效，不需要通知任何场景重建。
+    }
+
+    if (touch) {
+      // ② 触屏一律**铺满，不留黑边**（导演明确要求）。
+      //    逻辑宽已经按屏幕比例取到最接近的偶数，剩下的误差最多半个逻辑像素——
+      //    换算成形变 ≤0.5%，肉眼看不出来；而黑边是一眼就看得见的。
+      //    虚拟按键本来就是浮在画面上的 DOM 覆盖层（touch.js），不占地方。
+      this.canvas.style.width = vw + 'px';
+      this.canvas.style.height = vh + 'px';
+    } else {
+      // 桌面窗口可以是任意形状，宁可留边也不拉伸
+      const scale = Math.min(vw / this.W, vh / this.H);
+      this.canvas.style.width = Math.round(this.W * scale) + 'px';
+      this.canvas.style.height = Math.round(this.H * scale) + 'px';
+    }
   }
 
 

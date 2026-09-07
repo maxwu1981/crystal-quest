@@ -10,6 +10,10 @@ import { parseMap } from '../../src/field/FieldScene.js';
 import { canEquip } from '../../src/game/items.js';
 import { STATUS } from '../../src/game/status.js';
 import { ELEMENTS } from '../../src/battle/elements.js';
+import { layoutWidth } from '../../src/core/Game.js';
+import { MAX_W } from '../../src/core/draw.js';
+import { TitleScene } from '../../src/title/TitleScene.js';
+import { EndingScene } from '../../src/title/EndingScene.js';
 test('每个遇敌区都有对应的战斗背景，不会静默退回通用背景', async () => {
   // 遇敌区没在 ZONE_BG/MAP_BG 里登记的话，战斗背景会**静默**退回 drawFallback()——
   // 没有正式美术、没有透视地面、地平线还停在旧位置，上半场的人整个浮在天上。
@@ -76,5 +80,43 @@ test('魔法 / 道具 / 敌人数据字段合法', () => {
     if (e.onHit) assert(STATUS[e.onHit.status] && e.onHit.chance > 0 && e.onHit.chance <= 1, `${id}.onHit`);
     for (const s of e.spells || []) assert(data.spells[s], `${id} 魔法 ${s}`);
     for (const s of e.immune || []) assert(STATUS[s] || ELEMENTS[s], `${id} immune ${s}`);
+  }
+});
+
+// ── 手机上不能有黑边 ───────────────────────────────────────────────────────
+// 导演的要求是「铺满，两侧不要黑框，按键浮在画面上」。做法是**让画面本身变宽**
+// （多显示一些世界），而不是拉伸或裁切。这条卡住那个换算。
+test('画面宽度跟着屏幕比例走：主流手机横屏都不会留黑边', () => {
+  const bad = [];
+  // 市面上真实存在的横屏比例。19.5:9 的 iPhone 是 2.167——上限曾经是 448（＝2:1），
+  // 于是两侧各留 32px 黑边，正是导演在手机上看到的那圈黑框。
+  for (const [name, ar] of [['16:9', 16 / 9], ['18:9', 2], ['19.5:9 iPhone', 19.5 / 9],
+                            ['20:9', 20 / 9], ['21:9', 21 / 9], ['4:3 平板', 4 / 3]]) {
+    const w = layoutWidth(ar);
+    const got = w / 224;
+    // 逻辑宽取偶数，所以最多差半个逻辑像素；换算成形变 ≤0.5%，肉眼看不出来
+    const off = Math.abs(got - ar) / ar;
+    if (off > 0.006) bad.push(`${name}：屏幕 ${ar.toFixed(3)}，画布 ${got.toFixed(3)}（宽 ${w}），差 ${(off * 100).toFixed(1)}%`);
+    if (w < 256) bad.push(`${name}：宽 ${w} 小于 256，照 256 排的 UI 会被切掉`);
+  }
+  assert(!bad.length, '\n    ' + bad.join('\n    '));
+});
+
+test('画面宽度：极端比例要夹得住，不能算出零或几千', () => {
+  assert(layoutWidth(0.5) === 256, `竖屏该夹到 256，得到 ${layoutWidth(0.5)}`);
+  assert(layoutWidth(99) === MAX_W, `超宽该夹到 ${MAX_W}，得到 ${layoutWidth(99)}`);
+  assert(layoutWidth(0) === 256 && layoutWidth(NaN) >= 256, '0 / NaN 也不能算出小于 256 的宽度');
+  for (const ar of [1, 1.5, 2, 2.4]) assert(layoutWidth(ar) % 2 === 0, `${ar} 算出的宽度不是偶数`);
+});
+
+// 满屏铺东西的场景必须声明 wide，否则会被 Game.render 整层右移 OX，左边露出一条纯黑。
+// 标题画面上就是这样：手机横屏时左边四分之一是黑的（导演看到的另一半黑边）。
+// wide 是类字段，写在**实例**上，所以只能建一个实例来查。
+test('整幅铺满的场景都声明了 wide，不会被居中偏移推出一条黑边', () => {
+  const fake = { data, state: { party: [] }, W: 486, H: 224, OX: 115, input: {} };
+  for (const [name, make] of [['TitleScene', () => new TitleScene(fake)],
+                              ['EndingScene', () => new EndingScene(fake, [], () => {})]]) {
+    let sc; try { sc = make(); } catch (e) { assert(false, `${name} 建不起来：${e.message}`); }
+    assert(sc.wide === true, `${name} 没声明 wide——它按 game.W 排版，被右移 OX 之后左边会是一条黑`);
   }
 });

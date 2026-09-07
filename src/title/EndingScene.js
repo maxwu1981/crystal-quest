@@ -4,14 +4,18 @@
 import { drawText, PIXEL, FONT_FAMILY } from '../core/text.js';
 import { UI } from '../ui/Window.js';
 import { RNG } from '../core/RNG.js';
+import { MAX_W } from '../core/draw.js';
 import { TitleScene } from './TitleScene.js';
 
 export class EndingScene {
+  wide = true;                 // 整幅铺满，理由同 TitleScene
+
   constructor(game, onDone = null) {
     this.game = game; this.onDone = onDone; this.transparent = false; this.bgm = 'title'; this.t = 0;
     this.lines = game.data.story?.ending?.lines || ['感谢游玩！'];
     const rng = new RNG(11);
-    this.stars = Array.from({ length: 80 }, () => [rng.int(0, 255), rng.int(0, 223), rng.next() * 6.28]);
+    // 撒到 MAX_W 而不是 256（理由同 TitleScene）：宽屏上右边那一大半本来一粒星都没有
+    this.stars = Array.from({ length: 170 }, () => [rng.int(0, MAX_W - 1), rng.int(0, 223), rng.next() * 6.28]);
     this.scroll = 0; this.speed = 18; this.done = false;
   }
   get totalH() { return this.lines.length * 16 + this.game.H + 40; }
