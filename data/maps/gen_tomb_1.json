@@ -1,0 +1,153 @@
+{
+ "name": "万金 古塚",
+ "encounterZone": "cave_deep",
+ "spawn": {
+  "x": 10,
+  "y": 29
+ },
+ "legend": {
+  "#": {
+   "tile": "cave_wall",
+   "solid": true
+  },
+  ".": {
+   "tile": "cave_floor",
+   "encounter": true
+  },
+  "<": {
+   "tile": "stairs_up"
+  },
+  ">": {
+   "tile": "stairs_down"
+  },
+  "A": {
+   "tile": "counter",
+   "solid": true
+  },
+  "D": {
+   "tile": "door"
+  },
+  "R": {
+   "tile": "mountain",
+   "solid": true
+  },
+  "W": {
+   "tile": "wall",
+   "solid": true
+  },
+  "X": {
+   "tile": "glowstone",
+   "solid": true
+  },
+  "o": {
+   "tile": "flagstone",
+   "encounter": true
+  }
+ },
+ "rows": [
+  "#####################",
+  "#####################",
+  "######WWWW>WWWW######",
+  "######ooXoooXoo######",
+  "######WoooooooW######",
+  "######WoooAoooW######",
+  "######WoooAoooW######",
+  "###...ooXoooXoo######",
+  "##..##WWWWDWWWW######",
+  "##.######WoW#########",
+  "##.######WoW#########",
+  "##.######WoW#########",
+  "##.######WRW#########",
+  "##.######WoW#########",
+  "##.######WoW#########",
+  "##.######WoW#########",
+  "#W.WWW#WWWDWWW#WWWWW#",
+  "#WoooWWWoooooWWWoooW#",
+  "#WoooDoDoooooDoDoooW#",
+  "#WoooWWWoooooWWWoooW#",
+  "#WWWWW#WoooooW#WWWWW#",
+  "#######WWWDWWW#######",
+  "#########WoW#########",
+  "#########WoW#########",
+  "#########ooo#########",
+  "#########WoW#########",
+  "#########WoW#########",
+  "#########XoX#########",
+  "#########WoW#########",
+  "#########WoW#########",
+  "#########W<W#########"
+ ],
+ "events": [
+  {
+   "x": 18,
+   "y": 19,
+   "type": "chest",
+   "id": "gen_tomb_1_1",
+   "item": "antidote",
+   "qty": 3,
+   "text": [
+    "耳室是给活人放东西的，不是给死人用的。",
+    "东西还在，放东西的人不在。"
+   ]
+  },
+  {
+   "x": 9,
+   "y": 7,
+   "type": "chest",
+   "id": "gen_tomb_1_2",
+   "item": "hiether",
+   "qty": 2,
+   "text": [
+    "石缝里卡着东西，不知道卡了多久。"
+   ]
+  },
+  {
+   "x": 6,
+   "y": 3,
+   "type": "chest",
+   "id": "gen_tomb_1_3",
+   "gold": 260,
+   "text": [
+    "壁龛里的陶俑面朝墙站着，一排十二个。",
+    "摆的人知道它们该朝哪边——朝里，不朝外。"
+   ]
+  },
+  {
+   "x": 10,
+   "y": 11,
+   "type": "chest",
+   "id": "gen_tomb_1_4",
+   "item": "phoenix",
+   "qty": 2
+  },
+  {
+   "x": 14,
+   "y": 3,
+   "type": "chest",
+   "id": "gen_tomb_1_5",
+   "item": "guard_band",
+   "qty": 1
+  },
+  {
+   "x": 14,
+   "y": 7,
+   "type": "chest",
+   "id": "gen_tomb_1_6",
+   "gold": 380
+  }
+ ],
+ "npcs": [],
+ "gen": {
+  "kind": "tomb",
+  "entry": [
+   10,
+   30
+  ],
+  "exit": [
+   10,
+   2
+  ],
+  "seed": 5,
+  "attempt": 0
+ }
+}

@@ -1,4 +1,5 @@
-// 召唤演出（下）：焦点在**敌方**的五位——关圣帝君、钟馗、中坛元帅、义民爷、吕布。
+// 召唤演出（下）：焦点在**敌方**的五位——
+// 关圣帝君（火）、钟馗（光）、中坛元帅（風）、义民爷（暗）、吕布（金）。
 // 另外三位（伯公、观世音菩萨、妈祖）在 summonFxAlly.js；这个档负责把八位合并成 SUMMON_FX。
 //
 // 形状和 SPELL_FX 一致：`(x, y, rng) => ({ t, dur, render(ctx, p) })`，
@@ -10,13 +11,16 @@
 //     （ENEMY_CENTERS 是 [[48,62],[100,82],[48,114],[100,132]]，中心就在那里）
 // 每一位的全屏部分都用固定屏幕几何，只有局部部分跟着 (x, y) 走——传偏了不好看，但不会散架。
 //
-// **召唤为什么要比魔法长**：魔法 1.2 秒说一件事（这一下是火）；
-// 召唤 1.7–2.2 秒要说三件事（谁来了 → 他做了什么 → 走了）。中间那件必须有**剪影**，
-// 因为召唤的全部意义就是「一眼认出是谁」。所以这五位各有一个认人的形：
-// 关刀的月牙、乌纱帽的两只帽翅、两只火轮、六面旗、一支立着的戟。
+// **召唤为什么要比魔法长**：魔法 1.2 秒说一件事（这一下是火）；召唤 1.7–2.2 秒要说三件事
+// （谁来了 → 他做了什么 → 走了）。中间那件必须有**剪影**——召唤的全部意义就是「一眼认出是谁」。
+// 五个认人的形：关刀的月牙、乌纱帽的两只帽翅、两只火轮、六面旗、一支立着的戟。
 // 演出的其余规矩（只闪一次、峰值 ≤0.45、形状优先于粒子）见 summonKit.js 开头。
+//
+// **配色跟属性走**（八属性见 battle/elements.js）：关帝改火（本来就是暗红天 + 橙光，
+// 是数据落后于演出）、中坛元帅改風、义民爷改暗、吕布改金。各自的做法写在下面每一位头上。
+// 以前关帝和钟馗两位都挂 light，现在光只剩钟馗一位。
 
-import { W, FH, seg, pulse, ease, wash, flash, glow, ring, dot, poly, beam, banner, flame, inward } from './summonKit.js';
+import { W, FH, seg, pulse, ease, wash, flash, glow, ring, dot, poly, beam, banner, flame, gust, inward } from './summonKit.js';
 import { PARTY_X, PARTY_Y0, PARTY_DY } from './hudBits.js';
 import { FX_ALLY } from './summonFxAlly.js';
 
@@ -30,6 +34,10 @@ function guandao(ctx, L) {
 
 const FX_ENEMY = {
   // 关圣帝君「义气」：立(0–.26) → 举(.26–.46) → 劈(.46–.64) → 护(.64–1)
+  //
+  // **属性火**：面如重枣，赤兔赤马，而他解锁在火種那一幕的恆春。
+  // 这一段的暗红天 + 橙火星本来就是照火画的，改属性只是让数据追上演出，颜色没动，
+  // 只在刀痕上补了一串余烬——刀过去之后那条线还在烧，火才落到实处。
   //
   // 全场唯一一个「打完还留下来」的演出，因为义气不是一记大招。
   // 刀劈完停在原地插着，同一时间我方四个座位上落下金色的光条（那就是防护）。
@@ -66,6 +74,14 @@ const FX_ENEMY = {
         const a0 = ang(0), a1 = ang(ease(cut));
         beam(ctx, PX + Math.sin(a0) * L, PY - Math.cos(a0) * L,
           PX + Math.sin(a1) * L, PY - Math.cos(a1) * L, 5 * (1 - cut) + 1, '#ffffff', 1 - cut);
+        // 余烬：刀走过的弧上留一串火星，刀过去了那条线还在烧
+        for (let i = 0; i < 9; i++) {
+          const aa = a0 + (a1 - a0) * (i / 8), rr = L * (0.34 + i * 0.075);
+          ctx.globalAlpha = (1 - cut) ** 1.4 * 0.9;
+          dot(ctx, PX + Math.sin(aa) * rr, PY - Math.cos(aa) * rr + cut * 6,
+            i % 3 ? 1 : 2, i % 2 ? '#ffb27a' : '#ffe0b0');
+        }
+        ctx.globalAlpha = 1;
       }
       // 护：我方四个座位上落下一道金光条。这一段是给 allyStatus 看的，不该抢戏
       const g = seg(p, 0.60, 1);
@@ -80,6 +96,9 @@ const FX_ENEMY = {
   },
 
   // 钟馗「跳钟馗」：锣(0–.20) → 炮(.20–.54) → 影(.54–.72) → 扫(.72–1)
+  //
+  // **属性光**，八位里唯一的一位（关帝改成火之后就不撞了）。整段的看点就是
+  // 「先把场子压黑，再一串火把点过去」，那正是光该长的样子，所以配色一个都没动。
   //
   // 鞭炮串是这一段的主角，也是最容易做成频闪的地方。做法：十二个**局部**小亮点
   // 依次炸，每个只有几像素，全程不碰 flash()。局部亮点连着来是热闹，
@@ -143,26 +162,44 @@ const FX_ENEMY = {
 
   // 中坛元帅「三头六臂」：轮(0–.26) → 绫(.26–.44) → 击×3(.44–.84) → 收(.84–1)
   //
+  // **属性風**——风火轮，風在前面。火轮不能拿掉（那是认他的剪影），
+  // 所以改法是换层次：底色、扩散的光、三下乾坤圈全走风的青白，
+  // **火只留在轮缘那一圈火舌和收尾的余烬上**——风在前、火在后，才读得成风火轮，
+  // 而不是一个青色的火球。轮后拖的风线是这次加的：轮在转，要靠被它带起来的东西说。
+  //
   // 三段伤害要看得出是三下，所以三次乾坤圈砸下来的间隔是死的（0.13），
   // 前两下只给局部的光，第三下才闪一次全屏。三下一样亮就没有终点了。
   nezha: (x, y, rng) => {
     const wheels = [{ from: -30, to: x - 26 }, { from: W + 30, to: x + 26 }];
     const spark = Array.from({ length: 20 }, () => ({
       a: rng.next() * 6.283, v: rng.int(16, 44), d: rng.next() * 0.5, s: rng.int(1, 2) }));
+    // 满场的风线：位置一次定死，逐帧只推进度（逐帧掷骰会闪成噪点）
+    const gusts = Array.from({ length: 7 }, () => ({
+      y: rng.int(16, 132), len: rng.int(30, 64), bow: rng.int(-7, 7), d: rng.next() * 0.6, w: rng.next() }));
     const ph = rng.next() * 6.28;
     return { t: 0, dur: 1.9, render(ctx, p) {
-      wash(ctx, '#5a1e04', pulse(p, 0.10, 0.92) * 0.16);
-      glow(ctx, x, y, 96, 'rgb(255,150,50)', pulse(p, 0.20, 0.94) * 0.40);
+      wash(ctx, '#123c38', pulse(p, 0.10, 0.92) * 0.18);
+      glow(ctx, x, y, 96, 'rgb(150,240,215)', pulse(p, 0.20, 0.94) * 0.34);
+      // 风：几条横过整个战场的线，从左往右刮。全程都有，是这一段的底
+      const gp = seg(p, 0.04, 0.94);
+      for (const q of gusts) {
+        const k = (gp - q.d) / (1 - q.d); if (k <= 0 || k >= 1) continue;
+        gust(ctx, -20 + (W + 60) * ease(k), q.y, q.len, q.bow,
+          q.w > 0.7 ? '#eafff8' : '#9fe8d4', Math.sin(k * Math.PI) * 0.55, 0.7 + q.w);
+      }
       // 轮：两只火轮从画面两侧滚进来，滚到目标两边停住
       const r = seg(p, 0, 0.30), out = seg(p, 0.86, 1);
       if (r > 0) for (const w of wheels) {
         const cx = w.from + (w.to - w.from) * ease(Math.min(1, r)) + (w.from < 0 ? -1 : 1) * out * 90;
         const spin = p * 9 + ph;
         ctx.globalAlpha = 1 - out;
+        // 轮后面拖两条风线：轮在转这件事要靠被它带起来的东西说
+        gust(ctx, cx - 26 * Math.sign(w.to - w.from || 1), y + 8, 22, 5, '#cdf6ea', (1 - out) * 0.7, 1);
+        gust(ctx, cx - 22 * Math.sign(w.to - w.from || 1), y + 17, 17, -4, '#9fe8d4', (1 - out) * 0.5, 0.8);
         ctx.strokeStyle = '#ffc832'; ctx.lineWidth = 1.6;
         ctx.beginPath(); ctx.ellipse(cx, y + 12, 11, 7, 0, 0, 6.29); ctx.stroke();
         ctx.strokeStyle = '#ff6a1f'; ctx.lineWidth = 2.2;
-        for (let i = 0; i < 10; i++) {                       // 沿轮缘的火舌
+        for (let i = 0; i < 10; i++) {                       // 沿轮缘的火舌（火只留在这一圈）
           const a = i * 0.628 + spin, len = 5 + Math.sin(a * 3 + p * 7) * 3;
           ctx.beginPath();
           ctx.moveTo(cx + Math.cos(a) * 11, y + 12 + Math.sin(a) * 7);
@@ -187,21 +224,24 @@ const FX_ENEMY = {
       for (let i = 0; i < 3; i++) {
         const k = seg(p, 0.44 + i * 0.13, 0.58 + i * 0.13);
         if (k <= 0 || k >= 1) continue;
-        ring(ctx, x, y, 34 * (1 - ease(k)) + 5, '#ffe07a', 1 - k * 0.4, 2.6 * (1 - k) + 0.8);
+        ring(ctx, x, y, 34 * (1 - ease(k)) + 5, '#cff8ec', 1 - k * 0.4, 2.6 * (1 - k) + 0.8);
         if (k > 0.55) {
-          glow(ctx, x, y, 60, 'rgb(255,190,90)', (k - 0.55) * 1.4);
-          for (let j = 0; j < 3; j++) flame(ctx, x + (j - 1) * 7, y + 12, 18 * (1 - k), 6, ph + j + p * 6, j === 1 ? '#fff6d0' : '#ff9a3c');
+          glow(ctx, x, y, 60, 'rgb(170,240,220)', (k - 0.55) * 1.4);
+          // 正中一条火舌（轮上带下来的），两边是被砸出去的风
+          flame(ctx, x, y + 12, 18 * (1 - k), 6, ph + p * 6, '#fff6d0');
+          for (const j of [-1, 1]) gust(ctx, x + j * 6, y + 6 - k * 8, j * 26, j * 8, '#eafff8', (1 - k) * 0.85, 1.1);
         }
       }
       // 只有第三下闪，而且**单独走一条更宽的曲线**：挂在那 0.14 宽的命中段上
       // 起落只有 0.055 秒，低于 0.08 秒的下限——那就是频闪，不是冲击
-      flash(ctx, pulse(p, 0.70, 0.92) * 0.32, '#ffdca0');
-      // 收：余火四散
+      flash(ctx, pulse(p, 0.70, 0.92) * 0.32, '#dff8f0');
+      // 收：风把余烬卷散。三个点里有一个是暖的——轮子烧过的那一份
       const emb = seg(p, 0.70, 1);
       if (emb > 0) for (const q of spark) {
         const k = (emb - q.d) / (1 - q.d); if (k <= 0 || k >= 1) continue;
         ctx.globalAlpha = (1 - k) * 0.8;
-        dot(ctx, x + Math.cos(q.a) * q.v * k, y + Math.sin(q.a) * q.v * k * 0.7 - k * 10, q.s, '#ffb457');
+        dot(ctx, x + Math.cos(q.a) * q.v * k, y + Math.sin(q.a) * q.v * k * 0.7 - k * 10, q.s,
+          q.v % 3 === 0 ? '#ffb457' : '#bff2e4');
       }
       ctx.globalAlpha = 1;
     } };
@@ -209,7 +249,12 @@ const FX_ENEMY = {
 
   // 义民爷「六堆齐到」：号(0–.20) → 旗(.20–.48) → 阵(.48–.62) → 斩×6(.58–.90) → 收(.90–1)
   //
-  // 请的不是神，是人，所以整段没有一点神光：暗红的天、六面旗、一排看不清脸的人影、六下刀。
+  // **属性暗**：请的是三百年前替这庄死过的人，阴兵就是阴兵——跟好兄弟同一种东西
+  // （两边现在同属性），差别只在一个有主、一个无主。所以这不是「反派的暗」：
+  // 底色换暗紫、地面漫一层阴气、六道刀光各拖一道紫黑的影子。
+  // **刀本身还是白的**（他们拿的是刀，不是法术），旗也还是红的（那是义民旗，是身份）。
+  //
+  // 请的不是神，是人，所以整段没有一点神光：暗紫的天、六面旗、一排看不清脸的人影、六下刀。
   // 六面旗是这一位的剪影——也是「六堆」这三个字在画面上唯一说得清的方式。
   yimin: (x, y, rng) => {
     const flags = Array.from({ length: 6 }, (_, i) => ({
@@ -221,7 +266,7 @@ const FX_ENEMY = {
     const ash = Array.from({ length: 16 }, () => ({
       x: rng.int(10, 240), y: rng.int(40, 130), v: rng.int(10, 26), d: rng.next() * 0.4 }));
     return { t: 0, dur: 2.1, render(ctx, p) {
-      wash(ctx, '#1a0c10', (seg(p, 0, 0.24) - seg(p, 0.84, 1)) * 0.40);
+      wash(ctx, '#150f24', (seg(p, 0, 0.24) - seg(p, 0.84, 1)) * 0.44);
       // 号：地平线上一道暗红。号角听不见，但天先红了
       const h = pulse(p, 0.02, 0.44);
       if (h > 0.01) {
@@ -229,6 +274,15 @@ const FX_ENEMY = {
         const gr = ctx.createLinearGradient(0, FH - 46, 0, FH);
         gr.addColorStop(0, 'rgba(140,40,30,0)'); gr.addColorStop(1, 'rgba(180,60,40,0.9)');
         ctx.fillStyle = gr; ctx.fillRect(0, FH - 46, W, 46); ctx.restore();
+      }
+      // 阴：旗立起来之后地面漫上一层阴气，人是从这里面走出来的。
+      // 用渐变不用亮点——阴气不发光，它是把底下那一截「看不清」
+      const yin = pulse(p, 0.30, 0.92);
+      if (yin > 0.01) {
+        ctx.save(); ctx.globalAlpha = yin * 0.45;
+        const gy = ctx.createLinearGradient(0, FH - 62, 0, FH);
+        gy.addColorStop(0, 'rgba(60,36,92,0)'); gy.addColorStop(1, 'rgba(52,28,84,0.95)');
+        ctx.fillStyle = gy; ctx.fillRect(0, FH - 62, W, 62); ctx.restore();
       }
       // 旗：六面依次从下沿升起。一堆出事，各堆都要出人——所以是六面，不是一面
       const f = seg(p, 0.18, 0.52), down = seg(p, 0.88, 1);
@@ -244,27 +298,34 @@ const FX_ENEMY = {
         ctx.globalAlpha = Math.min(1, k) * (1 - down) * 0.75;
         const by = FH - 8 - ease(k) * 12;
         poly(ctx, [[q.x, by], [q.x, by - q.h], [q.x + q.w / 2, by - q.h - 4],
-          [q.x + q.w, by - q.h], [q.x + q.w, by]], '#241016');
+          [q.x + q.w, by - q.h], [q.x + q.w, by]], '#1c1226');
       }
       // 斩×6：六道刀光依次划过。第四道压全场唯一的一次闪——放在中间，收得住
       for (let i = 0; i < cuts.length; i++) {
         const q = cuts[i], k = seg(p, q.at, q.at + 0.10);
         if (k <= 0 || k >= 1) continue;
         const dx = Math.cos(q.a) * 26, dy = Math.sin(q.a) * 16;
+        // 影先到、刀后到：紫黑的一道拖在白刀后面，慢半拍、宽一倍
+        beam(ctx, q.x - dx * 1.15, q.y - dy * 1.15, q.x + dx * 1.15, q.y + dy * 1.15,
+          6 * (1 - k) + 1.4, '#6a4a96', (1 - k) ** 0.5 * 0.6);
         beam(ctx, q.x - dx, q.y - dy, q.x + dx, q.y + dy, 3.4 * (1 - k) + 0.8, '#fff2dc', (1 - k) ** 0.7);
-        if (i === 3) flash(ctx, Math.sin(k * Math.PI) * 0.30, '#ffd8c0');
+        if (i === 3) flash(ctx, Math.sin(k * Math.PI) * 0.30, '#d9c8f2');
       }
       // 收：旗降下，人散成灰
       if (down > 0) for (const q of ash) {
         const k = (down - q.d * 0.5) * 2; if (k <= 0 || k >= 1) continue;
         ctx.globalAlpha = (1 - k) * 0.7;
-        dot(ctx, q.x + Math.sin(k * 3 + q.y) * 3, q.y - q.v * k, 1, k < 0.4 ? '#e0cbb0' : '#7a6a58');
+        dot(ctx, q.x + Math.sin(k * 3 + q.y) * 3, q.y - q.v * k, 1, k < 0.4 ? '#cbb6e0' : '#584a6a');
       }
       ctx.globalAlpha = 1;
     } };
   },
 
   // 吕布「辕门射戟」：立(0–.24) → 张(.24–.48) → 射(.48–.56) → 震(.56–1)
+  //
+  // **属性金**：那支戟是断的，接起来才请得动，爐心鐵那一件也归他。
+  // 这一段本来就是一片冷钢，只是白得没有性格。命中那一下改成金：金光、金环、磕出来的火星。
+  // 戟身和箭仍然冷白（那是铁的颜色），**金只出现在铁碰铁的那一瞬**。
   //
   // 全场唯一一个**横着走**的演出。别的召唤都是从天而降或从中心炸开，这一位是一条水平线
   // 从右穿到左——因为辕门射戟本来就是「一箭，一百五十步，射中戟上的小枝」。
@@ -279,7 +340,7 @@ const FX_ENEMY = {
       // 张：整场压暗，只留过箭那一条水平亮带。暗是为了让那条线看得见
       wash(ctx, '#0a0c10', (seg(p, 0.20, 0.44) - seg(p, 0.58, 0.86)) * 0.46);
       const lane = pulse(p, 0.26, 0.66);
-      if (lane > 0.01) { ctx.save(); ctx.globalAlpha = lane * 0.18; ctx.fillStyle = '#c9d6e8'; ctx.fillRect(0, by - 7, W, 14); ctx.restore(); }
+      if (lane > 0.01) { ctx.save(); ctx.globalAlpha = lane * 0.18; ctx.fillStyle = '#e8dcb0'; ctx.fillRect(0, by - 7, W, 14); ctx.restore(); }
       // 立：戟插在目标那里——杆、尖、外加一枝月牙形的小枝，射的就是那个小枝
       const st = seg(p, 0, 0.26), fall = seg(p, 0.66, 1);
       if (st > 0) {
@@ -308,18 +369,21 @@ const FX_ENEMY = {
       const sh = seg(p, 0.46, 0.60);
       if (sh > 0 && sh < 1) {
         const hx = bx - (bx - x) * ease(sh);
-        flash(ctx, Math.sin(sh * Math.PI) * 0.34, '#eef4ff');
+        flash(ctx, Math.sin(sh * Math.PI) * 0.34, '#fff2d0');
         beam(ctx, Math.min(bx, hx + 46), by, hx, by, 2.2, '#ffffff', 1 - sh * 0.3);
       }
       // 震：戟被射中，碎屑四散；同时几点蓝的从右边被抽走——那是施术者的 MP
       if (fall > 0) {
-        glow(ctx, x, y, 54, 'rgb(200,220,255)', (1 - fall) * 0.35);
+        glow(ctx, x, y, 54, 'rgb(255,229,150)', (1 - fall) * 0.35);
         for (const q of shards) {
           const k = (fall - q.d) / (1 - q.d); if (k <= 0 || k >= 1) continue;
           ctx.globalAlpha = (1 - k) ** 1.2;
-          dot(ctx, x + Math.cos(q.a) * q.v * k, y + Math.sin(q.a) * q.v * k * 0.7 + k * k * 12, q.s, k < 0.4 ? '#ffffff' : '#8fa8c4');
+          // 铁碰铁磕出来的火星混在铁屑里：三片里有一片是金的
+          const hot = q.v % 3 === 0;
+          dot(ctx, x + Math.cos(q.a) * q.v * k, y + Math.sin(q.a) * q.v * k * 0.7 + k * k * 12, q.s,
+            k < 0.4 ? '#ffffff' : (hot ? '#ffe08a' : '#8fa8c4'));
         }
-        ring(ctx, x, y + 14, ease(fall) * 40, '#9fb4d0', (1 - fall) * 0.6, 1.4);
+        ring(ctx, x, y + 14, ease(fall) * 40, '#e8d79a', (1 - fall) * 0.6, 1.4);
         for (const q of drain) {
           const k = (fall - q.d) / (1 - q.d); if (k <= 0 || k >= 1) continue;
           ctx.globalAlpha = (1 - k) * 0.85;

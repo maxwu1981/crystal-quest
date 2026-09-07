@@ -1,0 +1,165 @@
+{
+ "name": "隘寮石城 内堂",
+ "encounterZone": "cave",
+ "spawn": {
+  "x": 13,
+  "y": 25
+ },
+ "legend": {
+  ",": {
+   "tile": "floor",
+   "encounter": true
+  },
+  ">": {
+   "tile": "stairs_down"
+  },
+  "A": {
+   "tile": "counter",
+   "solid": true
+  },
+  "B": {
+   "tile": "bed",
+   "solid": true
+  },
+  "D": {
+   "tile": "door"
+  },
+  "I": {
+   "tile": "wall",
+   "solid": true
+  },
+  "T": {
+   "tile": "tree",
+   "solid": true
+  },
+  "W": {
+   "tile": "wall",
+   "solid": true
+  },
+  "c": {
+   "tile": "counter",
+   "solid": true
+  },
+  "f": {
+   "tile": "floor",
+   "encounter": true
+  },
+  "g": {
+   "tile": "grass",
+   "encounter": true
+  },
+  "o": {
+   "tile": "flagstone",
+   "encounter": true
+  },
+  "w": {
+   "tile": "water",
+   "solid": true
+  }
+ },
+ "rows": [
+  "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+  "WWoooWWooW>IoAoIoWooWWoooWW",
+  "WooIooDooWooo,oooWooDooIooW",
+  "WoooooWooWooo,oooWooWoooooW",
+  "WWoooWWooWooo,oooWooWWoooWW",
+  "WWWWWWWooWooo,oooWooWWWWWWW",
+  "WBffffWooWooo,oooWooWffffBW",
+  "WfffffDooWWWWDWWWWooDfffffW",
+  "WBffffWooWooo,oooWooWffffBW",
+  "WfffffWooWoIo,oIoWooWfffffW",
+  "WBffffWooDooo,oooDooWffffBW",
+  "WfffffWooWooo,oooWooWfffffW",
+  "WWWWWWWooWWWWDWWWWooWWWWWWW",
+  "WccoooWooWoooooooWooWoooccW",
+  "WoooooDooWoTgggToWooDoooooW",
+  "WoooooWooWogwwwgoWooWoooooW",
+  "WWWWWWWooWogwwwgoWooWWWWWWW",
+  "WoooooWooWogwwwgoWooWoooooW",
+  "WcooooDooWoTgggToWooDoooocW",
+  "WcooooWooWoooooooWooWoooocW",
+  "WWWWWWWooWWWWDWWWWooWWWWWWW",
+  "WoooooWooWooo,oooWooWoooooW",
+  "WoooooWooWooo,oooWooWoooooW",
+  "WA,,,,WooDooo,oooDooW,,,,AW",
+  "WoooooDooWoIo,oIoWooDoooooW",
+  "WoooooWooWooo,oooWooWoooooW",
+  "WWWWWWWWWWWWWDWWWWWWWWWWWWW"
+ ],
+ "events": [
+  {
+   "x": 1,
+   "y": 21,
+   "type": "chest",
+   "id": "gen_castle_2_1",
+   "item": "hipotion",
+   "qty": 2,
+   "text": [
+    "神案上三炷香烧到一半就断了。",
+    "断口是齐的——不是烧断的，是掐断的。"
+   ]
+  },
+  {
+   "x": 25,
+   "y": 21,
+   "type": "chest",
+   "id": "gen_castle_2_2",
+   "item": "ether",
+   "qty": 2
+  },
+  {
+   "x": 1,
+   "y": 7,
+   "type": "chest",
+   "id": "gen_castle_2_3",
+   "gold": 200,
+   "text": [
+    "石缝里卡着东西，不知道卡了多久。"
+   ]
+  },
+  {
+   "x": 16,
+   "y": 1,
+   "type": "chest",
+   "id": "gen_castle_2_4",
+   "item": "phoenix",
+   "qty": 1,
+   "text": [
+    "椅子的扶手磨得发亮，坐的人爱把左手往外搭。"
+   ]
+  },
+  {
+   "x": 25,
+   "y": 11,
+   "type": "chest",
+   "id": "gen_castle_2_5",
+   "item": "bronze_armor",
+   "qty": 1,
+   "text": [
+    "通铺上叠着六床被，叠得整整齐齐。",
+    "第七床没叠，摊开着，人像是刚起身。"
+   ]
+  },
+  {
+   "x": 1,
+   "y": 11,
+   "type": "chest",
+   "id": "gen_castle_2_6",
+   "gold": 320
+  }
+ ],
+ "npcs": [],
+ "gen": {
+  "kind": "castle",
+  "entry": [
+   13,
+   26
+  ],
+  "exit": [
+   10,
+   1
+  ],
+  "seed": 23,
+  "attempt": 0
+ }
+}

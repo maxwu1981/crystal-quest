@@ -899,7 +899,7 @@
     "atk": 72,
     "acc": 16,
     "crit": 10,
-    "element": "thunder"
+    "element": "metal"
   },
   "gram": {
     "name": "格拉墨",
@@ -1046,7 +1046,7 @@
     "atk": 46,
     "acc": 26,
     "crit": 14,
-    "element": "thunder"
+    "element": "metal"
   },
   "nemean_fist": {
     "name": "狮皮拳套",

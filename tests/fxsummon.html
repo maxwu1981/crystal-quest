@@ -1,0 +1,103 @@
+<!doctype html><meta charset="utf-8"><title>召唤演出预览</title>
+<!-- 八位召唤的逐帧预览。跟 tests/fx.html 是同一个主意（把一次演出摊成一排静帧），
+     但**单独一个档**：fx.html 是给魔法用的，改那边的 SPELL_FX 会挡住别人。
+     两边的差别只有三处：
+       ① 换成 SUMMON_FX；
+       ② 焦点分两种——焦点在敌方的五位传敌群中心 (74,96)，
+          焦点在我方的三位传队伍中心 (212,88)，传错了不会崩但会不好看；
+       ③ 召唤 1.7–2.2 秒比魔法长，取样点铺得更开（八帧）。
+     怪的半透明剪影照 render.js 的 VEIL 规则画，层次关系跟战斗里一致。
+     数值上的体检在 tools/fx_headless.mjs（jsc 跑，查 NaN 与闪光三条自律）。 -->
+<style>
+ body{background:#14100e;color:#cdbfa0;font:13px/1.6 system-ui,sans-serif;margin:16px}
+ h2{font-size:14px;margin:22px 0 6px;color:#e8d9b0}
+ .el{color:#8f9aa6;font-weight:400}
+ canvas{background:#2a2118;display:block;image-rendering:pixelated}
+</style>
+<div id="out"></div>
+<script type="module">
+import { SUMMON_FX } from '../src/battle/summonFx.js';
+import { ELEMENTS } from '../src/battle/elements.js';
+import { ART } from '../src/core/draw.js';
+import { ENEMY_CENTERS, PANEL_Y } from '../src/battle/hudBits.js';
+
+class RNG { constructor(s){this.s=s>>>0||1}
+  next(){let x=this.s;x^=x<<13;x^=x>>>17;x^=x<<5;this.s=x>>>0;return this.s/4294967296}
+  int(a,b){return a+Math.floor(this.next()*(b-a+1))} }
+
+const W = 256, H = PANEL_Y;
+const ALLY_FOCUS = new Set(['bogong', 'guanyin', 'mazu']);   // 焦点在我方的三位
+const FRAMES = [0.08, 0.22, 0.36, 0.50, 0.62, 0.74, 0.86, 0.96];
+const GAP = 3;
+const only = new URLSearchParams(location.search).get('fx');
+const seed = +(new URLSearchParams(location.search).get('seed') || 7);
+
+// render.js 的 VEIL 表，跟 fx.html 抄的是同一份
+const VEIL = [[0,1,0],[0.18,1,0],[0.44,0.55,0.46],[0.72,0.05,0],[1,1,0]];
+function veilAt(p) {
+  for (let i = 1; i < VEIL.length; i++) {
+    const [p1,b1,g1] = VEIL[i]; if (p > p1) continue;
+    const [p0,b0,g0] = VEIL[i-1]; const k = p1===p0 ? 0 : (p-p0)/(p1-p0);
+    return [b0+(b1-b0)*k, g0+(g1-g0)*k];
+  }
+  return [1,0];
+}
+// 四只敌人按 ENEMY_CENTERS 站好——召唤现在一律打全体，只画一只看不出「扫过整条线」
+function drawFoes(ctx, alpha, tint) {
+  if (alpha <= 0.004) return;
+  ctx.save(); ctx.globalAlpha = alpha;
+  for (const [cx, cy] of ENEMY_CENTERS) {
+    ctx.fillStyle = tint || '#8f9aa6';
+    ctx.fillRect(cx - 20, cy - 20, 40, 40);
+    if (!tint) { ctx.fillStyle = '#c8d2dc'; ctx.fillRect(cx - 11, cy - 8, 6, 5); ctx.fillRect(cx + 5, cy - 8, 6, 5); }
+  }
+  ctx.restore();
+}
+// 我方四个座位，画成窄一点的条：焦点在我方的三位要看得出效果落在谁身上
+function drawParty(ctx) {
+  ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = '#6b7a86';
+  for (let i = 0; i < 4; i++) ctx.fillRect(204, 44 + i * 26, 16, 16);
+  ctx.restore();
+}
+
+const SUMMONS = await (await fetch('../data/summons.json', { cache: 'no-store' })).json();
+const out = document.getElementById('out');
+for (const [id, make] of Object.entries(SUMMON_FX)) {
+  if (only && id !== only) continue;
+  const cv = document.createElement('canvas');
+  cv.width = (W * FRAMES.length + GAP * (FRAMES.length - 1)) * ART;
+  cv.height = H * ART;
+  cv.style.width = (cv.width / ART * 0.5) + 'px';
+  cv.style.height = 'auto';
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(ART, ART);
+  const ally = ALLY_FOCUS.has(id);
+  const [fx0, fy0] = ally ? [212, 88] : [74, 96];
+  FRAMES.forEach((p, c) => {
+    ctx.save();
+    ctx.translate(c * (W + GAP), 0);
+    ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+    ctx.fillStyle = '#2a2118'; ctx.fillRect(0, 0, W, H);
+    const fx = make(fx0, fy0, new RNG(seed));
+    const [base, ghost] = veilAt(p);
+    drawParty(ctx);
+    drawFoes(ctx, ally ? 1 : base);
+    ctx.save(); fx.render(ctx, p); ctx.restore();
+    if (!ally) drawFoes(ctx, ghost, null);
+    ctx.fillStyle = 'rgba(200,190,160,0.85)'; ctx.font = '7px monospace';
+    ctx.fillText(`p=${p}`, 3, 9);
+    ctx.restore();
+  });
+  const sm = SUMMONS[id] || {}, el = ELEMENTS[sm.element];
+  const head = document.createElement('h2');
+  head.innerHTML = `${sm.name || id} <b style="color:${el ? el.color : '#888'}">${el ? el.cn : '—'}</b> ` +
+    `<span class="el">${id}　${ally ? '焦点在我方' : '焦点在敌方'}　横=时间 ${FRAMES.join(' / ')}</span>`;
+  out.append(head, cv);
+}
+// 属性对照挂在页面末尾，改配色的时候对着看
+const tail = document.createElement('h2');
+tail.innerHTML = '<span class="el">属性配色：' +
+  Object.entries(ELEMENTS).map(([k, v]) => `<b style="color:${v.color}">${v.cn} ${k}</b>`).join('　') + '</span>';
+out.append(tail);
+</script>

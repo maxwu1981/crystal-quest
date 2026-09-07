@@ -70,8 +70,11 @@ function scene(data, level, enemyIds, seed, endgame) {
   const st = newGameState(data);
   for (const m of st.party) { m.level = level; const [w, a] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: null }; healFull(m, data); }
   const s = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: false,
-    // 桩要跟 Effects 的接口一致：少一个 shake，一出会心就抛「不是函数」
-    fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; },
+    // 桩要跟 Effects 的接口一致：少一个 shake，一出会心就抛「不是函数」；
+    // 少一个 size，第一次物理攻击就抛「scene.size is not a function」——
+    // actions.js 的 attack() 每次命中都要拿目标尺寸给特效用（658f445「被魔法笼罩」那次加的），
+    // 而这里的假场景没有画面、没有尺寸，回一个空对象即可（特效本来就是空实现）
+    fx: { add() {}, shake() {} }, popup() {}, center() { return [0, 0]; }, size() { return {}; },
     party: makePartyActors(st, data), enemies: makeEnemyActors(enemyIds, data),
     alive: l => l.filter(a => a.alive),
     retarget(t) { return t.alive ? t : (this.alive(t.side === 'enemy' ? this.enemies : this.party)[0] || null); },

@@ -1,5 +1,6 @@
 // 商店买卖：纯逻辑
 import { addItem, removeItem, countItem } from './items.js';
+import { elementName } from '../battle/elements.js';
 
 export const MAX_STACK = 99;
 export const sellPrice = it => Math.floor((it.price || 0) / 2);
@@ -19,7 +20,6 @@ export function sellItem(state, id, data) {
   removeItem(state.inventory, id); state.gold += sellPrice(it);
   return { ok: true, msg: `卖出了 ${it.name}，得到 ${sellPrice(it)} 金币。` };
 }
-const ELEM = { fire: '火', thunder: '雷', ice: '冰', dark: '暗', light: '光' };
 // 装备的一行摘要：主属性 + 特效 + 可装备职业
 export function itemStats(it) {
   const p = [];
@@ -35,7 +35,7 @@ export function itemStats(it) {
   if (it.mpBonus) p.push(`MP +${it.mpBonus}`);
   if (it.spd) p.push(`速度 +${it.spd}`);
   if (it.crit) p.push(`会心 +${it.crit}%`);
-  if (it.element) p.push(`${ELEM[it.element] || it.element}属性`);
+  if (it.element) p.push(`${elementName(it.element)}属性`);
   if (it.status) p.push('附加异常');
   if (it.hits > 1) p.push(`${it.hits} 连击`);
   if (it.immuneAll) p.push('免疫异常');

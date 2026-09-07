@@ -48,8 +48,49 @@ tests/              run.js 单元/数据测试、playtest.js 自动试玩、bala
 - `jobs.json`  `{ id: { name, desc, base:{hp,mp,str,agi,int,vit,acc,eva}, growth:{同上/每级}, commands:[...], spells:["id" | {id, level}], unarmed?, hits? } }`
   职业 id：`boxer` 拳头师 / `hunter` 山猎人 / `general` 家将 / `herbwife` 青草婆 / `talisman` 符仔仙 / `peddler` 走贩
   攻击 = 力量/2 + 武器（武僧空手 = 力量/2 + unarmed×等级，hits 是命中数倍率）
+- **八属性**（`src/battle/elements.js` 是唯一的真相来源，颜色 / 特效键 / 中文名都在那张表里）：
+
+  | id | 中文 | 出处 | 现有法术 |
+  |---|---|---|---|
+  | `metal` | 金 | 爐心鐵 | 闪电 / 雷鸣 |
+  | `wood`  | 木 | 樹心   | 毒雾 |
+  | `water` | 水 | 舊龍骨 | 冰冻 |
+  | `fire`  | 火 | 火種   | 火焰 / 烈焰 |
+  | `earth` | 土 | 原石   | 镇土 / 动土 |
+  | `wind`  | 風 | 響石   | 穿堂风 / 落山风 |
+  | `light` | 光 | —      | 收惊 |
+  | `dark`  | 暗 | —      | 暗影 / 落灰 |
+
+  金木水火土風就是六鎮物（`lore.the_six`），加光暗正好八种，八位召唤一人一种。
+  旧 id 是 `fire/thunder/ice/dark/light/poison`，`tools/migrate_elements.py` 换过来的
+  （thunder→metal 雷走金、ice→water 冰是水的形态、poison→wood 草木之毒；跑过前后比对，70 条一条没丢）。
+  **`poison` 以前一名两用**：既是属性又是 `status.js` 的状态，而 `immune` 两种都收，
+  `immune:["poison"]` 到底免的是哪一个说不清。拆开之后 `wood` 管属性、`poison` 只管状态。
 - `spells.json` `{ id: { name, mp, power, element?, target:'enemy'|'ally', scope:'single'|'all', heal?, status?, cure?:[状态], revive?:比例, desc } }`
   power 为 0 且有 status = 纯状态魔法；状态 id 见 src/game/status.js（poison sleep blind protect）
+- `summons.json` 「請神」的八位。字段尽量沿用 spells.json，只有召唤才有的额外标出：
+  `{ id: { name 神名, title? 神号, skill 绝招名, mp, power, element 八属性之一（八位不重复）,
+  target:'enemy', scope:'all', hits? 段数（默认 1）, pierce? 跳过 mdef 减半判定,
+  status? 加在敌方全体身上, drain?:'mp'（施放后施术者 MP 归零）,
+  allyHeal? 顺带治我方全体的 power（走 healAmount）, allyMpHeal? 顺带回的 MP（定值）,
+  allyCure?:[状态], allyRevive? 比例, allyStatus? 加在我方全体身上,
+  once 一场战斗只能请一次, unlock 解锁 flag,
+  fx SUMMON_FX 的键, sfx audio.js SFX 的键, lore 出处一句, from 建议取得处, note? 设定注记, desc } }`
+  **八位一律 `target:'enemy'` + `scope:'all'`**——請神就是全场一起打，没有只打一只的。
+  伯公 / 观世音 / 妈祖原本是纯辅助，改成「打全体 + 原来的我方效果当附带」：
+  我方那一侧的字段一律 `ally` 开头（`allyStatus` 是原有的写法，其余照它取名），
+  不带前缀的 `status` 永远指**敌方**，这条不能含糊。
+  `hits` 是每个敌人各挨几段（中坛元帅 3、义民爷 6）。
+  **注意 `magicDamage` 每一段都会加一次 `int/2`**，所以段数多的那两位有一条 `power` 压不下去的地板
+  （符仔仙 9 级 int 33 → 义民爷六段光地板就 96）。多段召唤要靠 `hits` 调，不要靠 `power`。
+  演出在 `src/battle/summonFx.js`（导出 `SUMMON_FX`，形状同 `SPELL_FX`：`(x,y,rng) => ({t,dur,render})`），
+  共用画笔在 `summonKit.js`，焦点在我方的三位拆到 `summonFxAlly.js`（单档 400 行放不下八位）。
+  **平衡基准**（改数值前先看这几个数）：全体最强魔法 thundara power 18 / mp 14（单个敌人期望 41），
+  单体最强 dark power 14，全体治疗 cureall power 18，乌火 1250 HP、弱光、抗暗、mdef 14。
+  召唤定位是「一场一次的爆发」：对**每个**敌人的期望在 37–114 之间（伯公最低、义民爷最高），
+  MP 22–34。属性决定谁对谁好用——钟馗（光）对乌火最狠，义民爷（暗）被乌火抗掉一半，本行归本行。
+  MP 是唯一的资源——青草婆 9 级 36 MP、符仔仙 42 MP，所以一场战斗撑死请两尊，
+  且请完就没魔法可放。这个取舍本身就是难度，不要再加第二套货币。
 - `enemies.json` `{ id: { name, sprite, hp, mp, atk, def, acc, eva, spd, mdef, int, crit, exp, gold, weak:[], resist:[], immune:[元素或状态], spells:[], onHit?:{status, chance}, ai } }`
 - `encounters.json` `{ zoneId: { steps:[min,max], groups:[{ enemies:[ids], weight }] } }`
 - `maps/*.json` `{ name, encounterZone|null, spawn:{x,y}, legend:{ 字符: {tile, solid?, encounter?, counter?} }, rows:[字符串],

@@ -5,6 +5,7 @@ import { artCanvas } from '../core/draw.js';
 import { measure, FONT } from '../core/text.js';
 import { STATUS } from '../game/status.js';
 import { UI } from '../ui/Window.js';
+import { ELEMENTS } from '../battle/elements.js';
 
 export const ICON = 12;   // 图标边长（逻辑像素）。菜单行高 13，一行正好放得下一枚
 const LABEL_X = 9;        // Menu 把标签画在 x+9（前面 9px 留给光标），图标就压在这块空档上
@@ -49,22 +50,45 @@ const SHAPE = {
 // ---------- 魔法图标 ----------
 // 战斗里的魔法列表原本只有名字，玩家得记住「落灰」是暗属性、「收惊」是光属性。
 // FF6 在每个魔法前面放一枚属性色的小图标，扫一眼就知道该不该对这只怪用。
-// 颜色沿用 battle/actions.js 的 ELEMENT_COLOR（施法特效也是这套色），
+// 颜色来自 battle/elements.js（施法特效、商店说明也是同一张表），
 // 图标和打出去的效果同色，这层对应关系才立得住。
-const ELEM_COLOR = { fire: '#ffb060', thunder: '#ffe98a', ice: '#a8e4ff', dark: '#b28fd0', light: '#fff3c0', poison: '#a678c8' };
-const ELEM_SHAPE = {
+//
+// **八种属性必须有八种不同的形状。** 少配一种会静默退回「无属性宝珠」——
+// 列表看起来正常，但两个不同属性的魔法长得一模一样，玩家永远学不会这套克制。
+// tests/run.js 有两条测试守这件事（有没有配、配的是不是同一个形）。
+//
+// 这次扩到八种时顺手修了一处真的看不清的：旧的「冰」是十字加四个角点，
+// 和「光」的四芒星在 12px 上几乎一样（都是放射状的十字）。
+// 「水」改成一滴水，两者才分得开。
+const ELEM_COLOR = Object.fromEntries(Object.entries(ELEMENTS).map(([k, v]) => [k, v.color]));
+export const ELEM_SHAPE = {
   // 火：一簇往上收的火苗
   fire(ctx, c) { p(ctx, c, 5, 2, 2, 2); p(ctx, c, 4, 4, 4, 2); p(ctx, c, 3, 6, 6, 3); p(ctx, c, 4, 9, 4, 1); },
-  // 雷：一道折线闪电
-  thunder(ctx, c) { p(ctx, c, 6, 2, 3, 2); p(ctx, c, 5, 4, 3, 2); p(ctx, c, 3, 6, 5, 1); p(ctx, c, 4, 7, 3, 2); p(ctx, c, 3, 9, 2, 1); },
-  // 冰：一枚六角雪花（十字加两撇）
-  ice(ctx, c) { p(ctx, c, 5, 1, 2, 9); p(ctx, c, 2, 5, 8, 2); p(ctx, c, 3, 3, 2, 2); p(ctx, c, 7, 3, 2, 2); p(ctx, c, 3, 7, 2, 2); p(ctx, c, 7, 7, 2, 2); },
-  // 暗：一弯朝右的月牙
-  dark(ctx, c) { p(ctx, c, 3, 2, 4, 2); p(ctx, c, 2, 4, 3, 4); p(ctx, c, 3, 8, 4, 2); },
+  // 金：一道折线。雷是天顶落下来的刀，刀口的反光也是这个形
+  metal(ctx, c) { p(ctx, c, 6, 2, 3, 2); p(ctx, c, 5, 4, 3, 2); p(ctx, c, 3, 6, 5, 1); p(ctx, c, 4, 7, 3, 2); p(ctx, c, 3, 9, 2, 1); },
+  // 水：一滴水掉进水面，底下一圈涟漪。
+  // 尾拉长到 4 格、肚子收成圆的、底下留一条断开的涟漪——这三处都是为了跟「火」拉开：
+  // 火是短尖头 + 平底的一团，两个都画成对称的水滴形，12px 上只剩颜色能分（试过，不够）
+  water(ctx, c) {
+    p(ctx, c, 5, 0, 2, 4); p(ctx, c, 4, 4, 4, 1); p(ctx, c, 3, 5, 6, 2);
+    p(ctx, c, 4, 7, 4, 1); p(ctx, c, 5, 8, 2, 1); p(ctx, c, 2, 10, 8, 1);
+  },
+  // 木：一片斜着的叶子，叶尖朝右上，暗色的主脉从叶柄斜上去。
+  // 先画的是「一茎两叶」，但描边把两片叶和茎糊成一块，12px 上读起来是一道折线——
+  // 跟金的闪电撞了。一整片叶的轮廓最不会认错，而且脉一画就不是色块了
+  wood(ctx, c, d) {
+    p(ctx, c, 8, 1, 3, 2); p(ctx, c, 6, 3, 5, 2); p(ctx, c, 4, 5, 6, 2);
+    p(ctx, c, 2, 7, 6, 2); p(ctx, c, 1, 9, 4, 1); p(ctx, c, 1, 10, 2, 1);
+    p(ctx, d, 2, 9, 2, 1); p(ctx, d, 4, 7, 2, 1); p(ctx, d, 6, 5, 2, 1); p(ctx, d, 8, 3, 2, 1);
+  },
+  // 土：一堆叠起来的土石压在地面上，中间一道裂缝
+  earth(ctx, c, d) { p(ctx, c, 4, 3, 4, 2); p(ctx, c, 3, 5, 6, 2); p(ctx, c, 2, 7, 8, 2); p(ctx, c, 1, 9, 10, 1); p(ctx, d, 6, 5, 1, 4); },
+  // 風：三道长短不一的风线，两道带勾
+  wind(ctx, c) { p(ctx, c, 1, 2, 8, 2); p(ctx, c, 9, 1, 2, 2); p(ctx, c, 2, 5, 8, 2); p(ctx, c, 8, 7, 2, 1); p(ctx, c, 1, 8, 6, 2); },
   // 光：一颗四芒星
   light(ctx, c) { p(ctx, c, 5, 1, 2, 10); p(ctx, c, 1, 5, 10, 2); p(ctx, c, 4, 4, 4, 4); },
-  // 毒：沿用状态图标那三颗气泡，同一个概念不画两种样子
-  poison(ctx, c) { SHAPE.poison(ctx, c); },
+  // 暗：一弯朝右的月牙
+  dark(ctx, c) { p(ctx, c, 3, 2, 4, 2); p(ctx, c, 2, 4, 3, 4); p(ctx, c, 3, 8, 4, 2); },
   // 治疗：一枚十字（无属性的辅助魔法都走这个）
   heal(ctx, c) { p(ctx, c, 4, 2, 4, 8); p(ctx, c, 2, 4, 8, 4); },
   // 无属性攻击/其它辅助：一颗朴素的菱形宝珠

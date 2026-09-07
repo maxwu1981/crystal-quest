@@ -4,15 +4,9 @@ import * as F from './formulas.js';
 import { STATUS, cureStatus } from '../game/status.js';
 import { audio } from '../core/audio.js';
 import { countItem, removeItem, applyItem, canUseOn, describeUse } from '../game/items.js';
-
-const ELEMENT_FX = { fire: 'fire', thunder: 'thunder', ice: 'ice', poison: 'poison', dark: 'dark' };
-// 特效期间目标会被叠一层薄影（render.js 的 GHOST），这里给那层影子定颜色。
-// 用的是每种属性的**深色调**，因为这层影子要在自己那团特效里看得出形状：
-//   · 不染色（原图那种灰绿）叠上去是一团污渍，把火压脏；
-//   · 染成火的中间橙则整个消失在火里——试过，等于没画。
-// 深烬色才对：物体在火里本来就是逆光的剪影，暖调的黑不脏，形状还清清楚楚。
-const ELEMENT_TINT = { fire: '#6b2408', thunder: '#20265e', ice: '#123a52',
-                       poison: '#1c3a12', dark: '#150f24', light: '#4e4118' };
+// 四张属性表都从 elements.js 取。以前这个档里各写一份，属性一改名就要四处一起改，
+// 而改漏一处的表现是「特效静默退回 spark」——不报错、测试也照过。
+import { ELEMENT_FX, ELEMENT_TINT, ELEMENT_SFX, ELEMENT_COLOR } from './elements.js';
 
 // 给目标挂上「被笼罩」。时长直接取特效自己的 dur——两边各写一个数字，
 // 改了特效时长就会有一段「火已经灭了人还是半透明」。
@@ -21,7 +15,6 @@ function veilOn(t, fx, tint) {
   t.veil = t.veilDur = fx ? fx.dur : 0.3;
   t.veilTint = tint || null;
 }
-const ELEMENT_SFX = { fire: 'fire', thunder: 'thunder', ice: 'magic', poison: 'buzz', dark: 'hit' };
 
 // 附加状态：免疫 / 已有 → false
 export function inflict(scene, t, status) {
@@ -85,7 +78,6 @@ const SWING_COLOR = { wood: '#d9c08a', oak: '#d9c08a', bronze: '#d8a86a', iron: 
   steel: '#eef3f6', silver: '#f2f4ff', mythril: '#cfe8ff', adamant: '#bcd0e0', meteor: '#e0d2f0',
   dragon: '#ffd9b0', crystal: '#cdeff2', star: '#e6dcff', knife: '#dfe3e6',
   wrap: '#e2cfa8', leather: '#c9a074' };
-const ELEMENT_COLOR = { fire: '#ffb060', thunder: '#ffe98a', ice: '#a8e4ff', dark: '#b28fd0', light: '#fff3c0' };
 function swingColor(actor) {
   if (actor.element && ELEMENT_COLOR[actor.element]) return ELEMENT_COLOR[actor.element];
   const id = actor.member?.equipment?.weapon || '';   // 战斗 actor 把队员挂在 .member 上

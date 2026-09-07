@@ -105,6 +105,21 @@ export function flame(ctx, x, baseY, h, w, phase, color) {
     ctx.fillRect(snap(x + Math.sin(k * 3.4 + phase) * 3 * k - half), snap(baseY - i), Math.max(1, half * 2), 1);
   }
 }
+// 一道风：带弧度的一条线，尾端往回卷。**风也要画形状**——
+// 跟 flame() 上面那条教训是同一条：撒一把点画不出风，只会得到一片噪。
+// 一条看得出方向、尾巴卷回去的线就够了，三四条错开就是一阵。
+// 直线收尾读起来是划痕，所以那个小勾不能省。
+export function gust(ctx, x, y, len, bow, color, a, w = 1.2) {
+  if (a <= 0.002) return;
+  ctx.save(); ctx.globalAlpha = Math.min(1, a);
+  ctx.strokeStyle = color; ctx.lineWidth = Math.max(0.4, w); ctx.lineCap = 'round';
+  const ex = x + len, ey = y + bow * 0.25;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + len * 0.55, y + bow, ex, ey); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ex, ey);
+  ctx.quadraticCurveTo(ex + 5, ey - 3.2, ex - 1.5, ey - 4.6); ctx.stroke();
+  ctx.restore();
+}
+
 // 从画面外向内聚拢的点：给「蓄力」段用。角度一次定死，不逐帧掷骰
 export const inward = (rng, n, x, y, dist) => Array.from({ length: n }, () => {
   const a = rng.next() * 6.283, d = dist * (0.7 + rng.next() * 0.6);

@@ -46,12 +46,14 @@ function ribbon(ctx, pts, halfAt, color) {
 // sq 是纵向压扁比，跟场上其它东西的伪透视对齐（fxKit 的 ring() 用 0.62）。
 // k0 把「最宽处」往里推：0 是两端收尖的花瓣，0.34 是根部就已经张开、只朝外收尖的裂片。
 // 分这一刀是看了截图改的——两边都用花瓣形时，暗的碎片读作一圈紫花瓣，跟治疗撞了。
-function leaf(ctx, x, y, a, r0, len, wide, color, sq = 0.82, k0 = 0) {
+// bow 是弯度：暗的裂片弯着甩出去才像被撕下来的，治疗的光芒得几乎笔直——
+// 一圈同方向弯的叶子会读成**风车**（试出来的，转起来更像），直的才是光。
+function leaf(ctx, x, y, a, r0, len, wide, color, sq = 0.82, k0 = 0, bow = 0.14) {
   if (len < PX * 2) return;
   const ca = Math.cos(a), sa = Math.sin(a);
   const pts = Array.from({ length: 7 }, (_, i) => {
-    const k = i / 6, r = r0 + len * k, bow = Math.sin(k * 2.4) * len * 0.14;
-    return [x + ca * r - sa * bow, y + sa * r * sq + ca * bow * sq];
+    const k = i / 6, r = r0 + len * k, b = Math.sin(k * 2.4) * len * bow;
+    return [x + ca * r - sa * b, y + sa * r * sq + ca * b * sq];
   });
   ribbon(ctx, pts,
     k => wide * 0.5 * Math.max(0, Math.sin(Math.min(1, k0 + k * (1.04 - k0)) * Math.PI)) ** 0.62, color);
@@ -65,13 +67,16 @@ function leaf(ctx, x, y, a, r0, len, wide, color, sq = 0.82, k0 = 0) {
 // skew 让上下不对称：完全对称的话它会读成一只眼睛。
 function rift(ctx, x, y, hw, hh, color, skew) {
   if (hw < PX || hh < PX) return;
-  const rows = Math.max(2, Math.round(hh * 2 / PX));
+  const rows = Math.max(2, Math.round(hh * 2 / PX)), top = y - hh;
   ctx.fillStyle = color;
+  // 行距**必须**正好是 PX：写成 i/rows*2-1 再乘 hh 的话，步长是 hh*2/rows，
+  // 跟 PX 差那么零点几，snap 之后每隔一两百行就会跳过一整行物理像素——
+  // 表现是裂口正中间有一条一像素的横缝（放大两倍截图才看见的）。
   for (let i = 0; i <= rows; i++) {
-    const t = i / rows * 2 - 1;                       // -1 顶 → +1 底
+    const t = Math.max(-1, Math.min(1, (i * PX - hh) / hh));   // -1 顶 → +1 底
     const half = hw * (1 - Math.abs(t) ** 1.7) ** 0.6;
     if (half < PX * 0.5) continue;
-    ctx.fillRect(snap(x + skew * t * Math.abs(t) - half), snap(y + t * hh), Math.max(PX, half * 2), PX);
+    ctx.fillRect(snap(x + skew * t * Math.abs(t) - half), snap(top + i * PX), Math.max(PX, half * 2), PX);
   }
 }
 
@@ -93,7 +98,7 @@ const curlIn = (x, y, a0, r0, r1, curl, n = 9) => Array.from({ length: n }, (_, 
 });
 
 export const VOID_FX = {
-  // 暗：蚀(0–.30 全屏) → 裂(.28–.56 局部) → 吞(.53–.70 全屏) → 反(.66–1 局部)
+  // 暗：蚀(0–.30 全屏) → 裂(.28–.55 局部) → 吞(.53–.72 全屏) → 反(.62–1 局部)
   //
   // **为什么给它四段、又给它整屏**：剧情里地心那位就是这一属性
   // （docs/主线设计.md 第 5 节、data/lore.json 的「乌火」条：
@@ -144,9 +149,11 @@ export const VOID_FX = {
       if (g > 0 && g < 1) for (const q of strands) {
         const k = Math.max(0, (g - q.d) / (1 - q.d)); if (k <= 0) continue;
         const e = ease(k), r0 = q.r * (1 - e * 0.94);
-        ctx.globalAlpha = Math.min(1, k * 3) * (1 - k) ** 0.7 * 0.9;
+        ctx.globalAlpha = Math.min(1, k * 3) * (1 - k) ** 1.5 * 0.95;
+        // 半宽随收缩一起变细。第一版反过来（越近越粗，本意是「被压亮」），
+        // 放大看是几个钝头的三角楔子堵在目标身上——光被抽干净才是这一段要讲的事。
         ribbon(ctx, curlIn(x, y, q.a + e * q.curl, r0, Math.max(2, r0 * 0.26), q.curl * 0.8),
-          t => q.w * (1 - t) ** 1.3 * 0.5 * (0.4 + e),
+          t => q.w * 0.5 * (1 - e * 0.6) * Math.max(0, Math.sin(Math.min(1, 0.22 + t * 0.82) * Math.PI)) ** 0.5,
           k < 0.5 ? '#b9a2f0' : '#efe6ff');
       }
       // 塌：三圈轮廓**向内**收。火往外扩、冰炸开——这里刻意反着来，
@@ -214,7 +221,7 @@ export const VOID_FX = {
     } };
   },
 
-  // 治疗：承(0–.30) → 升(.12–.72) → 绽(.40–.80) → 离(.68–1)，全长 0.78 秒。
+  // 治疗：承(0–.30) → 升(.08–.76) → 绽(.38–.92) → 离(.58–1)，全长 0.78 秒。
   //
   // **为什么比别的短、而且一次全屏闪都不给**：这是全场用得最频繁的魔法，
   // 一局要看几十次——治愈 / 治愈之风 / 复活 / 解状态 / 药品全都走这一支
@@ -228,73 +235,90 @@ export const VOID_FX = {
   heal: (x, y, rng, o = {}) => {
     // 目标是我方角色：16×24 逻辑像素，比敌人窄得多，所以基准不是火焰那个 44×44 的方块，
     // 而是分开的 26（宽）/ 34（高）。默认值按角色给——actions.js 没传尺寸。
-    const kx = Math.max(0.85, Math.min(2, (o.w || 16) / 26));
-    const ky = Math.max(0.85, Math.min(2, (o.h || 24) / 34));
+    // 上限放到 2.6：符仔小鬼那类会给自己人放治疗的怪比角色宽四倍，
+    // 夹在 2 的话那朵光只有它脸那么大，看着像贴了张贴纸。
+    const kx = Math.max(0.85, Math.min(2.6, (o.w || 16) / 26));
+    const ky = Math.max(0.85, Math.min(2.6, (o.h || 24) / 34));
     const H = o.h || 24, foot = y + H / 2 + 1;
-    // 五条光带：起脚方位、高度、出发时间全部错开。
-    // 一起从同一个高度起、一样高地收，底边和顶边就各连成一条横线——
-    // 火焰栽的就是这个（fxKit 文件头第 5 条），这里从构造上就不给它机会。
+    // 五段光弧。**为什么是横的弧、不是往上窜的竖条**：竖着的两头收尖的形状，
+    // 在 16 像素宽的人身上就是一片叶子——五条、四条、加旋都试过，放大看都是「草在长」。
+    // 弧是横的，跟人的竖向相反，一眼就分得出那是绕着人转的光。这也正好是治疗的动作：托。
+    // 尺寸是拿**四个人竖着排的真实站位**（PARTY_X / PARTY_Y0 / PARTY_DY）试出来的，
+    // 不是在预览页那只 44px 见方的灰怪身上试的：第一版带子宽到 3.6 逻辑像素、
+    // 高过 26 的行距，四个人一起治就是一堵绿墙，人全被糊掉。
+    // 方位、高度、出发时间全部错开——同起同收就会连出上下两条横线（fxKit 文件头第 5 条）。
     const bands = Array.from({ length: 5 }, (_, i) => ({
-      a: i * 1.31 + rng.next() * 0.5,
-      h: 33 + rng.int(0, 15),
-      d: rng.next() * 0.26,
-      w: 2.4 + rng.next() * 1.9,
-      rad: 4.5 + rng.next() * 4 }));
-    // 七片花瓣：角度、长度、出场时间同样错开。一起从同一个半径张开就是一只规整的车轮。
-    const pet = Array.from({ length: 7 }, (_, i) => ({
-      a: i / 7 * 6.283 + rng.next() * 0.3,
-      len: 12 + rng.int(0, 7), w: 4 + rng.next() * 2.6, d: rng.next() * 0.22 }));
-    // 一条光带在身上的位置：s=0 在脚边的椭圆上，s=1 在头顶之上。越往上摆得越开。
-    const spiral = (s, q) => {
-      const t = q.a + s * 2.7, r = q.rad * kx * (0.5 + s * 0.85);
-      return [x + Math.sin(t) * r, foot - q.h * ky * s + Math.cos(t) * q.rad * kx * 0.34 * (1 - s)];
+      a: i * 1.63 + rng.next() * 0.6,
+      span: 2.0 + rng.next() * 1.4,
+      h: 25 + rng.int(0, 11),
+      d: i * 0.09 + rng.next() * 0.07,
+      w: 0.9 + rng.next() * 0.8,
+      rad: 6 + rng.next() * 3.5 }));
+    // 九道光：角度、长度、出场时间错开——一起从同一个半径张开就是一只规整的车轮。
+    // 宽度是第一版的一半：又肥又长的七片会在 16 像素宽的人身上开成一朵大雏菊，
+    // 把脸整个盖住，而且读作「植物」不是「光」。窄而多才是光芒。
+    const pet = Array.from({ length: 9 }, (_, i) => ({
+      a: i / 9 * 6.283 + rng.next() * 0.25,
+      len: (i % 2 ? 6.5 : 10) + rng.int(0, 3),      // 长短相间，一圈等长就是个图章
+      w: 1.4 + rng.next() * 1.0, d: rng.next() * 0.2 }));
+    // 一段光弧在 s 高度上的路径：s=0 贴着脚边那圈，s=1 到头顶之上。
+    // 一边升一边转、一边收紧（越往上半径越小），五段各转各的，不会排成一列。
+    const arc = (q, s) => {
+      const rr = q.rad * kx * (1 - s * 0.3), a0 = q.a + s * 1.7;
+      const cy = foot - q.h * ky * s;
+      return Array.from({ length: 9 }, (_, i) => {
+        const t = a0 + q.span * (i / 8);
+        return [x + Math.cos(t) * rr, cy + Math.sin(t) * rr * 0.32];
+      });
     };
     return { t: 0, dur: 0.78, render(ctx, p) {
-      // 局部加光，不铺全屏。glow 是 lighter 的径向渐变，亮的只有角色周围那一圈
-      glow(ctx, x, y - 1, 46 * kx, 'rgb(120,255,190)', pulse(p, 0.04, 0.96) * 0.34);
+      // 局部加光，不铺全屏。glow 是 lighter 的径向渐变，亮的只有角色周围那一圈。
+      // 半径和强度都按「全体治疗时四个人同时在放」定：一个人看着刚好，
+      // 四个叠起来就是一片糊——所以宁可弱，靠形状去说话。
+      glow(ctx, x, y - 1, 30 * kx, 'rgb(120,255,190)', pulse(p, 0.04, 0.96) * 0.2);
       // 承：脚下浮起两圈光环，先张开再收紧——「地气聚起来了」。贴地画（压扁 0.3）
       const f = seg(p, 0, 0.30), fo = 1 - seg(p, 0.70, 1);
       if (f > 0 && fo > 0) {
-        const rr = (6.5 + 8.5 * ease(f)) * kx * (0.7 + 0.3 * fo);
+        const rr = (3.4 + 4.6 * ease(f)) * kx * (0.7 + 0.3 * fo);
         halo(ctx, x, foot, rr, 0.30, '#7fe0aa', Math.min(1, f * 2.4) * fo * 0.8, PX * 2);
-        halo(ctx, x, foot - 1, rr * 0.6, 0.32, '#eaffef', Math.min(1, f * 3) * fo * 0.55, PX);
+        halo(ctx, x, foot - 1, rr * 0.55, 0.32, '#eaffef', Math.min(1, f * 3) * fo * 0.55, PX);
       }
-      // 升：五条光带贴着身体螺旋上去。
+      // 升：脚下那圈光裂成五段，一段一段绕着人往上托。
       // **这不是一撮往上飘的点**——旧版就是那撮点，在 16×24 的角色身上小到没有存在感，
-      // 也是这次重做的起因。改成有头有尾的带子：每条只占一小段高度，一路往上爬，
-      // 头亮尾暗，像光顺着人往上走。
-      const u = seg(p, 0.10, 0.74);
+      // 也是这次重做的起因。每段都是有头有尾的弧：两头收尖、中段最宽，
+      // 越往上越收紧、越淡，像光把人一层层抬起来。
+      const u = seg(p, 0.08, 0.76);
       if (u > 0) for (const q of bands) {
         const k = (u - q.d) / (1 - q.d); if (k <= 0) continue;
-        const s1 = Math.min(1.08, k * 1.08), s0 = s1 - 0.36;
-        const pts = Array.from({ length: 8 }, (_, i) => spiral(Math.max(0, s0 + (s1 - s0) * i / 7), q));
-        const fade = Math.min(1, k * 3.2) * (1 - Math.max(0, (k - 0.6) / 0.4));
-        const wide = t => q.w * kx * 0.5 * Math.max(0, Math.sin(Math.min(1, t * 1.02) * Math.PI)) ** 0.6;
-        ctx.globalAlpha = fade * 0.62; ribbon(ctx, pts, wide, '#3fb37e');
-        ctx.globalAlpha = fade * 0.8; ribbon(ctx, pts.slice(3), t => wide(0.45 + t * 0.55) * 0.72, '#9ff0c0');
-        ctx.globalAlpha = fade * 0.92; ribbon(ctx, pts.slice(5), t => wide(0.72 + t * 0.28) * 0.42, '#f2fff6');
+        const s = Math.min(1, ease(k));
+        const pts = arc(q, s);
+        const fade = Math.min(1, k * 3.5) * (1 - Math.max(0, (k - 0.55) / 0.45));
+        const wide = t => q.w * kx * 0.5 * Math.max(0, Math.sin(t * Math.PI)) ** 0.7;
+        ctx.globalAlpha = fade * 0.55; ribbon(ctx, pts, wide, '#3fb37e');
+        ctx.globalAlpha = fade * 0.85; ribbon(ctx, pts.slice(2, 8), t => wide(0.2 + t * 0.68) * 0.6, '#e6fff0');
       }
-      // 绽：胸口开出一朵光。七片花瓣两层套画（外层薄一点的青、内层短而实的白），
+      // 绽：胸口开出一朵光。九道光芒两层套画（外层薄一点的青、内层短而实的白），
       // 层次跟火焰的 LAYERS 是同一个道理——由外向内越来越实，视线被引到芯上。
       // 最后整朵**往上浮**着散掉：治疗的动作是「托起来」，收尾也该往上走。
-      const bl = seg(p, 0.40, 0.80);
+      const bl = seg(p, 0.38, 0.92);
       if (bl > 0) {
-        const cy = y - H * 0.05 - seg(p, 0.68, 1) * 10 * ky;
+        const cy = y - H * 0.16 - seg(p, 0.58, 1) * 12 * ky;    // 开在胸口偏上，一路浮过头顶
+        const spin = bl * 0.22;                                 // 整朵慢慢转，不然是一张贴上去的图案
         for (const q of pet) {
           const k = (bl - q.d) / (1 - q.d); if (k <= 0) continue;
-          const grow = ease(Math.min(1, k * 1.6)), fade = 1 - Math.max(0, (k - 0.5) / 0.5);
-          const r0 = (1.5 + 3 * grow) * kx, len = q.len * kx * grow;
+          const grow = ease(Math.min(1, k * 1.6)), fade = 1 - Math.max(0, (k - 0.55) / 0.45);
+          const r0 = (1.2 + 2.2 * grow) * kx, len = q.len * kx * grow;
+          ctx.globalAlpha = fade * 0.45;
+          leaf(ctx, x, cy, q.a + spin, r0, len, q.w * kx * (0.55 + 0.45 * fade), '#79e0a8', 0.82, 0, 0.03);
           ctx.globalAlpha = fade * 0.72;
-          leaf(ctx, x, cy, q.a, r0, len, q.w * kx * (0.55 + 0.45 * fade), '#79e0a8');
-          ctx.globalAlpha = fade * 0.9;
-          leaf(ctx, x, cy, q.a, r0 + len * 0.1, len * 0.58, q.w * kx * 0.42, '#f2fff6');
+          leaf(ctx, x, cy, q.a + spin, r0 + len * 0.08, len * 0.7, q.w * kx * 0.44, '#f2fff6', 0.82, 0, 0.03);
         }
         // 芯：一点白光。跟着花一起浮上去，最后收成一颗小星
-        const c = pulse(p, 0.40, 0.88);
+        const c = pulse(p, 0.38, 0.94);
         if (c > 0.01) {
-          ctx.globalAlpha = c * 0.95; ctx.fillStyle = '#ffffff';
-          ctx.beginPath(); ctx.ellipse(x, cy, (0.8 + c * 2.6) * kx, (0.8 + c * 2.6) * kx, 0, 0, 6.29); ctx.fill();
-          halo(ctx, x, cy, (3 + c * 13) * kx, 0.78, '#d8ffe6', c * 0.5, PX * 1.5);
+          ctx.globalAlpha = c * 0.9; ctx.fillStyle = '#ffffff';
+          ctx.beginPath(); ctx.ellipse(x, cy, (0.4 + c * 1.3) * kx, (0.4 + c * 1.3) * kx, 0, 0, 6.29); ctx.fill();
+          halo(ctx, x, cy, (2.5 + c * 7) * kx, 0.78, '#d8ffe6', c * 0.4, PX * 1.5);
         }
       }
       ctx.globalAlpha = 1;

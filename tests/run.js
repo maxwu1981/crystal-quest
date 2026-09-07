@@ -17,6 +17,8 @@ import { MIRROR, NO_TOUCH } from '../src/assets/terrain.js';
 import { U, u, us } from '../src/assets/terrainBits.js';
 import { ART, snap } from '../src/core/draw.js';
 import { TILE_FX } from '../src/assets/tiles.js';
+import { ELEMENTS, ELEMENT_IDS } from '../src/battle/elements.js';
+import { ELEM_SHAPE, spellIcon } from '../src/menu/icons.js';
 
 const results = [];
 const assert = (c, m = 'assert') => { if (!c) throw new Error(m); };
@@ -101,11 +103,13 @@ test('防御减半不会低于每击 1 点', () => {
   assert(r.miss || r.damage >= 1);
 });
 test('元素倍率', () => {
-  const t = { weak: ['fire'], resist: ['ice'], immune: ['poison'] };
-  assert(F.elementMultiplier(t, 'fire') === 2); assert(F.elementMultiplier(t, 'ice') === 0.5);
-  assert(F.elementMultiplier(t, 'poison') === 0); assert(F.elementMultiplier(t, 'thunder') === 1); assert(F.elementMultiplier(t, null) === 1);
+  const t = { weak: ['fire'], resist: ['water'], immune: ['wood'] };
+  assert(F.elementMultiplier(t, 'fire') === 2); assert(F.elementMultiplier(t, 'water') === 0.5);
+  assert(F.elementMultiplier(t, 'wood') === 0); assert(F.elementMultiplier(t, 'metal') === 1); assert(F.elementMultiplier(t, null) === 1);
+  // 八种都要认得，一种都不能落下（新加属性时忘了铺数据，这里先炸）
+  for (const id of ELEMENT_IDS) assert(F.elementMultiplier(t, id) > 0 || id === 'wood', `${id} 倍率异常`);
   const rng = new RNG(3);
-  assert(F.magicDamage(10, { int: 4 }, t, 'poison', rng).damage === 0);
+  assert(F.magicDamage(10, { int: 4 }, t, 'wood', rng).damage === 0);
   assert(F.magicDamage(10, { int: 4 }, t, 'fire', rng).damage >= 1);
 });
 test('逃跑概率在 [0.1, 0.9]', () => { assert(F.fleeChance(0, 100) === 0.1); assert(F.fleeChance(100, 0) === 0.9); });
@@ -338,7 +342,7 @@ test('魔法 / 道具 / 敌人数据字段合法', () => {
   for (const [id, e] of Object.entries(data.enemies)) {
     if (e.onHit) assert(STATUS[e.onHit.status] && e.onHit.chance > 0 && e.onHit.chance <= 1, `${id}.onHit`);
     for (const s of e.spells || []) assert(data.spells[s], `${id} 魔法 ${s}`);
-    for (const s of e.immune || []) assert(STATUS[s] || ['fire', 'thunder', 'ice', 'poison', 'dark'].includes(s), `${id} immune ${s}`);
+    for (const s of e.immune || []) assert(STATUS[s] || ELEMENTS[s], `${id} immune ${s}`);
   }
 });
 
@@ -437,7 +441,7 @@ test('三个装备槽：饰品可装、加成进属性、卸下还原', () => {
 test('武器特效：属性倍率、连击、附加状态、免疫饰品', () => {
   const m = { jobId: 'boxer', level: 8, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: 'kusanagi', armor: null, accessory: null } };
   const s = computeStats(m, data);
-  assert(s.element === 'thunder', '草薙剑应带雷属性');
+  assert(s.element === 'metal', '草薙剑应带金属性（雷走金，见 battle/elements.js）');
   assert(computeStats({ ...m, equipment: { weapon: 'ganjiang' } }, data).hits === 2, '干将莫邪应是 2 连击');
   assert(computeStats({ ...m, jobId: 'general', equipment: { weapon: null } }, data).hits === 2, '武僧空手应是 2 连击');
   assert(computeStats({ ...m, jobId: 'general', equipment: { weapon: 'nemean_fist' } }, data).hits === 4, '武僧 + 双击武器 = 4');
@@ -688,10 +692,30 @@ test('每一种魔法属性都有自己的图标形状，不能退回无属性',
   // 战斗里的魔法列表靠属性图标让玩家一眼分辨该不该对这只怪用。
   // 新加一种属性却忘了配图标，会静默退回「无属性宝珠」——
   // 列表看起来正常，但两个不同属性的魔法长得一模一样。
-  const HAVE = new Set(['fire', 'thunder', 'ice', 'dark', 'light', 'poison']);
+  // 清单不再手写：从 elements.js 那张表拿，加属性时忘了改测试的路直接堵死。
   const miss = new Set();
-  for (const sp of Object.values(data.spells)) if (sp.element && !HAVE.has(sp.element)) miss.add(sp.element);
+  for (const id of ELEMENT_IDS) if (!ELEM_SHAPE[id]) miss.add(id);
+  for (const sp of Object.values(data.spells)) if (sp.element && !ELEM_SHAPE[sp.element]) miss.add(sp.element);
+  for (const sm of Object.values(data.summons || {})) if (sm.element && !ELEM_SHAPE[sm.element]) miss.add(sm.element);
   assert(!miss.size, '这些属性没有配图标（menu/icons.js 的 ELEM_SHAPE）：' + [...miss].join(' '));
+});
+
+test('八种属性的图标形状两两不同，没有一对长得一样', () => {
+  // 上一条只查「有没有配」。配了但两种属性画的是同一个形，一样分不出来——
+  // 旧的「冰」（十字 + 四角点）和「光」（四芒星）就差点撞车，两个都是放射状十字。
+  // 这里真的把图标渲染出来比像素：形状一样、只有颜色不同也算撞。
+  const sig = new Map();
+  for (const id of ELEMENT_IDS) {
+    const c = spellIcon({ element: id });
+    const px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+    // 只看不透明的位置，忽略颜色：撞形状比撞颜色严重得多
+    let bits = '';
+    for (let i = 3; i < px.length; i += 4) bits += px[i] > 32 ? '1' : '0';
+    if (sig.has(bits)) assert(false, `${ELEMENTS[id].cn}(${id}) 和 ${ELEMENTS[sig.get(bits)].cn}(${sig.get(bits)}) 的图标形状一模一样`);
+    sig.set(bits, id);
+    assert(bits.includes('1'), `${id} 的图标是空的`);
+  }
+  assert(sig.size === 8, `八种属性应该有八个不同的形，实际 ${sig.size} 个`);
 });
 
 // **每个模块都要 import 得动。** 语法错误只有加载那一刻才炸，

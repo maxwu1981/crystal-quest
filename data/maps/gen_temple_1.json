@@ -1,0 +1,131 @@
+{
+ "name": "三地门 环庙",
+ "encounterZone": "cave_deep",
+ "spawn": {
+  "x": 10,
+  "y": 1
+ },
+ "legend": {
+  "<": {
+   "tile": "stairs_up"
+  },
+  ">": {
+   "tile": "stairs_down"
+  },
+  "C": {
+   "tile": "crystal",
+   "solid": true
+  },
+  "D": {
+   "tile": "door"
+  },
+  "I": {
+   "tile": "wall",
+   "solid": true
+  },
+  "R": {
+   "tile": "mountain",
+   "solid": true
+  },
+  "W": {
+   "tile": "wall",
+   "solid": true
+  },
+  "o": {
+   "tile": "flagstone",
+   "encounter": true
+  }
+ },
+ "rows": [
+  "WWWWWWWWWW<WWWWWWWWWWWWWW",
+  "WoooooooooooooooooooooooW",
+  "WooIoooooooooooooooooIooW",
+  "WoIoooIoIoIoIoIoIoIoooIoW",
+  "WooooWWWWWWWWWWWWWWWooooW",
+  "WoooWoooooooooooooooWoooW",
+  "WooIWooIoooooooooIooWIooW",
+  "WoooWoIoooIoIoIoooIoWoooW",
+  "WooIWooooWWWWWWWooooWIooW",
+  "WoooWoooWoooooooWoooWoooW",
+  "WooIWooIWoIo>oIoWIooWIooW",
+  "WoooWoooWoooooooWoooWoooW",
+  "RooIWooIWoooCoooWIooWIooR",
+  "WoooWoooWoooooooWoooWoooW",
+  "WooIWooIWoIoooIoWIooDoooW",
+  "WoooWoooWoooooooWoooWoooW",
+  "WooIWooooWWWDWWWooooWIooW",
+  "WoooWoIoooIoooIoooIoWoooW",
+  "WooIWooIoooooooooIooWIooW",
+  "WoooWoooooooooooooooWoooW",
+  "WooooWWWWWWWWWWWWWWWooooW",
+  "WoIoooIoIoIoIoIoIoIoooIoW",
+  "WooIoooooooooooooooooIooW",
+  "WoooooooooooooooooooooooW",
+  "WWWWWWWWWWWWRWWWWWWWWWWWW"
+ ],
+ "events": [
+  {
+   "x": 4,
+   "y": 4,
+   "type": "chest",
+   "id": "gen_temple_1_1",
+   "item": "ether",
+   "qty": 3,
+   "text": [
+    "龛里的灯油干了，灯芯还立着。"
+   ]
+  },
+  {
+   "x": 20,
+   "y": 4,
+   "type": "chest",
+   "id": "gen_temple_1_2",
+   "item": "bell",
+   "qty": 2
+  },
+  {
+   "x": 4,
+   "y": 20,
+   "type": "chest",
+   "id": "gen_temple_1_3",
+   "gold": 240
+  },
+  {
+   "x": 20,
+   "y": 20,
+   "type": "chest",
+   "id": "gen_temple_1_4",
+   "item": "hipotion",
+   "qty": 2
+  },
+  {
+   "x": 8,
+   "y": 16,
+   "type": "chest",
+   "id": "gen_temple_1_5",
+   "item": "silk_robe",
+   "qty": 1
+  },
+  {
+   "x": 8,
+   "y": 8,
+   "type": "chest",
+   "id": "gen_temple_1_6",
+   "gold": 400
+  }
+ ],
+ "npcs": [],
+ "gen": {
+  "kind": "temple",
+  "entry": [
+   10,
+   0
+  ],
+  "exit": [
+   12,
+   10
+  ],
+  "seed": 9,
+  "attempt": 0
+ }
+}

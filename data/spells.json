@@ -12,19 +12,37 @@
   "name": "闪电",
   "mp": 5,
   "power": 9,
-  "element": "thunder",
+  "element": "metal",
   "target": "enemy",
   "scope": "single",
-  "desc": "雷属性伤害"
+  "desc": "金属性伤害。雷走金——天顶落下来的那把刀"
  },
  "ice": {
   "name": "冰冻",
   "mp": 5,
   "power": 9,
-  "element": "ice",
+  "element": "water",
   "target": "enemy",
   "scope": "single",
-  "desc": "冰属性伤害"
+  "desc": "水属性伤害。冰是水冻硬的样子"
+ },
+ "zhentu": {
+  "name": "镇土",
+  "mp": 5,
+  "power": 9,
+  "element": "earth",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "土属性伤害。一张符压落去，地就把它含住"
+ },
+ "chuantang": {
+  "name": "穿堂风",
+  "mp": 5,
+  "power": 9,
+  "element": "wind",
+  "target": "enemy",
+  "scope": "single",
+  "desc": "风属性伤害。伙房厅下那道对流的风，剃骨"
  },
  "sleep": {
   "name": "催眠",
@@ -39,11 +57,11 @@
   "name": "毒雾",
   "mp": 8,
   "power": 5,
-  "element": "poison",
+  "element": "wood",
   "status": "poison",
   "target": "enemy",
   "scope": "all",
-  "desc": "全体小伤害并中毒"
+  "desc": "全体木属性小伤害并中毒。草木自己带的那一份"
  },
  "fira": {
   "name": "烈焰",
@@ -58,10 +76,28 @@
   "name": "雷鸣",
   "mp": 14,
   "power": 18,
-  "element": "thunder",
+  "element": "metal",
   "target": "enemy",
   "scope": "all",
-  "desc": "全体雷属性伤害"
+  "desc": "全体金属性伤害"
+ },
+ "dongtu": {
+  "name": "动土",
+  "mp": 12,
+  "power": 16,
+  "element": "earth",
+  "target": "enemy",
+  "scope": "all",
+  "desc": "全体土属性伤害。日子没看就动土，整片地跟着翻"
+ },
+ "luoshan": {
+  "name": "落山风",
+  "mp": 14,
+  "power": 17,
+  "element": "wind",
+  "target": "enemy",
+  "scope": "all",
+  "desc": "全体风属性伤害。山那头一整个冬天的风，一次全下来"
  },
  "shoujing": {
   "name": "收惊",

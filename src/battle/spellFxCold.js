@@ -1,9 +1,7 @@
 // 冰与毒——**向内收**和**往上洇**的两种。
 //
-// 冰：寒气从画面外收拢 → 把目标封进一根晶柱 → 一裂到底 → 炸成一地棱角分明的碎片。
-//     脆、快，dur 1.15。
-// 毒：脚下先烂出一摊黏泥 → 浊雾翻涌上来吞掉目标 → 毒气漫满整个战场 → 沉回去但**不散**，
-//     挂着丝慢慢化。黏、慢，dur 1.40。
+// 冰：寒气从画面外收拢 → 把目标封进一根晶柱 → 一裂到底 → 炸成一地棱角分明的碎片（dur 1.15，脆而快）。
+// 毒：脚下先烂出一摊黏泥 → 浊雾翻涌上来吞掉目标 → 毒气漫满战场 → 沉回去但**不散**（dur 1.40，黏而慢）。
 // 这个时长差本身就是两者的性格，别调成一样。三种属性关掉颜色只看运动也该分得出来：
 // 火往上腾、冰向内收再炸开、毒往上洇再黏住。
 //
@@ -16,11 +14,11 @@
 //   ③ **按 o.w/o.h 缩放**，同一发魔法罩在小史莱姆和罩在 boss 身上不能一样大。
 //
 // **毒是全体魔法**（spells.json 里 scope:'all'），spellVolley 会给每只活着的敌人各加
-// 一份这个演出——全屏那两层最多**叠四次**。所以毒这边的 wash 与毒气带峰值都压得很低
-// （0.10 / 0.16），四份叠起来才刚好；而且**毒全程一次都不闪**：lighter 模式的闪光叠四次
+// 一份这个演出——全屏那两层会**叠加**。所以毒这边的 wash（0.07）与毒气带（0.26）
+// 峰值都压得低，按最常见的两只校准；而且**毒全程一次都不闪**：lighter 模式的闪光叠四次
 // 是真会伤眼的，何况「毒」的可怕在于慢慢漫上来，不在爆。冰是单体，才敢用那一下白闪。
 import { snap } from '../core/draw.js';
-import { W, FH, PX, seg, pulse, ease, wash, flash, glow, ring } from './fxKit.js';
+import { W, FH, PX, seg, pulse, ease, wash, flash, glow } from './fxKit.js';
 
 // ---- 形状画笔。只有这两种用得上，暂时不往 fxKit 里塞 ----
 
@@ -84,10 +82,14 @@ function strand(ctx, x, topY, len, w, ph, col) {
 const S = v => Math.max(0.9, Math.min(2.3, v / 44));
 
 export const COLD_FX = {
-  // 冰：霜(0–.30) → 封(.22–.40) → 裂(.38–.60) → 碎(.52–1)
+  // 冰：霜(0–.26) → 封(.16–.36) → 裂(.30–.52) → 碎(.42–1)
   // 段与段刻意重叠一点，交接处不会「啪」地换场。
-  // 尺度四段各不相同：**远**（冰刃从画面外插进来）→ **紧**（晶柱只有目标那么大）
-  // → **满屏**（白闪＋冲击环扫出去）→ **散**（碎片飞得到处都是）。
+  // 尺度四段各不相同：**远**（冰刃从画面外插进来）→ **紧**（晶柱裹住目标）
+  // → **满屏**（白闪＋冰刃朝外崩开）→ **散**（碎片飞得到处都是）。
+  //
+  // 白闪的峰值落在 p≈0.41 也就是 0.47 秒：actions.js 的 spellOn 等 0.45 秒才结算伤害，
+  // 「炸开」和「伤害数字跳出来」必须是同一件事（第一版闪在 0.56 秒，读起来是两件事）。
+  // 碎片段从 0.42 铺到片尾，不然最后三分之一是空画面——冰是快，但快不等于提前结束。
   ice: (x, y, rng, o = {}) => {
     const kx = S(o.w || 44), ky = S(o.h || 44);
     const foot = y + (o.h ? o.h / 2 : 22);              // 晶柱从脚下长起来，不是浮在躯干上
@@ -117,8 +119,8 @@ export const COLD_FX = {
                   [[lf[1], cp[0], cp[1], gm], 'rgba(140,200,238,0.30)'],
                   [[gm, cp[1], cp[2], rt[0]], 'rgba(206,240,255,0.26)']];
     // 脚下的一堆霜：**画在晶柱之后**，把柱底那条边和八根冰刺的根一起埋掉
-    const mound = Array.from({ length: 5 }, (_, i) => ({
-      dx: (i - 2) * 9 + (rng.next() - 0.5) * 5, dy: rng.next() * 2, r: 6 + rng.next() * 6, sp: 0.3,
+    const mound = Array.from({ length: 6 }, (_, i) => ({
+      dx: (i - 2.5) * 11 + (rng.next() - 0.5) * 6, dy: rng.next() * 3, r: 9 + rng.next() * 8, sp: 0.3,
       k: [0.12 + rng.next() * 0.12, 0.06 + rng.next() * 0.08, 0.08 + rng.next() * 0.09],
       ph: rng.next() * 6.283 }));
     // 冰刃：从画面外朝目标插进来。每片是个**细长的菱形**，尖端朝着飞行方向——
@@ -129,9 +131,9 @@ export const COLD_FX = {
     // 冰刺：从地面窜起围住晶柱。起脚高低差 ±3，**绝不能齐平**——
     // 一排东西对齐同一条线就会连成横切线，火焰那次就是栽在这里
     const spurs = Array.from({ length: 8 }, (_, i) => ({
-      dx: (i - 3.5) * 8.4 + (rng.next() - 0.5) * 4, dy: (rng.next() - 0.5) * 6,
-      h: 8 + rng.next() * 17, w: 4 + rng.next() * 5,
-      tilt: (rng.next() - 0.5) * 12, lag: rng.next() * 0.5 }));
+      dx: (i - 3.5) * 8.4 + (rng.next() - 0.5) * 7, dy: (rng.next() - 0.5) * 9,
+      h: 7 + rng.next() * 15, w: 5.5 + rng.next() * 7,
+      tilt: (rng.next() - 0.5) * 14, lag: rng.next() * 0.5 }));
     // 裂纹：在晶柱的归一化坐标里走折线，五条各有起点与走向
     const cracks = Array.from({ length: 5 }, () => {
       let cx = (rng.next() - 0.5) * 0.9, cy = -0.16 - rng.next() * 0.6, ang = rng.next() * 6.283;
@@ -162,7 +164,7 @@ export const COLD_FX = {
       wash(ctx, '#0c2c4c', pulse(p, 0.04, 0.86) * 0.22);
       // 全屏那层霜：从四边往里长、中心留空，交代「整场都冷下来了」。
       // 用径向渐变，没有硬圈；正常合成不是 lighter，所以不算闪
-      const rime = seg(p, 0.05, 0.34) * (1 - seg(p, 0.62, 0.96));
+      const rime = seg(p, 0.04, 0.28) * (1 - seg(p, 0.56, 0.94));
       if (rime > 0.01) {
         // 峰值 0.11：第一版给到 0.20，跟中段的白闪一叠整帧就成了一张白纸，
         // 晶柱的棱线全被洗掉。这一层只是**底子**，主角是那几条棱
@@ -172,7 +174,7 @@ export const COLD_FX = {
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, FH); ctx.restore();
       }
       // 霜：冰刃收拢
-      const g0 = seg(p, 0, 0.30);
+      const g0 = seg(p, 0, 0.26);
       if (g0 > 0 && g0 < 1) for (const q of blades) {
         const k = Math.max(0, (g0 - q.lag) / (1 - q.lag)); if (k <= 0) continue;
         const d = q.d0 * (1 - ease(k)), c = Math.cos(q.a), s = Math.sin(q.a);
@@ -186,7 +188,7 @@ export const COLD_FX = {
       // 封：晶柱长起来把目标裹住。左右两个棱面明暗不同、中间一道亮脊——
       // 「棱边亮、面透」：面的 alpha 只有 0.30–0.42，目标始终看得见，
       // 亮的是那几条 PX 宽的棱线。冰的透明不是均匀的，这一条是它跟火最大的差别
-      const fr = seg(p, 0.22, 0.40), alive = 1 - seg(p, 0.52, 0.66);
+      const fr = seg(p, 0.16, 0.34), alive = 1 - seg(p, 0.42, 0.56);
       const grow = 0.18 + ease(fr) * 0.82;
       // 归一化骨架 → 画面坐标。lean 按高度错开，越高偏得越多
       const M = ([a, b]) => [x + (a + lean * -b) * hw, foot + b * ht * grow];
@@ -198,13 +200,13 @@ export const COLD_FX = {
         edge(ctx, [lf[1], gm, rt[0]].map(M), 'rgba(200,240,255,0.52)', 1, false); // 腰
       }
       // 冰刺：围着晶柱窜起。三角形，左棱描亮
-      const sp = seg(p, 0.20, 0.42);
+      const sp = seg(p, 0.15, 0.36);
       if (sp > 0 && alive > 0) {
         ctx.globalAlpha = alive * 0.92;
         for (const q of spurs) {
           const k = Math.max(0, Math.min(1, (sp - q.lag) / (1 - q.lag))); if (k <= 0) continue;
-          const bx = x + q.dx * kx, by = foot + q.dy * 0.5, h = q.h * ky * ease(k), w = q.w * kx;
-          const P = [[bx - w / 2, by], [bx + w / 2, by], [bx + q.tilt * kx * 0.4, by - h]];
+          const bx = x + q.dx * kx, by = foot + q.dy, h = q.h * ky * ease(k), w = q.w * kx;
+          const P = [[bx - w / 2, by], [bx + w / 2, by], [bx + q.tilt * kx * 0.9, by - h]];
           poly(ctx, P, 'rgba(150,212,244,0.55)');
           edge(ctx, [P[0], P[2]], '#eefdff', 1);
         }
@@ -212,14 +214,14 @@ export const COLD_FX = {
       // 地上堆起来的霜。**必须画在晶柱和冰刺之后**：柱底那条边和八根冰刺的底边
       // 全是横平的直线，露出来就是一排横切线。轮廓用 cloud() 起伏一下，边界自己就糊了。
       // 晶柱碎了它还留着慢慢化，收尾才不至于戛然而止
-      const md = seg(p, 0.20, 0.36) * (1 - seg(p, 0.72, 1));
+      const md = seg(p, 0.15, 0.30) * (1 - seg(p, 0.76, 1));
       if (md > 0.01) {
-        cloud(ctx, mound, x, foot + 2, kx * (0.6 + md * 0.5), ky * 0.30, 1, p * 1.2, '#9ec9e4', md * 0.55);
-        cloud(ctx, mound, x, foot + 1, kx * (0.5 + md * 0.4), ky * 0.24, 0.86, p * 1.2 + 2, '#e2f4ff', md * 0.55);
-        glow(ctx, x, foot + 1, 34 * kx, 'rgb(120,190,235)', md * 0.24);
+        cloud(ctx, mound, x, foot + 1, kx * (0.7 + md * 0.5), ky * 0.44, 1, p * 1.2, '#6f9dbe', md * 0.62);
+        cloud(ctx, mound, x, foot + 2, kx * (0.6 + md * 0.4), ky * 0.34, 0.9, p * 1.2 + 2, '#cfe8f8', md * 0.62);
+        glow(ctx, x, foot + 1, 36 * kx, 'rgb(110,175,220)', md * 0.15);
       }
       // 裂：五条裂纹一路裂过去
-      const cr = seg(p, 0.38, 0.56);
+      const cr = seg(p, 0.30, 0.46);
       if (cr > 0 && alive > 0) {
         ctx.globalAlpha = alive * Math.min(1, cr * 3);
         for (const q of cracks) {
@@ -229,25 +231,35 @@ export const COLD_FX = {
       }
       // **整个法术只闪这一下**。pulse 是正弦不是开关：跨 0.22 秒，起落各 0.11 秒 ≥0.08；
       // 峰值 0.36 < 0.45。「碎裂」最容易做成高频白闪，这里刻意只给一次慢起慢落
-      const bang = pulse(p, 0.38, 0.60);
+      const bang = pulse(p, 0.30, 0.52);
       if (bang > 0.004) {
         flash(ctx, bang * 0.36, '#dcefff');
         glow(ctx, x, y, 128 * kx, 'rgb(146,212,255)', bang * 0.22);
       }
-      // 冲击环只留一道，而且**扫完就走**（0.42–0.72，不到三成片长）。
-      // 第一版两道环拖到 0.92，两个又干净又完整的椭圆浮在空画面上，
-      // 读起来是 UI 控件不是冲击波——环这种东西必须一闪而过
-      const sw = seg(p, 0.42, 0.72);
-      if (sw > 0 && sw < 1) ring(ctx, x, y, 8 + ease(sw) * 96 * kx, '#dff4ff', (1 - sw) ** 1.6 * 0.7, 3 * (1 - sw) + 0.4);
+      // 冲击：**开头那批冰刃反过来朝外炸出去**。试过两版几何椭圆环，
+      // 不管调多细多快，静帧上都是一个又干净又完整的椭圆浮在画面上，
+      // 读作 UI 控件不是冲击波。换成同一批刃反向飞就成立了——
+      // 而且首尾呼应：收进来的寒气原样被崩出去。形状永远比图元可信。
+      const sw = seg(p, 0.32, 0.64);
+      if (sw > 0 && sw < 1) for (const q of blades) {
+        const d = 10 + ease(sw) * (56 + q.d0 * 0.4) * kx, c = Math.cos(q.a), s = Math.sin(q.a);
+        const L = q.len * kx * (1 - sw * 0.5), w = q.w * (1 - sw * 0.5);
+        const cx = x + c * d, cy = y + s * d * 0.7;
+        const P = [[cx + c * L, cy + s * L * 0.7], [cx + s * w, cy - c * w],
+                   [cx - c * L * 0.5, cy - s * L * 0.36], [cx - s * w, cy + c * w]];
+        ctx.globalAlpha = (1 - sw) ** 1.3 * 0.9;
+        poly(ctx, P, 'rgba(214,242,255,0.90)');
+        edge(ctx, P, '#f4ffff', 0.8);
+      }
       // 碎：晶柱炸成一地碎片，旋转着飞散并下坠
-      const br = seg(p, 0.52, 1);
+      const br = seg(p, 0.42, 1);
       if (br > 0) for (const q of shards) {
         const k = Math.max(0, Math.min(1, (br - q.lag) / (1 - q.lag))); if (k <= 0) continue;
         const r = q.v * ease(k) * kx * 0.9;
-        const cx = x + Math.cos(q.a) * r, cy = y + Math.sin(q.a) * r * 0.7 + k * k * 26 * ky;
+        const cx = x + Math.cos(q.a) * r, cy = y + Math.sin(q.a) * r * 0.7 + k * k * 36 * ky;
         const rot = q.rot + q.spin * k, c = Math.cos(rot), s = Math.sin(rot);
         const P = q.p.map(([a, b]) => [cx + (a * c - b * s) * kx, cy + (a * s + b * c) * kx]);
-        ctx.globalAlpha = (1 - k) ** 0.7 * 0.95;
+        ctx.globalAlpha = (1 - k) ** 0.5 * 0.95;
         poly(ctx, P, q.lit ? 'rgba(228,248,255,0.90)' : 'rgba(104,168,210,0.85)');
         edge(ctx, P, '#f4ffff', 0.9);
       }
@@ -264,15 +276,25 @@ export const COLD_FX = {
     const foot = y + (o.h ? o.h / 2 : 22);
     // 每个 puff 的谐波系数与相位都在这里掷死。翻滚靠相位推进——
     // 在 render 里重新掷骰会变成一团噪点抖动，毒雾最容易犯这个
-    const puff = (n, dx, dy, r, sp) => Array.from({ length: n }, () => ({
+    // amp 是轮廓的起伏幅度。**最外那层要给最大**：能不能读成雾全看外轮廓有没有
+    // 凹进去的口子，圆滚滚的边界读作灌木丛。里层被外层压着，起伏小一点反而干净
+    const puff = (n, dx, dy, r, sp, amp = 1) => Array.from({ length: n }, () => ({
       dx: (rng.next() * 2 - 1) * dx, dy: rng.next() * dy, r: r + rng.next() * r * 1.1, sp,
-      k: [0.09 + rng.next() * 0.10, 0.05 + rng.next() * 0.07, 0.06 + rng.next() * 0.08],
+      k: [(0.16 + rng.next() * 0.16) * amp, (0.08 + rng.next() * 0.12) * amp,
+          (0.10 + rng.next() * 0.14) * amp],
       ph: rng.next() * 6.283 }));
-    const body = puff(9, 18, 12, 7, 1);                 // 主体雾团
+    // 三层各有**自己的一组 puff**，不是同一组缩放三次。
+    // 同一组缩放的话三层是同心的，读起来是等高线地形图；各自一组，
+    // 亮的部分才会散落在雾团各处，像翻涌起来被照到的那几个鼓包
+    // 里层的 puff 要**摊得更开、单个更小**：挤在中间的话六团并成一坨，
+    // 又变回同心的等高线。摊开之后亮的是散落的几个鼓包，那才是翻涌
+    const body = puff(11, 20, 21, 6.5, 1, 1.55);        // 外层：最大最淡、边最碎
+    const midl = puff(9, 20, 20, 3.6, 1.4);
+    const core = puff(7, 17, 18, 2.3, 1.9);             // 芯：最小最亮
     const mud = puff(5, 15, 2, 8, 0.35);                // 脚下那摊黏泥（扁的）
     const bubs = Array.from({ length: 12 }, () => ({
-      dx: (rng.next() * 2 - 1) * 21, dy: (rng.next() * 2 - 1) * 4,
-      r: 1.3 + rng.next() * 2.9, d: rng.next(), sp: 0.8 + rng.next() * 1.1 }));
+      dx: (rng.next() * 2 - 1) * 23, dy: (rng.next() * 2 - 1) * 7,
+      r: 1 + rng.next() * 2.2, d: rng.next(), sp: 0.8 + rng.next() * 1.1 }));
     const drips = Array.from({ length: 8 }, () => ({
       dx: (rng.next() * 2 - 1) * 20, hang: 3 + rng.next() * 8, len: 8 + rng.next() * 17,
       w: 1.1 + rng.next() * 1.5, lag: rng.next() * 0.45, ph: rng.next() * 6.283 }));
@@ -280,10 +302,12 @@ export const COLD_FX = {
 
     return { t: 0, dur: 1.40, render(ctx, p) {
       const roll = p * 5.2;                             // 翻滚相位，全片共用
-      // 峰值只有 0.10：全体魔法最多叠四份，四份叠起来才到 0.34
-      wash(ctx, '#31501a', pulse(p, 0.06, 0.94) * 0.10);
+      // 峰值只有 0.07：全体魔法最多叠四份，1-(1-.07)^4≈0.25，
+      // 跟火焰（单体、0.14）才是同一个量级。第一版给 0.10，四只敌人时整屏糊成一块绿板，
+      // 连天空都绿了——**要绿的是地面**，那是毒气带的活，不是这一层的
+      wash(ctx, '#31501a', pulse(p, 0.06, 0.94) * 0.07);
       // 渗：脚下先烂出一摊。轮廓是起伏的，不是一个干干净净的椭圆
-      const sl = seg(p, 0, 0.18) * (1 - seg(p, 0.82, 1));
+      const sl = seg(p, 0, 0.18) * (1 - seg(p, 0.88, 1));
       if (sl > 0.01) {
         const e = 0.5 + sl * 0.5;
         cloud(ctx, mud, x, foot + 1, kx * e, ky * 0.26 * e, 1, roll * 0.4, '#1b2a0b', sl * 0.62);
@@ -293,13 +317,15 @@ export const COLD_FX = {
       const bu = seg(p, 0.05, 0.9) * (1 - seg(p, 0.86, 1));
       if (bu > 0.02) for (const q of bubs) {
         const c = (p * q.sp * 1.9 + q.d) % 1;
-        const bx = x + q.dx * kx, by = foot + q.dy * 0.5;
+        const bx = x + q.dx * kx, by = foot + q.dy;
         const r = q.r * kx * (c < 0.78 ? ease(c / 0.78) : 1);
         ctx.globalAlpha = bu * (c < 0.78 ? 0.75 : (1 - c) / 0.22 * 0.75);
-        ctx.fillStyle = 'rgba(122,168,42,0.75)';
+        ctx.fillStyle = 'rgba(60,88,20,0.85)';
         ctx.beginPath(); ctx.ellipse(bx, by, r, r * 0.62, 0, 0, 6.29); ctx.fill();
+        ctx.fillStyle = 'rgba(140,186,54,0.9)';
+        ctx.beginPath(); ctx.ellipse(bx, by - r * 0.18, r * 0.78, r * 0.42, 0, 0, 6.29); ctx.fill();
         ctx.strokeStyle = '#d4ee74'; ctx.lineWidth = PX * 1.1;
-        ctx.beginPath(); ctx.ellipse(bx, by, r, r * 0.62, 0, 3.5, 5.7); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(bx, by, r, r * 0.62, 0, 3.45, 5.65); ctx.stroke();
         if (c > 0.78) {                                 // 破掉的那一圈
           const f = (c - 0.78) / 0.22;
           ctx.globalAlpha = bu * (1 - f) * 0.55;
@@ -310,37 +336,54 @@ export const COLD_FX = {
       // 三层都半透明，目标从雾里透得出来（旧版是一撮往上飘的点，根本没有体量）
       const up = seg(p, 0.18, 0.42), sink = seg(p, 0.70, 1);
       const rise = ease(up) * (1 - sink * 0.45);
-      const fade = Math.min(1, up * 3) * (1 - sink * 0.85);
+      // 尾段刻意留 26% 的残雾：全消掉的话最后那几条挂丝是凭空垂在半空的绿线。
+      // 「黏着不散」这四个字全靠这个残量
+      const fade = Math.min(1, up * 3) * (1 - sink * 0.74);
       if (fade > 0.01) {
-        const cy = foot - (4 + 20 * ky) * rise;
+        // 雾团**必须坐在地上**：抬高的话地上那摊和雾之间空出一条缝，
+        // 读作「雾浮在半空」，跟「黏着不散」正相反。够高靠 puff 的 dy 摊开，不靠整体抬升
+        const cy = foot - 16 * ky * rise;
         const sx = kx * (0.55 + rise * 0.75), sy = ky * (0.40 + rise * 0.80);
-        cloud(ctx, body, x, cy, sx, sy, 1.00, roll, '#3a5714', fade * 0.44);
-        cloud(ctx, body, x, cy + 1, sx * 0.74, sy * 0.74, 0.86, roll * 1.35 + 2.1, '#7aa62a', fade * 0.56);
-        cloud(ctx, body, x, cy + 2, sx * 0.44, sy * 0.44, 0.78, roll * 1.80 + 4.3, '#c2df58', fade * 0.50);
+        // 最外这一层只是**毛边**：撑大 1.28 倍、只有 0.14，把主体那圈硬边糊掉。
+        // 没有它的话雾团是个剪影，边缘利得像贴纸
+        cloud(ctx, body, x, cy - 2, sx, sy, 1.28, roll * 0.8, '#2c4410', fade * 0.14);
+        cloud(ctx, body, x, cy, sx, sy, 1.00, roll, '#33500f', fade * 0.40);
+        cloud(ctx, midl, x, cy + 1, sx, sy, 1.00, roll * 1.30 + 2.1, '#6f9e24', fade * 0.42);
+        cloud(ctx, core, x, cy + 2, sx, sy, 1.00, roll * 1.70 + 4.3, '#bcda52', fade * 0.38);
       }
       // 罩：毒气从战场底边往上洇。**上缘是起伏的**——一条直线横过屏幕是这一套里
       // 最招骂的东西，毒雾的下（这里是上）边缘尤其危险。
-      // 峰值 0.16：这是全体魔法，最多叠四份，别叠成一块绿板
+      // 峰值 0.26：这是全体魔法，会叠。encounters.json 的分布是 1 只 26%、2 只 49%、
+      // 3 只 23%、4 只只有 2%——所以按**两只**校准（叠起来 0.45），不为那 2% 牺牲其余
+      //
+      // 第一版整条都是橄榄色，放进游戏一看整段消失了——六堆平原本来就是草地，
+      // 绿盖绿等于没画。所以上缘要描一道亮边：**有边界的东西在什么底子上都看得见**，
+      // 光靠一层染色只会跟背景融掉。这道边是波浪不是直线，所以不算横切线。
       const hz = seg(p, 0.34, 0.62) * (1 - seg(p, 0.80, 1));
       if (hz > 0.01) {
         const top = FH - (28 + 62 * hz);
-        ctx.save(); ctx.globalAlpha = hz * 0.16;
-        const g = ctx.createLinearGradient(0, top - 8, 0, FH);
-        g.addColorStop(0, 'rgba(64,96,22,0)'); g.addColorStop(0.5, 'rgba(52,80,20,0.70)');
-        g.addColorStop(1, 'rgba(28,44,12,0.95)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, FH);
-        for (let i = 0; i <= 36; i++) {
+        const crest = Array.from({ length: 37 }, (_, i) => {
           const u = i / 36;
-          ctx.lineTo(u * W, top + Math.sin(u * 8.4 + wob + roll * 0.35) * 5 + Math.sin(u * 19 - roll * 0.5) * 2.4);
-        }
-        ctx.lineTo(W, FH); ctx.closePath(); ctx.fill(); ctx.restore();
+          return [u * W, top + Math.sin(u * 8.4 + wob + roll * 0.35) * 5 + Math.sin(u * 19 - roll * 0.5) * 2.4];
+        });
+        // 由亮到暗跨完一整条：贴着上缘是**发亮的酸绿**，往下压到近黑的墨绿。
+        // 靠的是明度落差而不是色相，所以压在天空上、压在草地上都读得出来
+        ctx.save(); ctx.globalAlpha = hz * 0.26;
+        const g = ctx.createLinearGradient(0, top - 10, 0, FH);
+        g.addColorStop(0, 'rgba(198,222,96,0)'); g.addColorStop(0.10, 'rgba(178,204,74,0.55)');
+        g.addColorStop(0.38, 'rgba(96,132,32,0.80)'); g.addColorStop(1, 'rgba(20,32,8,0.95)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, FH);
+        for (const [cx2, cy2] of crest) ctx.lineTo(cx2, cy2);
+        ctx.lineTo(W, FH); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha = hz * 0.45; edge(ctx, crest, '#c8e267', 1.5, false);
+        ctx.restore();
       }
-      // 黏：从雾团底下垂挂液，越拉越长、尖上鼓出珠子，最后断掉落下去。
+      // 黏：从雾团底下垂下黏液，越拉越长、尖上鼓出珠子，最后断掉落下去。
       // 这是毒跟火/冰最不一样的地方——它是**黏的**，不会干干净净地散掉
       const dr = seg(p, 0.34, 1);
       if (dr > 0) for (const q of drips) {
         const k = Math.max(0, Math.min(1, (dr - q.lag) / (1 - q.lag))); if (k <= 0) continue;
-        const ay = foot - (4 + 20 * ky) * rise + q.hang * ky * 0.5;
+        const ay = foot - 16 * ky * rise - q.hang * ky * 0.7;
         const len = q.len * ky * ease(k);
         ctx.globalAlpha = Math.min(1, k * 4) * (1 - sink * 0.65) * 0.85;
         strand(ctx, x + q.dx * kx, ay, len, q.w * kx, q.ph + roll * 0.5, '#84b62c');
