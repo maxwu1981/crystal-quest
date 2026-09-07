@@ -41,10 +41,25 @@ if (!DEV && 'serviceWorker' in navigator && self.isSecureContext) {
   // 手上本来就是最新的文件，刷新纯属白闪一下。
   const hadController = !!navigator.serviceWorker.controller;
   let reloading = false;
+
+  // **但不能说刷就刷。** 预缓存 3.3MB 要十几秒，那时候玩家多半已经在打了——
+  // 打到一半画面忽然重载，这一场就没了（存档只在旅馆/菜单里写）。
+  // 所以只在「没什么好损失」的时刻刷：页面在后台（人已经切走了，回来正好是新版），
+  // 或者停在标题/结局那种画面上（TitleScene 与 EndingScene 的 bgm 都是 'title'）。
+  // 都不是的话就等他切到后台再刷。宁可晚一点，也不要在战斗中间把人踢出去。
+  const safeNow = () => document.visibilityState === 'hidden'
+    || window.game?.scenes?.opaque?.()?.bgm === 'title';
+  const doReload = () => { if (!reloading) { reloading = true; location.reload(); } };
+  const reloadWhenSafe = () => {
+    if (safeNow()) return doReload();
+    addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') doReload(); });
+    // 回到标题画面（游戏结束、读档回去）也算安全时机，隔几秒问一次代价可以忽略
+    const timer = setInterval(() => { if (safeNow()) { clearInterval(timer); doReload(); } }, 4000);
+  };
+
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (reloading || !hadController) return;
-    reloading = true;
-    location.reload();
+    reloadWhenSafe();
   });
 
   // 等 load 之后再注册：预缓存要下 2.5MB，和开局加载抢带宽的话首屏会变慢。
