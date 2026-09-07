@@ -5,7 +5,7 @@
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
 // 共 230 个文件，约 3.3 MB。
-const VERSION = 'f5084ac9e852';
+const VERSION = 'd64075e823ca';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
