@@ -6,6 +6,13 @@ import { audio } from '../core/audio.js';
 import { countItem, removeItem, applyItem, canUseOn, describeUse } from '../game/items.js';
 
 const ELEMENT_FX = { fire: 'fire', thunder: 'thunder', ice: 'ice', poison: 'poison', dark: 'dark' };
+// 特效期间目标会被叠一层薄影（render.js 的 GHOST），这里给那层影子定颜色。
+// 用的是每种属性的**深色调**，因为这层影子要在自己那团特效里看得出形状：
+//   · 不染色（原图那种灰绿）叠上去是一团污渍，把火压脏；
+//   · 染成火的中间橙则整个消失在火里——试过，等于没画。
+// 深烬色才对：物体在火里本来就是逆光的剪影，暖调的黑不脏，形状还清清楚楚。
+const ELEMENT_TINT = { fire: '#6b2408', thunder: '#20265e', ice: '#123a52',
+                       poison: '#1c3a12', dark: '#150f24', light: '#4e4118' };
 const ELEMENT_SFX = { fire: 'fire', thunder: 'thunder', ice: 'magic', poison: 'buzz', dark: 'hit' };
 
 // 附加状态：免疫 / 已有 → false
@@ -93,7 +100,7 @@ function* attack(scene, actor, a) {
   if (actor.element && mult !== 1) r.damage = Math.max(1, Math.floor(r.damage * mult));
   // 打在敌人身上是白色月牙，打在自己人身上是红色冲击环——一眼要能分出挨打的是谁
   const impact = actor.element ? (ELEMENT_FX[actor.element] || 'slash') : (t.side === 'party' ? 'hurt' : 'slash');
-  if (actor.element) t.veil = 1.2;                       // 附魔武器同样要透出目标
+  if (actor.element) { t.veil = 1.2; t.veilTint = ELEMENT_TINT[actor.element] || null; }   // 附魔武器同样要透出目标
   scene.fx.add(impact, ...scene.center(t), { dir: face, ...scene.size(t) });
   if (r.crit) scene.fx.shake(0.18);          // 会心才震，普通命中不震，免得整场都在晃
   audio.sfx(r.crit ? 'crit' : 'hit');
@@ -136,6 +143,7 @@ function* spellVolley(scene, actor, sp, targets) {
   const kind = ELEMENT_FX[sp.element] || 'spark';
   for (const t of targets) {
     t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
+    t.veilTint = ELEMENT_TINT[sp.element] || null;
     scene.fx.add(kind, ...scene.center(t), scene.size(t));
   }
   audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
@@ -181,6 +189,7 @@ function* spellOn(scene, actor, sp, t) {
   // veil：特效期间目标画成半透明，像**隔着火焰/雷光看过去**。
   // 时长跟特效同步（属性魔法 1.2s，其余 0.3s），由 BattleScene.update 递减。
   t.veil = ELEMENT_FX[sp.element] ? 1.2 : 0.3;
+  t.veilTint = ELEMENT_TINT[sp.element] || null;
   scene.fx.add(ELEMENT_FX[sp.element] || 'spark', ...scene.center(t), scene.size(t));
   audio.sfx(ELEMENT_SFX[sp.element] || 'hit');
   // 0.45 而不是 0.25：属性魔法的演出在 p≈0.35 才爆开（spellFx.js 的「爆」段），

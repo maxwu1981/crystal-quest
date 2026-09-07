@@ -100,6 +100,16 @@ export function veilAlpha(a) {
   return a.veil > 0 ? 0.45 + 0.55 * Math.max(0, 1 - a.veil / 0.35) : 1;
 }
 
+// **特效画完之后，把被笼罩的角色再叠画一次**（GHOST 这么淡的一层）。
+// 只压底下那一层是不够的：火焰中心几乎不透光，而怪本身是暗色的，
+// 45% 的暗绿压在亮橙火苗底下等于没有——实测整只怪一帧都看不见。
+// 叠在**上面**才保证无论特效多亮，目标的轮廓始终浮在火里。
+// 没被火盖到的地方这一层会跟底下那层相加（0.45 → 约 0.55），正好也不刺眼。
+// 这层影子按属性染色（actions.js 的 ELEMENT_TINT）：直接叠原图是一团暗色污渍，
+// 把火压得发脏；染成火的中间调之后，读作「怪在火里被照着」。
+const GHOST = 0.42;
+const ghostArt = (spr, a) => (a.veilTint ? tintedSprite(spr, a.veilTint) : spr);
+
 // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
 export function idleBob(scene, e) {
   if (!e.alive || e.flash > 0) return 0;
@@ -128,6 +138,7 @@ export function cheerHop(scene, p) {
 export function renderBattle(scene, ctx) {
   const { W } = scene.game;
   const [sx, sy] = scene.fx.offset();
+  const ghosts = [];                     // 被魔法笼罩的角色，特效画完再叠一层薄影
   ctx.save(); ctx.translate(sx, sy);
   drawBackground(ctx, W, scene.backdrop, scene.time);
   for (const e of scene.enemies) {
@@ -148,9 +159,11 @@ export function renderBattle(scene, ctx) {
       drawDissolve(ctx, spr, x - Math.round(14 * (1 - p) ** 2), y, p);
       ctx.globalAlpha = 1; continue;
     }
+    const ex = x + lungeOffset(e), ey = y + idleBob(scene, e), etint = hitTint(e);
     ctx.globalAlpha = veilAlpha(e);
-    drawHit(ctx, spr, x + lungeOffset(e), y + idleBob(scene, e), hitTint(e));
+    drawHit(ctx, spr, ex, ey, etint);
     ctx.globalAlpha = 1;
+    if (e.veil > 0) ghosts.push(() => drawArt(ctx, ghostArt(spr, e), ex, ey));
   }
   for (const p of scene.party) {
     const [x, y] = actorRect(scene, p);
@@ -166,8 +179,17 @@ export function renderBattle(scene, ctx) {
     drawHit(ctx, scene.game.sprites[key], dx, dy, tint);
     if (p.alive) for (const g of layersFor(p.member, 'left')) drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
     ctx.globalAlpha = 1;
+    if (p.veil > 0) ghosts.push(() => {
+      drawArt(ctx, ghostArt(scene.game.sprites[key], p), dx, dy);
+      if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, ghostArt(g, p), dx, dy);
+    });
   }
   scene.fx.render(ctx);
+  if (ghosts.length) {                   // 见 GHOST 上面那段：叠在特效**上面**的一层薄影
+    ctx.globalAlpha = GHOST;
+    for (const g of ghosts) g();
+    ctx.globalAlpha = 1;
+  }
   if (scene.phase === 'input' && scene.sub === 'target') {
     const t = scene.target.list[scene.target.idx];
     const [x, y, w, h] = actorRect(scene, t);

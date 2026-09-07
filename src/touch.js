@@ -18,8 +18,13 @@
 // 所以统一在容器上收 touchstart/touchmove/touchend，每次都把全部活动触点
 // 重新命中一遍，算出「现在按住哪些动作」，再和上一帧比较做增量。
 //
-// 排版：十字键在左下、A/B 在右下，中间留空——两个拇指各占一边，
-// 谁也不会挡住画面下缘的对话框。
+// 排版：**横屏**，画面按高度铺满，十字键与 A/B 半透明浮在画面两侧下角。
+//
+// 原来是竖屏：画面顶到上面、按键排在下面的黑边里，互不重叠。改横屏是因为
+// 这是个 8:7 的画面，竖屏手机上它只能占屏幕上面 40%，下面一大半是黑的；
+// 横过来按高度铺满，画面就大了两倍不止。代价是没有黑边留给按键了，
+// 所以按键改成半透明浮在画面上——19.5:9 的屏幕放 8:7 的画面，
+// 左右各留一条黑边，按键落在最外侧，实际压到画面上的只有一点点。
 
 const HTML = `
 <div class="tp tp-dpad">
@@ -39,37 +44,49 @@ const HTML = `
 </div>`;
 
 const CSS = `
-/* 手机上把画面顶到上方：body 默认是上下居中，那会在画面上方空出一大块黑，
-   而按键在下面——中间那段既没内容也按不到。顶上去之后画面和按键各据一端。 */
-body.tpad-on { align-items: flex-start; padding-top: calc(8px + env(safe-area-inset-top)); }
+/* 画面保持居中铺满（index.html 的 flex 居中），按键浮在它上面——
+   横屏下没有黑边可以放按键了，见文件头。 */
 #tpad { position:fixed; inset:0; pointer-events:none; z-index:5;
   touch-action:none; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
 #tpad .tp { position:absolute; pointer-events:auto; }
 /* 十字键：左下角，尺寸跟着屏幕宽走但夹在 132–190px，太小按不准、太大占画面 */
-#tpad .tp-dpad { left:max(12px, env(safe-area-inset-left)); bottom:var(--tp-bottom, 14px);
-  width:clamp(132px, 42vw, 190px); aspect-ratio:1; }
+/* 十字键：贴最左下角。尺寸跟着**屏幕高度**走而不是宽度——横屏时宽度是长边，
+   按 vw 算会大得离谱（19.5:9 的手机上 42vw ≈ 340px，半个画面就没了）。 */
+#tpad .tp-dpad { left:max(6px, env(safe-area-inset-left)); bottom:max(8px, env(safe-area-inset-bottom));
+  width:clamp(112px, 34vh, 168px); aspect-ratio:1; }
 #tpad .tp-b { position:absolute; border-radius:12px;
-  background:rgba(26,45,37,0.72); border:2px solid rgba(196,168,90,0.55); box-sizing:border-box; }
-#tpad .tp-b::after { content:''; position:absolute; inset:38%; border-radius:2px; background:rgba(226,214,170,0.75); }
-#tpad .tp-b.on { background:rgba(70,110,88,0.92); border-color:rgba(240,220,150,0.95); }
+  background:rgba(20,34,28,0.34); border:2px solid rgba(214,190,120,0.42); box-sizing:border-box;
+  backdrop-filter:blur(1px); }
+/* 箭头本身反而要**比底板更实**：底板压得再淡，方向指示也得一眼看清 */
+#tpad .tp-b::after { content:''; position:absolute; inset:38%; border-radius:2px; background:rgba(240,232,200,0.85); }
+#tpad .tp-b.on { background:rgba(78,124,96,0.78); border-color:rgba(245,228,160,0.95); }
 #tpad .tp-hub { position:absolute; left:33.3%; top:33.3%; width:33.4%; height:33.4%;
-  border-radius:8px; background:rgba(26,45,37,0.5); }
+  border-radius:8px; background:rgba(20,34,28,0.28); }
 /* A/B：右下角，A 大一点、位置更低，拇指自然落点 */
-#tpad .tp-btns { right:max(12px, env(safe-area-inset-right)); bottom:calc(var(--tp-bottom, 14px) + 8px);
-  width:clamp(140px, 40vw, 190px); height:clamp(96px, 28vw, 130px); }
+#tpad .tp-btns { right:max(6px, env(safe-area-inset-right)); bottom:max(12px, env(safe-area-inset-bottom));
+  width:clamp(118px, 34vh, 172px); height:clamp(84px, 24vh, 120px); }
 #tpad .tp-r { position:absolute; display:flex; align-items:center; justify-content:center;
-  border-radius:50%; box-sizing:border-box; font:600 20px/1 system-ui, sans-serif; color:rgba(226,214,170,0.9);
-  background:rgba(26,45,37,0.72); border:2px solid rgba(196,168,90,0.55); }
-#tpad .tp-r[data-a="cancel"] { right:52%; top:0; width:clamp(56px,17vw,74px); aspect-ratio:1; }
-#tpad .tp-a { right:0; bottom:0; width:clamp(66px,20vw,86px); aspect-ratio:1;
-  border-color:rgba(220,180,90,0.8); }
-#tpad .tp-r.on { background:rgba(70,110,88,0.92); border-color:rgba(240,220,150,0.95); }
+  border-radius:50%; box-sizing:border-box; font:600 20px/1 system-ui, sans-serif; color:rgba(240,232,200,0.92);
+  background:rgba(20,34,28,0.34); border:2px solid rgba(214,190,120,0.42); backdrop-filter:blur(1px);
+  text-shadow:0 1px 2px rgba(0,0,0,0.6); }
+#tpad .tp-r[data-a="cancel"] { right:52%; top:0; width:clamp(52px,15vh,70px); aspect-ratio:1; }
+#tpad .tp-a { right:0; bottom:0; width:clamp(60px,17vh,80px); aspect-ratio:1;
+  border-color:rgba(232,196,110,0.7); }
+#tpad .tp-r.on { background:rgba(78,124,96,0.78); border-color:rgba(245,228,160,0.95); }
 /* 右上角两个小钮：全图 / 静音。做小、做淡——它们不该跟主操作抢注意力 */
 #tpad .tp-top { right:max(10px, env(safe-area-inset-right)); top:calc(10px + env(safe-area-inset-top)); display:flex; gap:8px; }
 #tpad .tp-s { width:38px; height:38px; display:flex; align-items:center; justify-content:center;
   border-radius:9px; font:500 14px/1 system-ui, sans-serif; color:rgba(226,214,170,0.75);
-  background:rgba(26,45,37,0.6); border:1px solid rgba(196,168,90,0.4); }
-#tpad .tp-s.on { background:rgba(70,110,88,0.9); }`;
+  background:rgba(20,34,28,0.32); border:1px solid rgba(214,190,120,0.34); }
+#tpad .tp-s.on { background:rgba(78,124,96,0.8); }
+/* 竖屏提示：盖住整个屏幕。不做「竖屏也能玩」的第二套排版——见 relayout 那段 */
+#tprot { position:fixed; inset:0; z-index:9; display:none; align-items:center; justify-content:center;
+  background:#0d1410; color:#e2d6aa; text-align:center; font:600 17px/1.9 system-ui, sans-serif; }
+#tprot.on { display:flex; }
+#tprot small { display:block; font-weight:400; font-size:13px; color:#8d8674; }
+/* 用字符本身而不是 CSS 的 \\21BB 转义：这段 CSS 是写在模板串里的，
+   模板串里 \\21 会被 JS 当成八进制转义，整个模块直接 SyntaxError 挂掉 */
+#tprot div::before { content:'↻'; display:block; font-size:44px; line-height:1.4; color:#c4a85a; }`;
 
 // 触控设备才装。用 pointer:coarse 而不是 'ontouchstart' in window：
 // 后者在带触摸屏的笔记本上也为真，会给鼠标用户平白扣掉半个屏幕。
@@ -90,7 +107,6 @@ export function installTouch(game) {
   style.textContent = CSS;
   document.head.appendChild(style);
 
-  document.body.classList.add('tpad-on');
   const pad = document.createElement('div');
   pad.id = 'tpad';
   pad.innerHTML = HTML;
@@ -134,24 +150,21 @@ export function installTouch(game) {
   addEventListener('blur', () => { for (const a of held) game.input.release(a); held.clear(); measure(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { for (const a of held) game.input.release(a); held.clear(); } });
 
-  const dpad = pad.querySelector('.tp-dpad');
+  // 竖屏提示。横屏是这个游戏在手机上唯一合理的姿势：画面是 8:7 的，
+  // 竖屏时按宽度铺满也只占屏幕上面 40%，剩下一大半是黑的，字还小得看不清。
+  // 与其做两套排版，不如请玩家转一下——PWA 装到桌面后 manifest 会直接锁横屏，
+  // 这个提示只对「在浏览器里直接打开」的情况有用。
+  const rotate = document.createElement('div');
+  rotate.id = 'tprot';
+  rotate.innerHTML = '<div>请把手机横过来<small>横屏才放得下整个画面</small></div>';
+  document.body.appendChild(rotate);
 
-  // 按键区不贴屏幕底，而是**在画面下方的剩余空间里居中**。
-  // 竖屏手机上画面只占上面 40%（256:224 的比例，铺满宽度就到顶了），
-  // 贴底的话中间会空出三四百像素纯黑——既没内容也按不到，
-  // 而拇指还得往下够。居中之后按键落在拇指自然的位置上。
-  const place = () => {
-    const cv = game.canvas.getBoundingClientRect();
-    const h = dpad.getBoundingClientRect().height;
-    const safe = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0;
-    const free = innerHeight - cv.bottom;                 // 画面下方还剩多少
-    const bottom = Math.max(14, Math.round((free - h) / 2));
-    pad.style.setProperty('--tp-bottom', bottom + 'px');
+  const relayout = () => {
+    measure();
+    // 竖屏时盖上提示。用宽高比判断而不是 screen.orientation：
+    // 后者在 iPad 分屏和桌面浏览器缩窄窗口时都会说谎
+    rotate.classList.toggle('on', innerHeight > innerWidth * 1.05);
   };
-
-  // fitCanvas 要知道给按键留多少：十字键高度 + 上下各一点余量
-  const padH = () => Math.round(dpad.getBoundingClientRect().height + 48);
-  const relayout = () => { game.touchPad = padH(); game.fitCanvas?.(); measure(); place(); };
   relayout();
   addEventListener('resize', relayout);
   addEventListener('orientationchange', () => setTimeout(relayout, 250));
