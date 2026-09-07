@@ -3,7 +3,8 @@ import { Input } from './Input.js';
 import { RNG } from './RNG.js';
 import { SceneStack } from './SceneStack.js';
 import { startLoop } from './loop.js';
-import { drawText, initFont } from './text.js';
+// 分页标题的前缀；调试信息接在它后面
+import { initFont } from './text.js';
 import { audio } from './audio.js';
 import { loadData } from '../data/loader.js';
 import { buildSprites } from '../assets/sprites.js';
@@ -16,6 +17,9 @@ import { normalizeMember } from '../game/jobskill.js';
 import { FieldScene } from '../field/FieldScene.js';
 import { BattleScene } from '../battle/BattleScene.js';
 import { TitleScene } from '../title/TitleScene.js';
+
+// 分页标题的前缀；`?debug` 时调试信息接在它后面（不再画进画面）
+const TITLE = '去屏東打怪';
 
 export class Game {
   constructor(canvas) {
@@ -148,6 +152,12 @@ export class Game {
       ctx.fillStyle = f.color; ctx.fillRect(0, 0, this.W, this.H);
       ctx.globalAlpha = 1;
     }
-    if (this.debug) drawText(ctx, `FPS ${stats.fps} ${this.scenes.top?.debugInfo?.() ?? ''}`, 2, 2, { color: '#7cff7c' });
+    // 调试信息**不画在画面上**。原本是左上角一行青绿字（FPS 60 village (15,17) …），
+    // 它压在游戏画面里、也会进每一张截图，导演明确要求拿掉。
+    // 改写进分页标题：开发时瞄一眼标题栏就有，玩的人一个字都看不到。
+    if (this.debug) {
+      const info = `FPS ${stats.fps} ${this.scenes.top?.debugInfo?.() ?? ''}`.trim();
+      if (info !== this._dbg) { this._dbg = info; document.title = `${TITLE} · ${info}`; }
+    }
   }
 }
