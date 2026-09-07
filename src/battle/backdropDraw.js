@@ -40,8 +40,13 @@ function plate(ctx, W, kind, cam, hz) {
   const im = backdrops[kind];
   if (!im) return false;
   layer(ctx, cam, K.sky, () => {
-    ctx.imageSmoothingEnabled = false;
+    // **这一层开插值，全局是关的。** 母版 512×240 要放大约 3 倍才铺满战场，
+    // 用最近邻会同时吃到两头的坏处：画本身是连续调（不是像素画），放大后
+    // 既有绘画的糊、又有最近邻的方块边。开插值之后它就是一幅**高分辨率的背景**，
+    // 前面站着低分辨率的角色——这正是 HD-2D 的核心对比（见 docs/HD2D方案.md）。
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(im, -M, -M, W + M * 2, hz + M);
+    ctx.imageSmoothingEnabled = false;          // 还回去，后面几层还是像素画
   });
   return true;
 }

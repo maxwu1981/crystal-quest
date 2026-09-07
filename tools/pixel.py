@@ -175,6 +175,29 @@ def posterize(px, levels=8):
         px[i] = lut[px[i]]; px[i + 1] = lut[px[i + 1]]; px[i + 2] = lut[px[i + 2]]
     return px
 
+def posterize_luma(px, levels=8):
+    """只把**明度**压成 levels 档，色相与饱和度原样保留。
+
+    **为什么不能直接用 posterize()**：那个函数对 R/G/B 三个通道各自独立取整，
+    接近灰的颜色会被推出色相——(120,125,135) 会变成 (109,109,146)，凭空多一层蓝。
+    程序化瓦片本来就只有几十色，落点全在格子上，所以没事；
+    但 Gemini 画出来的连续调图整片是近灰的石头，独立取整会把整面墙染蓝。实测踩过。
+
+    按明度分档等于「把连续的明暗压成几段平涂」——那正是像素画的样子，
+    而颜色一点没动。"""
+    step = 255 / (levels - 1)
+    for i in range(0, len(px), 4):
+        r, g, b = px[i], px[i + 1], px[i + 2]
+        l = 0.299 * r + 0.587 * g + 0.114 * b
+        if l < 1:
+            continue
+        k = round(round(l / step) * step) / l          # 明度缩放系数，色相不变
+        px[i] = min(255, int(r * k + 0.5))
+        px[i + 1] = min(255, int(g * k + 0.5))
+        px[i + 2] = min(255, int(b * k + 0.5))
+    return px
+
+
 def threshold_alpha(px, cut=128):
     for i in range(3, len(px), 4): px[i] = 255 if px[i] >= cut else 0
     return px
