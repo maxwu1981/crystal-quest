@@ -789,6 +789,23 @@ test('神话装备的职业限制合法，且不会出现「拿得到但全队�
   assert(src.size, '一件可获得的道具都没有，收集逻辑坏了');
 });
 
+test('每个职业都装得上东西：武器、防具、饰品三个槽各至少有一件能装的', () => {
+  // 装备限制是**每件道具一张白名单**（items.json 的 jobs），加了新职业不去补，
+  // 结果就是它一路裸着打到底——而且没有任何报错，转职预览只会显示「卸下 ○○」。
+  // 童乩加进来那次正是如此：25 件后排装备一件都没写它。
+  // 家将（赤手空拳）是唯一允许没有武器的：他的设定就是不拿兵器。
+  const slots = { weapon: '武器', armor: '防具', accessory: '饰品' };
+  const bad = [];
+  for (const id of Object.keys(data.jobs)) {
+    for (const [slot, cn] of Object.entries(slots)) {
+      if (slot === 'weapon' && id === 'general') continue;
+      const ok = Object.values(data.items).some(it => it.type === slot && canEquip(it, { jobId: id }));
+      if (!ok) bad.push(`${data.jobs[id].name} 没有能装的${cn}`);
+    }
+  }
+  assert(!bad.length, bad.join('；'));
+});
+
 test('每个职业都取得到自己的精灵（含借图的），五处按 jobId 取图的地方才不会拿到 undefined', () => {
   // 精灵是按 `${jobId}_${dir}_${frame}` 直接取的，转职预览、走地图、战斗、
   // 胜利结算五处都这么取。少一个职业的图，光标一移到它上面就是 TypeError 当场崩——

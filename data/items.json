@@ -261,7 +261,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -277,7 +277,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -293,7 +293,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -309,7 +309,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -325,7 +325,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -341,7 +341,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -357,7 +357,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -373,7 +373,7 @@
       "boxer",
       "hunter",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -491,7 +491,7 @@
     "price": 55,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ]
   },
@@ -505,7 +505,7 @@
     "price": 208,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 2
@@ -520,7 +520,7 @@
     "price": 405,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 3
@@ -535,7 +535,7 @@
     "price": 789,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 4
@@ -550,7 +550,7 @@
     "price": 1539,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 6
@@ -565,7 +565,7 @@
     "price": 3002,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 9
@@ -580,7 +580,7 @@
     "price": 11415,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "intBonus": 13
@@ -724,7 +724,7 @@
     "price": 51,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -740,7 +740,7 @@
     "price": 99,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -756,7 +756,7 @@
     "price": 193,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -772,7 +772,7 @@
     "price": 733,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -788,7 +788,7 @@
     "price": 2788,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -804,7 +804,7 @@
     "price": 10599,
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter",
       "general"
@@ -1078,7 +1078,7 @@
     "price": 0,
     "cat": "staff",
     "jobs": [
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "atk": 30,
@@ -1116,7 +1116,7 @@
     "price": 0,
     "cat": "staff",
     "jobs": [
-      "talisman"
+      "talisman", "tangki"
     ],
     "atk": 28,
     "acc": 10,
@@ -1189,7 +1189,7 @@
     "cat": "robe",
     "jobs": [
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler",
       "hunter"
     ],
@@ -1212,7 +1212,7 @@
       "hunter",
       "general",
       "herbwife",
-      "talisman",
+      "talisman", "tangki",
       "peddler"
     ],
     "def": 46,
