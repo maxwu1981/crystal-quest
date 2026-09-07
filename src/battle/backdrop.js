@@ -15,8 +15,14 @@ import { HZ, paintScene } from './backdropDraw.js';
 // 那边是每种地形一张专属背景，「换了地方」这件事全靠背景说。这里按玩家当前所在地选一套。
 // 判断只看 game.state.map / opts.zone，所以 FieldScene 不用改，也不必多传参数。
 // 认不出的地图一律退回通用背景（调试强制遇敌、以后新加的地图都走这条路）。
-const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_deep: 'deep' };
-const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine' };
+// **新增遇敌区必须在这里登记**，否则战斗背景静默退回 drawFallback()——
+// 那条路没有正式美术、没有透视地面、地平线还停在 PANEL_Y-40，
+// 于是上半场的人整个浮在天上。而地图本身、遇敌表、测试全都正常，
+// 只有真的在那张图上打一场才看得出来。隘寮石城与万金古塚就这么漏了一整轮。
+const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_deep: 'deep',
+                  fort: 'cave', tomb: 'deep' };
+const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
+                 fort_ailiao: 'cave', tomb_wanjin: 'deep' };
 
 // 背景里的随机细节（星星、钟乳石、竹丛…）只能掷一次骰子：每帧重掷会变成一整片雪花。
 // 所以由 BattleScene 在 constructor 里调用本函数把结果存下来，render 只读不掷。

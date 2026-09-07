@@ -10,6 +10,21 @@ import { parseMap } from '../../src/field/FieldScene.js';
 import { canEquip } from '../../src/game/items.js';
 import { STATUS } from '../../src/game/status.js';
 import { ELEMENTS } from '../../src/battle/elements.js';
+test('每个遇敌区都有对应的战斗背景，不会静默退回通用背景', async () => {
+  // 遇敌区没在 ZONE_BG/MAP_BG 里登记的话，战斗背景会**静默**退回 drawFallback()——
+  // 没有正式美术、没有透视地面、地平线还停在旧位置，上半场的人整个浮在天上。
+  // 而地图、遇敌表、其余测试全都正常，只有真的在那张图上打一场才看得出来。
+  // 隘寮石城与万金古塚就这么漏了一整轮，所以钉成断言。
+  const { makeBackdrop } = await import('../../src/battle/backdrop.js');
+  const zones = new Set();
+  for (const m of Object.values(data.maps))
+    for (const def of Object.values(m.legend || {})) if (def.encounter && typeof def.encounter === 'string') zones.add(def.encounter);
+  for (const m of Object.values(data.maps)) if (m.encounterZone) zones.add(m.encounterZone);
+  for (const z of Object.keys(data.encounters || {})) zones.add(z);
+  const bad = [...zones].filter(z => makeBackdrop(null, { zone: z }).kind === 'default');
+  assert(!bad.length, '这些遇敌区没有专属战斗背景：' + bad.join(' '));
+});
+
 test('职业引用的魔法与指令都存在', () => {
   const cmds = new Set(['attack', 'magic', 'summon', 'defend', 'item', 'flee']);
   for (const [id, j] of Object.entries(data.jobs)) {

@@ -132,6 +132,41 @@ function veilAt(a) {
 
 const ghostArt = (spr, a) => (a.veilTint ? tintedSprite(spr, a.veilTint) : spr);
 
+// ---- 落影与远近 ----
+// 地图上主角、NPC、树、宝箱全都有落影（npc.js 的 drawShadow，那边注释原话
+// 「人没有的话看着像浮在地上」），而 src/battle/ 二十六个档里一次都没用过。
+// 加了透视斜面之后这条更要紧：地面在说「这是一块朝里退的地」，
+// 角色没有影子就还是贴在上面的纸片。
+const SHADOW_ON = true;
+const SHADOW = { a: 0.26, w: 0.34, h: 0.13 };
+// 深度系数：画面越靠下 ＝ 离镜头越近 ＝ 越大越实。
+// 只给 ±12%（0.82→1.06）——再多最上面那个人就小得像小孩，
+// 而回合制里四个人得看起来是一队的。
+const NEAR = 152, FAR = 36;
+const depthK = y => 0.82 + 0.24 * Math.min(1, Math.max(0, (y - FAR) / (NEAR - FAR)));
+// 只在**绘制**时按深度缩放，不动 actorRect——那个还管着选目标、特效落点、
+// 伤害数字的位置。绕着脚底缩放，人才不会浮起来或陷进地里。
+const SCALE_ON = false;
+function depthScale(ctx, x, y, w, h, k) {
+  if (!(typeof window !== 'undefined' && window.__SCALE !== undefined ? window.__SCALE : SCALE_ON)) return null;
+  ctx.save();
+  ctx.translate(x + w / 2, y + h);      // 原点挪到脚底中心
+  ctx.scale(k, k);
+  ctx.translate(-(x + w / 2), -(y + h));
+  return true;
+}
+
+function groundShadow(ctx, x, y, w, h, k) {
+  if (!(typeof window !== 'undefined' && window.__SHADOW !== undefined ? window.__SHADOW : SHADOW_ON)) return;
+  ctx.save();
+  ctx.globalAlpha = SHADOW.a * (0.55 + k * 0.45);
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(x + w / 2, y + h - 1.5, w * SHADOW.w * k, h * SHADOW.h * k, 0, 0, 6.29);
+  ctx.fill();
+  ctx.restore();
+}
+
 // 受击时（flash > 0）冻结：sprite 本来就在忽隐忽现，再动就成了闪。死亡另有下沉动画。
 export function idleBob(scene, e) {
   if (!e.alive || e.flash > 0) return 0;
@@ -182,10 +217,14 @@ export function renderBattle(scene, ctx) {
       ctx.globalAlpha = 1; continue;
     }
     const ex = x + lungeOffset(e), ey = y + idleBob(scene, e), etint = hitTint(e);
+    const ek = depthK(ey + artH(spr));
+    groundShadow(ctx, ex, ey, artW(spr), artH(spr), ek);
+    const eScaled = depthScale(ctx, ex, ey, artW(spr), artH(spr), ek);
     const [eb, eg] = veilAt(e);
     ctx.globalAlpha = eb;
     drawHit(ctx, spr, ex, ey, etint);
     ctx.globalAlpha = 1;
+    if (eScaled) ctx.restore();
     if (eg > 0.004) ghosts.push([eg, () => drawArt(ctx, ghostArt(spr, e), ex, ey)]);
   }
   for (const p of scene.party) {
@@ -198,11 +237,16 @@ export function renderBattle(scene, ctx) {
     const key = p.alive ? `${p.jobId}_left_0` : `${p.jobId}_downed`;
     const dx = x - lungeOffset(p), dy = y - cheer + faintSink(scene, p);
     const tint = hitTint(p);
+    const sp0 = scene.game.sprites[key];
+    const pk = sp0 ? depthK(dy + artH(sp0)) : 1;
+    if (sp0) groundShadow(ctx, dx, dy, artW(sp0), artH(sp0), pk);
+    const pScaled = sp0 && depthScale(ctx, dx, dy, artW(sp0), artH(sp0), pk);
     const [pb, pg] = veilAt(p);          // 敌人对我方放魔法时，同样要透出人来
     ctx.globalAlpha = pb;
     drawHit(ctx, scene.game.sprites[key], dx, dy, tint);
     if (p.alive) for (const g of layersFor(p.member, 'left')) drawHit(ctx, g, dx, dy, tint); // 装备叠加也一起闪
     ctx.globalAlpha = 1;
+    if (pScaled) ctx.restore();
     if (pg > 0.004) ghosts.push([pg, () => {
       drawArt(ctx, ghostArt(scene.game.sprites[key], p), dx, dy);
       if (p.alive) for (const g of layersFor(p.member, 'left')) drawArt(ctx, ghostArt(g, p), dx, dy);

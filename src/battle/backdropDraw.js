@@ -42,7 +42,8 @@ export const HZ = { plains: 36, cave: 40, deep: 44, shrine: 38 };
 // 第一版是让整幅铺满战场再裁上面 62%——那样母版自带的一条地面会露出来，
 // 跟程序化的地面接出一道硬边，正是「两种地面打架」。让画根本不带地面才是对的。
 // 没有美术就返回 false，调用方照旧走程序化那两层——PNG 少一张不该让背景消失。
-const PLATE_H = 120;      // 母版画的天空有多高（逻辑像素）；母版是它的 2 倍 512×240
+const PLATE_H = 120;
+const DOF = 1;     // 远景虚化强度：1 = 不虚化；3 左右是明显的景深      // 母版画的天空有多高（逻辑像素）；母版是它的 2 倍 512×240
 function plate(ctx, W, kind, cam, hz) {
   const im = backdrops[kind];
   if (!im) return false;
@@ -56,6 +57,18 @@ function plate(ctx, W, kind, cam, hz) {
     // 前面站着低分辨率的角色——这正是 HD-2D 的核心对比（见 docs/HD2D方案.md）。
     ctx.imageSmoothingEnabled = true;
     const keep = Math.min(1, (hz + M) / PLATE_H);          // 用得上画的下缘几成
+    // 景深：远景压掉细节。用「缩小再放大」而不是 ctx.filter=blur——
+    // 实测小半径的 filter 反而比大半径贵好几倍（Skia 只有大半径才走降采样近似），
+    // 自己降采样一次是 +0.15ms。DOF 是歧路旅人最好认的一笔：远的糊、近的锐。
+    const q = window.__DOF ?? DOF;
+    if (q > 1) {
+      const bw = Math.max(8, Math.round((W + M * 2) / q)), bh = Math.max(4, Math.round((hz + M) / q));
+      if (!plate.buf) plate.buf = document.createElement('canvas');
+      const b = plate.buf; b.width = bw; b.height = bh;
+      const bc = b.getContext('2d'); bc.imageSmoothingEnabled = true;
+      bc.drawImage(im, 0, im.height * (1 - keep), im.width, im.height * keep, 0, 0, bw, bh);
+      ctx.drawImage(b, 0, 0, bw, bh, -M, -M, W + M * 2, hz + M);
+    } else
     ctx.drawImage(im, 0, im.height * (1 - keep), im.width, im.height * keep,
                   -M, -M, W + M * 2, hz + M);
     ctx.imageSmoothingEnabled = false;          // 还回去，后面几层还是像素画
