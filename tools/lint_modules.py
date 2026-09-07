@@ -204,6 +204,13 @@ def main():
         all_exports |= v
 
     objs = {p: object_consts(clean[p]) for p in raw}
+    # 每个文件里「定义了但没导出」的顶层函数名 → 文件路径。B 项拿它兜住拆文件漏搬的情况
+    local_defs = {}
+    for p, s0 in raw.items():
+        for m in re.finditer(r'^(?:function\s*\*?\s*(\w+)|const\s+(\w+)\s*=\s*(?:\([^)]*\)|\w+)\s*=>)', s0, re.M):
+            nm = m.group(1) or m.group(2)
+            if nm and nm not in exp[p]:
+                local_defs.setdefault(nm, p)
     bad_a, bad_b, bad_c, n_imp = [], [], [], 0
     for p, s in raw.items():
         for names, rel in imports_of(s):
@@ -224,6 +231,14 @@ def main():
             if nm in all_exports:            # 全项目有人导出它，说明是忘了 import
                 bad_b.append(f'{os.path.relpath(p, ROOT)} 调用了 {nm}()，'
                              f'但本文件既没 import 也没声明它')
+            elif nm in local_defs and local_defs[nm] != p:
+                # 别的文件里有个**没导出**的同名函数。拆文件时把用到它的那半搬走、
+                # 而它自己留在原处，就是这个样子——上面那条 `in all_exports` 看不见它，
+                # 因为它根本没被 export。实测：把 equip.js 的图标那半拆出去时，
+                # `matOf` 留在原档，浏览器里 ReferenceError，而 70 条测试全绿。
+                bad_b.append(f'{os.path.relpath(p, ROOT)} 调用了 {nm}()，'
+                             f'它定义在 {os.path.relpath(local_defs[nm], ROOT)} 但**没有导出**'
+                             f'（拆文件时最容易漏这一类）')
 
         # C：`{ ...SRC, foo: … }` 里 foo 把 SRC.foo 盖掉了。
         # SRC 从哪来都行——本文件声明的，或从别的模块 import 的。

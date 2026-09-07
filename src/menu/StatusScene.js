@@ -5,7 +5,7 @@ import { computeStats, memberSpells } from '../game/party.js';
 import { expForLevel } from '../battle/formulas.js';
 import { drawSprite, drawRatio, portrait } from './common.js';
 import { drawStatusIcons } from './icons.js';
-import { itemIcon } from '../assets/equip.js';
+import { itemIcon } from '../assets/itemIcon.js';
 import { icons } from '../assets/art.js';
 import { key } from '../touch.js';
 

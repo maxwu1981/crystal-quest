@@ -5,7 +5,7 @@ import { drawText, LINE_H } from '../core/text.js';
 import { countItem, removeItem, useItemOnMember, describeUse, campParty } from '../game/items.js';
 import { drawPartyPanel, drawSprite, drawTextBlock, stepCursor, PARTY_W } from './common.js';
 import { drawMenuIcons, iconGap } from './icons.js';
-import { itemIcon } from '../assets/equip.js';
+import { itemIcon } from '../assets/itemIcon.js';
 import { audio } from '../core/audio.js';
 import { itemStats } from '../game/shop.js';
 

@@ -2,7 +2,7 @@
 import { Menu } from '../ui/Menu.js';
 import { drawWindow, UI, fillWindowBg } from '../ui/Window.js';
 import { drawMenuIcons, iconGap } from '../menu/icons.js';
-import { itemIcon } from '../assets/equip.js';
+import { itemIcon } from '../assets/itemIcon.js';
 import { drawText, LINE_H } from '../core/text.js';
 import { countItem } from '../game/items.js';
 import { buyItem, sellItem, sellPrice, describeItem } from '../game/shop.js';

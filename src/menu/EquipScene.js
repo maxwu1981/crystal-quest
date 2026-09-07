@@ -14,7 +14,7 @@ import { canEquip, equip } from '../game/items.js';
 import { drawPartyPanel, drawSprite, stepCursor, PARTY_W, portrait } from './common.js';
 import { drawMenuIcons, drawStatusIcons, deltaArrow, iconGap, textW } from './icons.js';
 import { icons } from '../assets/art.js';
-import { itemIcon } from '../assets/equip.js';
+import { itemIcon } from '../assets/itemIcon.js';
 import { itemStats } from '../game/shop.js';
 import { key } from '../touch.js';
 
