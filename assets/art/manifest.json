@@ -89,6 +89,7 @@
     "paperkid": "enemy_paperkid.png",
     "earthox": "enemy_earthox.png"
   },
+  "bg": {"plains": "bg_plains.png", "cave": "bg_cave.png", "deep": "bg_deep.png", "shrine": "bg_shrine.png"},
   "tiles": {
     "sarcophagus": "tile_sarcophagus.png",
     "seal_stone": "tile_seal_stone.png",

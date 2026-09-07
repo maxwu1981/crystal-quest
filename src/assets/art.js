@@ -28,6 +28,10 @@ function frame(img, { mirror = false, bob = false } = {}) {
 const load = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
 
 export const icons = {}; // 神话装备造型：icons[itemIcon] = Image
+// 战斗背景的整幅画（backdrops[kind] = Image）。**不经过派生**：它按战场画幅
+// 256×152 逻辑画成 512×304，比逐逻辑像素画出来的程序化背景细一档，
+// 直接用母版精度绘制正是要的（见 set_art.py 的 is_bg）。
+export const backdrops = {};
 
 export async function loadArt(sprites, tiles, jobs = null, base = './assets/art/') {
   let m;
@@ -69,5 +73,6 @@ export async function loadArt(sprites, tiles, jobs = null, base = './assets/art/
   for (const [id, file] of Object.entries(m.enemies || {})) { const im = await load(base + file); if (im) { sprites['enemy_' + id] = im; n++; } }
   for (const [id, file] of Object.entries(m.tiles || {})) { const im = await load(base + file); if (im) { tiles[id] = im; n++; } }
   for (const [id, file] of Object.entries(m.icons || {})) { const im = await load(base + file); if (im) { icons[id] = im; n++; } }
+  for (const [id, file] of Object.entries(m.bg || {})) { const im = await load(base + file); if (im) { backdrops[id] = im; n++; } }
   return n;
 }

@@ -46,6 +46,14 @@ def is_enemy(name):
     return name.startswith('enemy_')
 
 
+# 战斗背景**不派生**：它不是瓦片也不是角色，是一整幅按战场画幅（256×152 逻辑）画的画。
+# 走 target_size 的话会被当成瓦片压成 16×16 逻辑——这正是当初怪物被压扁的同一个坑
+# （那次是所有非角色资源都按瓦片尺寸派生，16 只怪全成了方块）。
+# 背景直接用母版：它已经是 2× 逻辑分辨率，比现在程序化画的背景还细一档。
+def is_bg(name):
+    return name.startswith('bg_')
+
+
 # 怪物没有统一尺寸：山猪 44 逻辑像素宽、乌火 64、椿象 36，各是各的。
 # 而战斗画面用 `artW = img.width / ART` 反推逻辑宽度，所以怪物图的像素尺寸
 # 必须是「该怪的逻辑尺寸 × ART」。早先这里把所有非角色资源一律当瓦片（16×16）算，
@@ -144,7 +152,7 @@ def main():
     a = ap.parse_args()
 
     cur = current_art()
-    masters = sorted(f for f in os.listdir(MASTER) if f.endswith('.png')) if os.path.isdir(MASTER) else []
+    masters = sorted(f for f in os.listdir(MASTER) if f.endswith('.png') and not is_bg(f)) if os.path.isdir(MASTER) else []
     manifest = json.load(open(os.path.join(ART_DIR, 'manifest.json'), encoding='utf-8'))
     used = set()
     for v in manifest.get('characters', {}).values(): used.update(v.values())
