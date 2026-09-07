@@ -2,6 +2,7 @@
 import { snap } from '../core/draw.js';
 import { SPELL_FX } from './spellFx.js';
 import { SUMMON_FX } from './summonFx.js';
+import { SKILL_FX } from './skillFx.js';
 
 export class Effects {
   constructor(rng) { this.rng = rng; this.list = []; this.shakeT = 0; }
@@ -35,6 +36,10 @@ const FX = {
   // （和这个档下面记的 spellFx 那次同一类坑）。
   // 键名不与 SPELL_FX 相撞（八位都是神名），lint_modules.py 的 C 项会盯着这件事。
   ...SUMMON_FX,
+  // 九招战技的演出（skillFx.js，0.45–0.7 秒的短打，只画局部不铺全屏）。
+  // 同样是「没登记就静默吞掉」的那条路——skills.json 的 fx 写了名字而这里没展开，
+  // 表现是招式照常结算、画面上一点动静都没有。测试里有一条对着两边点名单。
+  ...SKILL_FX,
   // 命中的一瞬：一道月牙形冲击张开来，外加几点迸散的火星。
   // 原本是三条平行斜直线，读起来像划痕不像打击。
   slash: (x, y, rng, o = {}) => {

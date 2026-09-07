@@ -77,7 +77,8 @@ export function* useBattleSkill(scene, actor, a) {
 // 自己给自己上的东西**必中**——inflict 的 chance 覆盖走 1，但免疫仍然一票否决。
 function* selfSkill(scene, actor, sk) {
   const list = Array.isArray(sk.selfStatus) ? sk.selfStatus : [sk.selfStatus].filter(Boolean);
-  scene.fx.add('heal', ...scene.center(actor));
+  // 自己身上的演出也走 sk.fx（开脸有自己的脸谱），缺省才退回通用的 heal 光环
+  scene.fx.add(sk.fx || 'heal', ...scene.center(actor), scene.size(actor));
   audio.sfx(sk.sfx || 'heal');
   const got = [];
   for (const st of list) if (inflict(scene, actor, st, 1)) got.push(STATUS[st].name);

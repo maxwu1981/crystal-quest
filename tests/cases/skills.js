@@ -14,6 +14,8 @@ import { makePartyActors, makeEnemyActors } from '../../src/battle/actors.js';
 import { execute } from '../../src/battle/actions.js';
 import { decideEnemyAction } from '../../src/battle/ai.js';
 import { decideAutoAction } from '../../src/battle/autoBattle.js';
+import { Effects } from '../../src/battle/effects.js';
+import { SKILL_FX } from '../../src/battle/skillFx.js';
 import { skillItems } from '../../src/battle/BattleScene.js';
 import { memberSkills, skillsFor, cooldownOf, putOnCooldown, tickCooldowns,
          hpCost, skillReady, skillPower } from '../../src/game/battleskill.js';
@@ -253,4 +255,38 @@ test('自动战斗：该用战技的时候真的会用', () => {
   const a2 = solo.party[0];
   const act2 = decideAutoAction(a2, solo.party, solo.enemies, data, []);
   assert(act2?.type === 'attack', `一只杂鱼普攻就能补掉，不该动冷却：${JSON.stringify(act2?.skillId)}`);
+});
+
+// ── 演出登记 ───────────────────────────────────────────────────────────────
+// `Effects.add` 里是 `if (!make) return null`：**没登记的键会被静默吞掉**。
+// 招式照常结算、伤害照常跳，只是画面上一点动静都没有——不报错，别的测试也照过。
+// 这个项目在 SUMMON_FX 上栽过同一条（见 effects.js 那段注释），所以这里问的是
+// **真的 Effects 实例**，不是另抄一份键名清单——抄的那份一定会跟不上。
+test('战技：skills.json 里每个 fx 键都在 Effects 的表里登记过', () => {
+  const fx = new Effects(new RNG(1)), bad = [];
+  for (const [id, sk] of Object.entries(data.skills)) {
+    if (!sk.fx) { bad.push(`${id} 没写 fx，会退回通用刀光`); continue; }
+    if (!fx.add(sk.fx, 0, 0, { dir: -1, w: 44, h: 44 })) bad.push(`${id} 的 fx「${sk.fx}」没在 effects.js 登记`);
+  }
+  assert(!bad.length, '\n    ' + bad.join('\n    '));
+});
+
+test('战技：九个演出真的画得出来，时长在 0.3–0.9 秒之间', () => {
+  const rng = new RNG(2), bad = [];
+  // 用**真的** canvas 2d context，不用桩：桩会把「arc 少传一个参数」这类错吞掉，
+  // 而这一类正是只有画到那一帧才炸的东西。
+  const ctx = document.createElement('canvas').getContext('2d');
+  for (const [id, sk] of Object.entries(data.skills)) {
+    const make = SKILL_FX[sk.fx];
+    if (!make) { bad.push(`${id}: SKILL_FX 里没有 ${sk.fx}`); continue; }
+    const e = make(120, 90, rng, { dir: -1, w: 44, h: 44 });
+    // 战技是身法不是魔法：拖到魔法那个长度（1.2–1.7 秒）一场战斗放三次就开始等了
+    if (!(e.dur > 0.3 && e.dur < 0.9)) bad.push(`${id}: dur ${e.dur} 不像战技，像魔法`);
+    for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+      ctx.save();
+      try { e.render(ctx, p); } catch (err) { bad.push(`${id}: p=${p} 画到一半炸了 ${err.message}`); }
+      ctx.restore();
+    }
+  }
+  assert(!bad.length, '\n    ' + bad.join('\n    '));
 });

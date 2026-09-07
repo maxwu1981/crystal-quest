@@ -7,6 +7,7 @@
     "hits": 2,
     "target": "enemy",
     "scope": "single",
+    "fx": "fist2",
     "desc": "宋江阵的拳套，一步两拳，落点不同。隔一回合就能再来一次。"
   },
   "sunderfist": {
@@ -19,6 +20,7 @@
     "target": "enemy",
     "scope": "single",
     "sfx": "crit",
+    "fx": "sunder",
     "desc": "拳头找的是接缝，不是硬处。绕开大半防御，还把甲敲开一道口子。"
   },
   "allout": {
@@ -32,6 +34,7 @@
     "target": "enemy",
     "scope": "single",
     "sfx": "crit",
+    "fx": "allout",
     "desc": "拿自己的血换那一下。必中，而且很容易打在要害上。"
   },
   "openface": {
@@ -45,6 +48,7 @@
       "protect"
     ],
     "sfx": "heal",
+    "fx": "openface",
     "desc": "脸一画上，人就不是人了。挡在队伍前面，敌人先冲他来，同时自己硬得多。"
   },
   "pacing": {
@@ -54,6 +58,7 @@
     "power": 0.5,
     "target": "enemy",
     "scope": "all",
+    "fx": "stomp",
     "desc": "踏罡步斗，一脚下去整片地都在震。打的是所有站着的东西。"
   },
   "sevenstar": {
@@ -65,6 +70,7 @@
     "hits": 4,
     "target": "enemy",
     "scope": "single",
+    "fx": "sevenstar",
     "desc": "七个脚位走完，人已经绕到旁边去了。段数多，可是每一下都要先穿过对方的甲。"
   },
   "holdbreath": {
@@ -76,6 +82,7 @@
     "crit": 25,
     "target": "enemy",
     "scope": "single",
+    "fx": "aim",
     "desc": "山里等一只山猪要等半天。屏住那口气，这一下不会落空。"
   },
   "venomblade": {
@@ -87,6 +94,7 @@
     "target": "enemy",
     "scope": "single",
     "sfx": "buzz",
+    "fx": "venom",
     "desc": "刀口先在草汁里过一遍。伤不重，可是那东西会一直烂下去。"
   },
   "sweep": {
@@ -96,6 +104,7 @@
     "power": 0.45,
     "target": "enemy",
     "scope": "all",
+    "fx": "sweep",
     "desc": "赶山的走法：不挑一只打，把整条线上的都扫过去。"
   }
 }

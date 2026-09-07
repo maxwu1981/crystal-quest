@@ -1,0 +1,75 @@
+<!doctype html><meta charset="utf-8"><title>战技演出预览</title>
+<!-- 战技逐帧预览。fx.html 的同款，只是换成 SKILL_FX，并去掉 veil 那一层——
+     战技是物理打击，目标不会被「笼罩」成半透明（只有附魔武器才会，那是另一回事）。
+     取样点也不一样：魔法按 VEIL 的四段挑，战技只有 0.45–0.7 秒，
+     均匀取五帧就够，重点看的是「起手 / 命中 / 收尾」读不读得出来。
+     ?fx=sevenstar 只看某一招；?big=48 铺满宽度看细节。 -->
+<style>
+ body{background:#14100e;color:#cdbfa0;font:13px/1.6 system-ui,sans-serif;margin:16px}
+ h2{font-size:14px;margin:22px 0 6px;color:#e8d9b0}
+ canvas{background:#2a2118;display:block;image-rendering:pixelated}
+</style>
+<div id="out"></div>
+<script type="module">
+import { SKILL_FX } from '../src/battle/skillFx.js';
+import { ART } from '../src/core/draw.js';
+
+// 和 fx.html 同一个确定性随机（掷骰顺序变了图就变了，预览必须可复现）
+class RNG { constructor(s){this.s=s>>>0||1}
+  next(){let x=this.s;x^=x<<13;x^=x>>>17;x^=x<<5;this.s=x>>>0;return this.s/4294967296}
+  int(a,b){return a+Math.floor(this.next()*(b-a+1))} }
+
+const W = 256, H = 152;                  // 战场范围（面板以上）
+const CX = 100, CY = 82;                 // ENEMY_CENTERS[1]
+let SIZES = { '小怪':[36,36], '一般':[48,48], '大怪':[76,80] };
+let FRAMES = [0.10, 0.30, 0.50, 0.70, 0.92];
+const BIG = new URLSearchParams(location.search).get('big');
+const only = new URLSearchParams(location.search).get('fx');
+if (BIG) { const n = +BIG; SIZES = { [`${n}px`]: [n, n] }; FRAMES = [0.14, 0.40, 0.66, 0.90]; }
+
+// 灰怪本体：战技不做 veil，所以从头到尾都是实的——正好用来看特效**盖不盖得住目标**。
+// 战技该是「打在它身上」而不是「罩住它」，盖满了就是画过头了。
+function drawFoe(ctx, w, h) {
+  ctx.save(); ctx.fillStyle = '#8f9aa6';
+  ctx.fillRect(CX - w/2, CY - h/2, w, h);
+  ctx.fillStyle = '#c8d2dc';
+  ctx.fillRect(CX - w*0.22, CY - h*0.18, w*0.14, h*0.12);
+  ctx.fillRect(CX + w*0.08, CY - h*0.18, w*0.14, h*0.12);
+  ctx.restore();
+}
+
+const out = document.getElementById('out');
+const GAP = 3;
+for (const [kind, make] of Object.entries(SKILL_FX)) {
+  if (only && kind !== only) continue;
+  const sizes = Object.entries(SIZES);
+  const cv = document.createElement('canvas');
+  cv.width  = (W * FRAMES.length + GAP * (FRAMES.length - 1)) * ART;
+  cv.height = (H * sizes.length + GAP * (sizes.length - 1)) * ART;
+  cv.style.width = BIG ? '100%' : (cv.width / ART * 0.72) + 'px';
+  cv.style.height = 'auto';
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(ART, ART);
+  sizes.forEach(([label, [w, h]], r) => {
+    FRAMES.forEach((p, c) => {
+      ctx.save();
+      ctx.translate(c * (W + GAP), r * (H + GAP));
+      ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+      ctx.fillStyle = '#2a2118'; ctx.fillRect(0, 0, W, H);
+      drawFoe(ctx, w, h);
+      // dir:-1 ＝ 我方站右边打向左（战斗里最常见的那一侧）
+      const fx = make(CX, CY, new RNG(7), { w, h, dir: -1 });
+      ctx.save(); fx.render(ctx, p); ctx.restore();
+      ctx.fillStyle = 'rgba(200,190,160,0.85)';
+      ctx.font = '7px monospace';
+      ctx.fillText(`${label} p=${p}`, 3, 9);
+      ctx.restore();
+    });
+  });
+  const head = document.createElement('h2');
+  const dur = make(CX, CY, new RNG(7), { w: 48, h: 48 }).dur;
+  head.textContent = `${kind}　dur=${dur}s　横=时间 ${FRAMES.join(' / ')}　纵=目标大小`;
+  out.append(head, cv);
+}
+</script>
