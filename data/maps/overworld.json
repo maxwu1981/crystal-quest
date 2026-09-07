@@ -54,7 +54,7 @@
   "TMMgMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
   "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
   "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
-  "TgMMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
+  "TgEMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
   "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
   "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
   "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
@@ -69,7 +69,7 @@
   "TggggFFFFFFFpgggggggggTggggggggggggggggT",
   "TgggFFFFFFFFpggggggggggggggTggggSSSggggT",
   "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
-  "TgggFFFFFFFFpggggggggggggggggSSwwwwwSSgT",
+  "TgggFEFFFFFFpggggggggggggggggSSwwwwwSSgT",
   "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
   "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
   "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
@@ -102,6 +102,28 @@
     "x": 1,
     "y": 17,
     "facing": "right"
+   }
+  },
+  {
+   "x": 2,
+   "y": 6,
+   "type": "warp",
+   "to": {
+    "map": "fort_ailiao",
+    "x": 13,
+    "y": 25,
+    "facing": "up"
+   }
+  },
+  {
+   "x": 5,
+   "y": 21,
+   "type": "warp",
+   "to": {
+    "map": "tomb_wanjin",
+    "x": 10,
+    "y": 29,
+    "facing": "up"
    }
   },
   {

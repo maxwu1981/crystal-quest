@@ -371,5 +371,173 @@
     "weight": 1
    }
   ]
+ },
+ "fort": {
+  "steps": [
+   13,
+   30
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "skeleton"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "paperkid"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "skeleton"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "paperkid",
+     "paperkid",
+     "paperkid"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "goblin",
+     "paperkid"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "bat",
+     "bat"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "darkslime",
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "ghost"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "viper",
+     "bat"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "tigergran"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "darkslime",
+     "paperkid"
+    ],
+    "weight": 1
+   }
+  ]
+ },
+ "tomb": {
+  "steps": [
+   14,
+   30
+  ],
+  "groups": [
+   {
+    "enemies": [
+     "paperkid",
+     "paperkid"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "skeleton"
+    ],
+    "weight": 3
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "paperkid",
+     "paperkid"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "darkslime",
+     "darkslime"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "bat",
+     "bat",
+     "bat"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "skeleton",
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "viper"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "viper",
+     "paperkid"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "darkslime",
+     "skeleton"
+    ],
+    "weight": 2
+   },
+   {
+    "enemies": [
+     "tigergran"
+    ],
+    "weight": 1
+   },
+   {
+    "enemies": [
+     "tigergran",
+     "paperkid"
+    ],
+    "weight": 1
+   }
+  ]
  }
 }

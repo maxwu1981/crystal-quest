@@ -10,15 +10,21 @@ import { execute } from '../src/battle/actions.js';
 import { decideEnemyAction } from '../src/battle/ai.js';
 
 // 各等级默认装备（模拟玩家按金币逐步换装：出村青铜、洞窟前铁、深处钢）
+// 童乩（tangki）这一路跟符仔仙同装：都是后排、都用杖 + 袍，商店里也没有第三种
+// 后排武器可挑。这不是偷懒——它俩的差别在 MP 池与会什么招，不在穿什么。
+// 装备表少一个职业会当场报错（checkGear），别默默算错。
 const TIERS = [
   { upto: 3, gear: { boxer: ['bronze_sword', 'leather_armor'], hunter: ['knife', 'leather_armor'],
                      herbwife: ['wood_staff', 'cloth_robe'], talisman: ['wood_staff', 'cloth_robe'],
+                     tangki: ['wood_staff', 'cloth_robe'],
                      general: [null, 'cloth_robe'], peddler: ['bronze_sword', 'cloth_robe'] } },
   { upto: 6, gear: { boxer: ['iron_sword', 'bronze_armor'], hunter: ['bronze_dagger', 'leather_armor'],
                      herbwife: ['oak_staff', 'linen_robe'], talisman: ['oak_staff', 'linen_robe'],
+                     tangki: ['oak_staff', 'linen_robe'],
                      general: ['leather_knuckle', 'linen_robe'], peddler: ['iron_sword', 'linen_robe'] } },
   { upto: 99, gear: { boxer: ['steel_sword', 'iron_armor'], hunter: ['iron_dagger', 'bronze_armor'],
                       herbwife: ['iron_staff', 'silk_robe'], talisman: ['iron_staff', 'silk_robe'],
+                      tangki: ['iron_staff', 'silk_robe'],
                       general: ['iron_knuckle', 'silk_robe'], peddler: ['steel_sword', 'silk_robe'] } },
 ];
 // Boss 平衡要按玩家**真实可能的装备**算，而不是一个想当然的「决战档」。
@@ -37,6 +43,7 @@ const LOADOUTS = {
     general:  ['iron_knuckle', 'silk_robe'],
     herbwife: ['iron_staff', 'silk_robe'],
     talisman: ['iron_staff', 'silk_robe'],
+    tangki:   ['iron_staff', 'silk_robe'],
     peddler:  ['steel_sword', 'silk_robe'],
   },
   // ② 全开箱：迷宫翻遍。注意四个人**都**换成神装——原来只换三个，
@@ -47,6 +54,7 @@ const LOADOUTS = {
     general:  ['vajra', 'silk_robe'],
     herbwife: ['caduceus', 'hagoromo'],
     talisman: ['laevateinn', 'silk_robe'],
+    tangki:   ['laevateinn', 'silk_robe'],
     peddler:  ['ganjiang', 'silk_robe'],
   },
   // ③ 一个箱都不开：纯靠商店。这是难度的上限，练级派会落在这一档
@@ -119,6 +127,7 @@ export async function run(data = null, n = 30) {
     'boss(顺路开箱)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath' },
     'boss(全开箱)':   { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'full' } };
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
+                   fort: [4, 5, 6, 7], tomb: [4, 5, 6, 7],          // 隘寮石城 / 万金古塚：跟 cave 同一档，用同一组等级才好对照
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
