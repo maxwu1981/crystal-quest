@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 171 个文件，约 2.6 MB。
-const VERSION = 'd1ab053bd75c';
+// 共 190 个文件，约 2.8 MB。
+const VERSION = '812926811726';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -110,15 +110,24 @@ const PRECACHE = [
   './data/maps/cave_1.json',
   './data/maps/cave_2.json',
   './data/maps/cave_3.json',
+  './data/maps/fort_ailiao.json',
+  './data/maps/gen_castle_1.json',
+  './data/maps/gen_castle_2.json',
+  './data/maps/gen_cave_1.json',
+  './data/maps/gen_mine_1.json',
+  './data/maps/gen_temple_1.json',
+  './data/maps/gen_tomb_1.json',
   './data/maps/house_elder.json',
   './data/maps/house_hakka.json',
   './data/maps/inn.json',
   './data/maps/overworld.json',
   './data/maps/shop.json',
+  './data/maps/tomb_wanjin.json',
   './data/maps/village.json',
   './data/party.json',
   './data/spells.json',
   './data/story.json',
+  './data/summons.json',
   './index.html',
   './manifest.webmanifest',
   './src/assets/art.js',
@@ -138,11 +147,20 @@ const PRECACHE = [
   './src/battle/backdrop.js',
   './src/battle/backdropDraw.js',
   './src/battle/effects.js',
+  './src/battle/elements.js',
   './src/battle/formulas.js',
+  './src/battle/fxKit.js',
   './src/battle/hud.js',
   './src/battle/hudBits.js',
   './src/battle/render.js',
   './src/battle/spellFx.js',
+  './src/battle/spellFxCold.js',
+  './src/battle/spellFxSky.js',
+  './src/battle/spellFxVoid.js',
+  './src/battle/summonFx.js',
+  './src/battle/summonFxAlly.js',
+  './src/battle/summonFxFinale.js',
+  './src/battle/summonKit.js',
   './src/battle/victory.js',
   './src/core/Game.js',
   './src/core/Input.js',
@@ -160,6 +178,7 @@ const PRECACHE = [
   './src/field/minimap.js',
   './src/field/npc.js',
   './src/game/items.js',
+  './src/game/jobskill.js',
   './src/game/party.js',
   './src/game/shop.js',
   './src/game/state.js',
