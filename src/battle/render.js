@@ -146,7 +146,11 @@ const NEAR = 152, FAR = 36;
 const depthK = y => 0.82 + 0.24 * Math.min(1, Math.max(0, (y - FAR) / (NEAR - FAR)));
 // 只在**绘制**时按深度缩放，不动 actorRect——那个还管着选目标、特效落点、
 // 伤害数字的位置。绕着脚底缩放，人才不会浮起来或陷进地里。
-const SCALE_ON = false;
+// 尺寸随深度（导演定案：开，±12%）。
+// 四个队员跨了可见地面纵深的 64%，一样大的话「地面在说透视、角色在说贴纸」，
+// 两边自相矛盾。±12% 已经够读出远近，再多最上面那个人就小得像小孩——
+// 回合制里四个人得看起来是一队的。
+const SCALE_ON = true;
 function depthScale(ctx, x, y, w, h, k) {
   if (!(typeof window !== 'undefined' && window.__SCALE !== undefined ? window.__SCALE : SCALE_ON)) return null;
   ctx.save();
