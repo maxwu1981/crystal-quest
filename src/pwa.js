@@ -26,6 +26,27 @@ if (DEV && 'serviceWorker' in navigator) {
 }
 
 if (!DEV && 'serviceWorker' in navigator && self.isSecureContext) {
+  // **新版本装好之后自动刷新一次。**
+  //
+  // sw.js 是 cache-first，install 里已经 skipWaiting、activate 里已经 clients.claim，
+  // 可是这些都发生在**页面已经用旧缓存渲染完之后**——新 SW 接管了，屏幕上还是旧的。
+  // 结果是：发布之后导演打开 App 看到的是旧版，要**关掉再开一次**才会变。
+  // 他不会知道要这么做，只会说「改了跟没改一样」。这件事真的发生过（见 CLAUDE.md 的验收那节）。
+  //
+  // controllerchange 正是「新 SW 接管了这一页」的信号，收到就重载一次。
+  // 加锁是因为它可能连着派两次（skipWaiting + claim），不挡住会变成刷新循环。
+  // **要在这里就记下来**：controllerchange 派发的时候 controller 已经换成新的了，
+  // 那时候再去读它，首次安装和版本更新看起来一模一样。要分清只能看**页面加载那一刻**
+  // 有没有 controller——有，说明这一页是旧缓存渲染的，该刷；没有，是全新访客，
+  // 手上本来就是最新的文件，刷新纯属白闪一下。
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading || !hadController) return;
+    reloading = true;
+    location.reload();
+  });
+
   // 等 load 之后再注册：预缓存要下 2.5MB，和开局加载抢带宽的话首屏会变慢。
   // 反正第一次访问用不上缓存，晚几百毫秒毫无损失。
   addEventListener('load', () => {
@@ -36,6 +57,11 @@ if (!DEV && 'serviceWorker' in navigator && self.isSecureContext) {
     navigator.serviceWorker.register(url, { scope: new URL('./', url) })
       .then(reg => {
         if (location.search.includes('debug')) console.log('[pwa] 已注册，scope =', reg.scope);
+        // 装成主屏幕 App 之后，页面可能几天都不重新加载一次，浏览器也就不会去问
+        // 有没有新版。每次回到前台主动查一遍——查到新的就走上面那条自动刷新。
+        const check = () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); };
+        addEventListener('visibilitychange', check);
+        check();
       })
       .catch(err => console.warn('[pwa] service worker 没注册上（不影响游戏）：', err.message));
   });

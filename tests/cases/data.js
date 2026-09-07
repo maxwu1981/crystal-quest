@@ -105,7 +105,12 @@ test('画面宽度跟着屏幕比例走：主流手机横屏都不会留黑边',
 test('画面宽度：极端比例要夹得住，不能算出零或几千', () => {
   assert(layoutWidth(0.5) === 256, `竖屏该夹到 256，得到 ${layoutWidth(0.5)}`);
   assert(layoutWidth(99) === MAX_W, `超宽该夹到 ${MAX_W}，得到 ${layoutWidth(99)}`);
-  assert(layoutWidth(0) === 256 && layoutWidth(NaN) >= 256, '0 / NaN 也不能算出小于 256 的宽度');
+  // 0 / NaN 当成「没给比例」，退回当前窗口自己算——所以断言的是**下限**，不是某个定值
+  // （写死 256 会随着跑测试那个窗口的形状时红时绿，第一版就是这么误报的）
+  for (const bad of [0, NaN, -5, Infinity, undefined]) {
+    const w = layoutWidth(bad);
+    assert(Number.isFinite(w) && w >= 256 && w <= MAX_W, `layoutWidth(${bad}) 算出 ${w}`);
+  }
   for (const ar of [1, 1.5, 2, 2.4]) assert(layoutWidth(ar) % 2 === 0, `${ar} 算出的宽度不是偶数`);
 });
 
