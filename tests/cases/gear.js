@@ -128,13 +128,26 @@ function itemSources() {
 // 顺带一提，这批断档正是 Boss 难度全靠开箱驱动的原因：
 // 玩家的强度只有「商店 tier 5」和「神话 tier 11」两档，中间没有过渡。
 // 详见 CLAUDE.md 的 Boss 难度曲线一节。
+// 2026-09-08：tier 6（银）与 tier 7（秘银）**已经全部有出处了**——
+// 壇下三层放银的那五件、爐底两层放秘银的那六件（见 data/maps/altar_*.json、furnace_*.json）。
+// 这一档正是导演点名的那个断档：商店最高 tier 5（钢剑 atk 18），神话是 tier 11
+// （草薙剑 atk 72），中间空五档，玩家的强度只有两个台阶。银与秘银补上了前两阶。
+//
+// **剩下的 tier 8–10 是故意不给的**，不是忘了：
+//   ① 价钱就说明它们不属于这一段游戏——精金 5854、陨铁 11415、龙牙 22259 金，
+//      而打穿现在这一幕全部收入也就一两千。
+//   ② 防御那一侧更要命：伤害公式是「攻击×1.5 − 防御」，而乌火 atk 只有 30，
+//      所以 def ≥ 60 的角色每下只吃 1 点 ＝ 物理免疫。龙鳞甲 def 57 一件就到门口了
+//      （见 CLAUDE.md 的 Boss 难度曲线一节）。
+//   ③ 它们该属于第三幕以后那几座还没做的迷宫（docs/八元素迷宫.md 列了八座，
+//      现在落地的是壇下与爐底两座）。哪天那些迷宫接上了，就从这张名单里往下删。
 const UNUSED_TIERS = new Set([
-  'silver_sword', 'mythril_sword', 'adamant_sword', 'meteor_sword', 'dragon_sword',
-  'silver_dagger', 'mythril_dagger', 'adamant_dagger', 'meteor_dagger',
-  'silver_knuckle', 'mythril_knuckle', 'adamant_claw', 'dragon_claw',
-  'silver_staff', 'mythril_staff', 'star_staff',
-  'silver_armor', 'mythril_armor', 'adamant_armor', 'meteor_armor', 'dragon_armor',
-  'mythril_robe', 'star_robe',
+  'adamant_sword', 'meteor_sword', 'dragon_sword',
+  'adamant_dagger', 'meteor_dagger',
+  'adamant_claw', 'dragon_claw',
+  'star_staff',
+  'adamant_armor', 'meteor_armor', 'dragon_armor',
+  'star_robe',
 ]);
 
 test('每件神话装备都真的拿得到（之前 23 件里有 15 件玩家永远见不到）', () => {

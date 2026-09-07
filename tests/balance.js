@@ -63,6 +63,19 @@ const LOADOUTS = {
   },
   // ③ 一个箱都不开：纯靠商店。这是难度的上限，练级派会落在这一档
   shop: null,   // null = 走 TIERS，按等级取商店档
+  // ④ 顺路开箱 + 把壇下与爐底也翻了：tier 6（银）与 tier 7（秘银）那两阶。
+  //    这两座是 2026-09-08 才接上的支线迷宫，也是商店 tier 5 与神话 tier 11
+  //    之间唯一的两级台阶。**必须单独量一档**——不然「补上断档」这件事
+  //    到底把 Boss 战推成什么样，表上一个数字都看不出来。
+  side: {
+    boxer:    ['mythril_sword', 'mythril_armor'],
+    hunter:   ['mythril_dagger', 'mythril_armor'],
+    general:  ['mythril_knuckle', 'mythril_robe'],
+    herbwife: ['mythril_staff', 'mythril_robe'],
+    talisman: ['mythril_staff', 'mythril_robe'],
+    tangki:   ['mythril_staff', 'mythril_robe'],
+    peddler:  ['mythril_sword', 'mythril_armor'],
+  },
 };
 const ENDGAME = LOADOUTS.full;   // 兼容旧调用
 const GEAR = (level, mode) => {
@@ -185,6 +198,7 @@ export async function run(data = null, n = 30) {
     'boss(纯商店)':   { groups: [{ enemies: ['knight'], weight: 1 }] },
     'boss(顺路开箱)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath' },
     'boss(全开箱)':   { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'full' },
+    'boss(壇下+爐底)': { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'side' },
     // 童乩那一路：队伍里换一个请神的进来，職業 21 级 ＝ 请得动前四位。
     // 有这一行，改 summons.json 的 MP 才看得见后果
     'boss(童乩)':     { groups: [{ enemies: ['knight'], weight: 1 }], endgame: 'onpath', tangki: 21 },
@@ -192,7 +206,8 @@ export async function run(data = null, n = 30) {
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
                    fort: [4, 5, 6, 7], tomb: [4, 5, 6, 7],          // 隘寮石城 / 万金古塚：跟 cave 同一档，用同一组等级才好对照
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
-                   'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12] };
+                   'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12],
+                   'boss(壇下+爐底)': [4, 5, 6, 7, 8] };
   for (const [zone, z] of Object.entries(zones)) {
     for (const level of levels[zone] || [3, 6, 9]) {
       const r = { zone, level, fights: 0, wins: 0, hpLoss: 0, mpLoss: 0, rounds: 0, deaths: 0, summons: 0 };

@@ -105,53 +105,53 @@
       "y": 20,
       "type": "chest",
       "id": "altar_1_1",
-      "item": "antidote",
-      "qty": 3,
       "text": [
         "耳室是给活人放东西的，不是给死人用的。",
         "东西还在，放东西的人不在。"
-      ]
+      ],
+      "item": "antidote",
+      "qty": 3
     },
     {
       "x": 3,
       "y": 14,
       "type": "chest",
       "id": "altar_1_2",
-      "item": "hiether",
-      "qty": 2,
       "text": [
         "洞是从外面掏进来的，边上还留着凿子的斜口。",
         "掏洞的人东西丢了一地，没带走。"
-      ]
+      ],
+      "item": "hiether",
+      "qty": 2
     },
     {
       "x": 3,
       "y": 8,
       "type": "chest",
       "id": "altar_1_3",
-      "gold": 260,
       "text": [
         "石缝里卡着东西，不知道卡了多久。"
-      ]
+      ],
+      "gold": 240
     },
     {
       "x": 6,
       "y": 3,
       "type": "chest",
       "id": "altar_1_4",
-      "item": "phoenix",
-      "qty": 2,
       "text": [
         "壁龛里的陶俑面朝墙站着，一排十二个。",
         "摆的人知道它们该朝哪边——朝里，不朝外。"
-      ]
+      ],
+      "item": "phoenix",
+      "qty": 2
     },
     {
       "x": 14,
       "y": 3,
       "type": "chest",
       "id": "altar_1_5",
-      "item": "guard_band",
+      "item": "silver_staff",
       "qty": 1
     },
     {
@@ -159,7 +159,7 @@
       "y": 7,
       "type": "chest",
       "id": "altar_1_6",
-      "gold": 380
+      "gold": 320
     }
   ],
   "npcs": [],
