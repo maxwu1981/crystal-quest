@@ -77,11 +77,22 @@
     "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
     "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
     "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
-    "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
+    "TgggggVggggggggg,,,,V,,,,ggggggggggggggT",
     "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTETTTTTT"
   ],
   "events": [
+    {
+      "x": 6,
+      "y": 29,
+      "type": "warp",
+      "to": {
+        "map": "huofang_1",
+        "x": 13,
+        "y": 24,
+        "facing": "up"
+      }
+    },
     {
       "x": 20,
       "y": 29,
@@ -273,6 +284,24 @@
             "过了这条圳沟往北，就是罗经圈。",
             "路会绕，你们跟着水声走就不会错。",
             "还有——遇到虎头蜂就跑，不要打。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hf_gatekeeper",
+      "name": "路过的庄仔人",
+      "sprite": "man",
+      "x": 6,
+      "y": 29,
+      "dir": "down",
+      "unless": "bossDefeated",
+      "dialogue": [
+        {
+          "lines": [
+            "那间伙房莫要进去。屋是空了，毋过没干净。",
+            "大代志都还没个了结，先莫管这些细项。",
+            "代志办完，你自己要进去，𠊎毋拦你。"
           ]
         }
       ]

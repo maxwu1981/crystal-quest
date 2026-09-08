@@ -28,7 +28,19 @@ export class ItemScene {
   pick(id) {
     const it = this.game.data.items[id];
     if (it.effect?.camp) { audio.sfx('heal'); campParty(this.game.state.party, this.game.data); removeItem(this.inv, id); this.msg = '全员复原了'; this.buildMenu(this.menu.cursor); return; }
+    if (it.effect?.escape) { this.useEscape(id); return; }
     this.mode = 'target'; this.itemId = id; this.cursor = 0; this.msg = '';
+  }
+  // 逃出险地：目的地写在地图自己的 `escape` 字段上（不是每张图都有），
+  // 没有就当这里用不上。走 SceneStack 现成的 pop 两层回场地层，
+  // 再调它本来就有的 loadMap——跟正常传送门走的是同一条路，不重造一遍初始化。
+  useEscape(id) {
+    const g = this.game, esc = g.data.maps[g.state.map.id]?.escape;
+    if (!esc) { this.msg = '这里用不上。'; return; }
+    removeItem(this.inv, id);
+    audio.sfx('confirm');
+    g.scenes.pop(); g.scenes.pop();
+    g.scenes.top.loadMap(esc.map, esc.x, esc.y, esc.facing || 'down');
   }
   update() {
     const input = this.game.input;

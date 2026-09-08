@@ -38,7 +38,9 @@ const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_
                   chuhuo: 'cave', chuhuo_deep: 'deep',
                   // 木馬道：全作第一座户外迷宫，legend 换皮成林子/土路，退 plains 才对——
                   // 它不是洞，画面上该是天光而不是岩壁
-                  trail: 'plains', trail_deep: 'plains' };
+                  trail: 'plains', trail_deep: 'plains',
+                  // 空伙房：castle 复用（跟隘寮石城同一个原型），退 cave/deep 跟 fort 一致
+                  huofang: 'cave', huofang_deep: 'deep' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
                  fort_ailiao: 'cave', tomb_wanjin: 'deep',
                  altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',

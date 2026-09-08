@@ -239,6 +239,10 @@ export async function run(data = null, n = 30) {
                    // 木馬道没有闸门（随时进得去，跟 altar/furnace/lighthouse/windgap 同一档），
                    // 数值也已经压到那个梯度，量的等级照抄 cave/tomb 那两档
                    trail: [4, 5, 6, 7], trail_deep: [5, 6, 7, 8],
+                   // 空伙房跟出火地縫同一挂法（overworld 入口的「路过的庄仔人」是 unless: bossDefeated），
+                   // 而且量出来的加权 HP 比出火还重（huofang_deep 215.5 > chuhuo_deep 顶 300 那档的均值），
+                   // 量的等级比出火再抬一档
+                   huofang: [9, 10, 11, 12], huofang_deep: [10, 11, 12, 13],
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
                    'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12],
                    'boss(壇下+爐底)': [4, 5, 6, 7, 8] };

@@ -132,6 +132,17 @@
     "battle": false,
     "field": true
   },
+  "ping_an_fu": {
+    "name": "平安符",
+    "type": "consumable",
+    "effect": {
+      "escape": true
+    },
+    "price": 150,
+    "desc": "庙里求来的，急难时念动就能脱身险地（只能在地图上用）",
+    "battle": false,
+    "field": true
+  },
   "wood_sword": {
     "name": "木剑",
     "type": "weapon",

@@ -43,6 +43,10 @@ export const MOOD = {
   // 这两张要靠色调把六七种地板收成一个空间，所以取到 22% 那一档——跟洞窟二层同级。
   fort_ailiao: { tint: '#c9a05c', tintA: 0.34, vig: { r: 150, a: 0.26, c: '18,16,12' }, motes: DUST, sun: HALL },
   tomb_wanjin: { tint: '#6d86ad', tintA: 0.38, vig: { r: 120, a: 0.44, c: '6,8,14' }, motes: { ...DUST, n: 9 }, sun: { ...HALL, col: [186, 210, 238] } },
+  // 空伙房：castle 复用（跟隘寮石城同一副骨架），但这座是暗属性、空了的伙房，
+  // 不该沿用石城的暖调——退一支冷灰蓝，後落（甕都在那边）比前落更深一档
+  huofang_1: { tint: '#5f6f86', tintA: 0.34, vig: { r: 120, a: 0.40, c: '10,10,14' }, motes: DUST, sun: HALL },
+  huofang_2: { tint: '#5a6a82', tintA: 0.40, vig: { r: 100, a: 0.48, c: '8,8,12' }, motes: { ...DUST, n: 9 }, sun: HALL },
   // 風口：三张图共用一套冷色调（跟 cave_1/cave_2 同一支），只有粒子的横向速度
   // （vx）不同——這就是「你能改風向」在画面上唯一看得见的地方。
   // windgap_2（東風）vx 取正、windgap_3（西風）取负：掏完洞回来，

@@ -1,0 +1,254 @@
+{
+  "name": "空伙房 · 後落",
+  "encounterZone": "huofang_deep",
+  "spawn": {
+    "x": 13,
+    "y": 25
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "o": {
+      "tile": "flagstone"
+    },
+    ",": {
+      "tile": "path"
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "arch_door"
+    },
+    "I": {
+      "tile": "pillar",
+      "solid": true
+    },
+    "A": {
+      "tile": "altar",
+      "solid": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    },
+    "c": {
+      "tile": "stove",
+      "solid": true
+    },
+    "w": {
+      "tile": "water",
+      "solid": true
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    },
+    "g": {
+      "tile": "grass",
+      "encounter": true
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWoooWWooWoIoAoIoWooWWoooWW",
+    "WooIooDooWooo,oooWooDooIooW",
+    "WoooooWooWooo,oooWooWoooooW",
+    "WWoooWWooWooo,oooWooWWoooWW",
+    "WWWWWWWooWWWWDWWWWooWWWWWWW",
+    "WBffffWooWooo,oooWooWffffBW",
+    "WfffffWooWoIo,oIoWooWfffffW",
+    "WBffffDooWooo,oooWooDffffBW",
+    "WfffffWooWoIo,oIoWooWfffffW",
+    "WWWWWWWooDooo,oooDooWWWWWWW",
+    "WccoooWooWooo,oooWooWoooccW",
+    "WoooooDooWWWWDWWWWooDoooooW",
+    "WoooooWooWoooooooWooWoooooW",
+    "WoooooWooWoTgggToWooWoooooW",
+    "WWWWWWWooWogwwwgoWooWWWWWWW",
+    "WoooooWooWogwwwgoWooWoooooW",
+    "WoooooDooWogwwwgoWooDoooooW",
+    "WoocooWooWoTgggToWooWoocooW",
+    "WWWWWWWooWoooooooWooWWWWWWW",
+    "WoooooWooWWWWDWWWWooWoooooW",
+    "WoooooDooWooo,oooWooDoooooW",
+    "WA,,,,WooWooo,oooWooW,,,,AW",
+    "WoooooWooDooo,oooDooWoooooW",
+    "WoooooWooWoIo,oIoWooWoooooW",
+    "WoooooWooWooo,oooWooWoooooW",
+    "WWWWWWWWWWWWWDWWWWWWWWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 13,
+      "y": 26,
+      "type": "warp",
+      "to": {
+        "map": "huofang_1",
+        "x": 10,
+        "y": 2,
+        "facing": "down"
+      }
+    },
+    {
+      "x": 2,
+      "y": 22,
+      "type": "chest",
+      "id": "huofang_urn_1",
+      "item": "guard_band",
+      "qty": 1,
+      "text": [
+        "瓮身刻着一个「長」字，笔画很深，像是刻了不只一次。",
+        "瓮里除了骨殖，还压着一枚顶针，针眼那面朝外摆着。",
+        "像是特意留出来，给人看的。"
+      ]
+    },
+    {
+      "x": 24,
+      "y": 22,
+      "type": "chest",
+      "id": "huofang_urn_2",
+      "gold": 700,
+      "text": [
+        "瓮外没有字，只用麻绳捆了一圈又一圈。",
+        "打开是一整瓮的铜钱，一枚都没花过。",
+        "像是攒着要办什么事，事情却没办成。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 17,
+      "type": "chest",
+      "id": "huofang_urn_3",
+      "item": "elixir",
+      "qty": 1,
+      "text": [
+        "瓮肩上贴着半张符，剩下半张不知去了哪里。",
+        "瓮里除了骨殖，还有几副没拆封的药材，包得整整齐齐。",
+        "是行家的手路。"
+      ]
+    },
+    {
+      "x": 23,
+      "y": 11,
+      "type": "chest",
+      "id": "huofang_urn_4",
+      "item": "silver_ring",
+      "qty": 1,
+      "text": [
+        "瓮很小，比其他几个都矮了一截。",
+        "里面压着一只银戒指，戒圈小得戴不上成人的手指。",
+        "瓮上没有名字，只画了一个歪歪的圈。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "type": "chest",
+      "id": "huofang_urn_5",
+      "gold": 900,
+      "text": [
+        "瓮身被烟熏得发黑，像是长年摆在灶边。",
+        "打开是一整瓮的工钱，一笔一笔用红纸包着，没拆开过。",
+        "包工钱的红纸上，日期停在同一个月。"
+      ]
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "type": "chest",
+      "id": "huofang_urn_6",
+      "item": "phoenix",
+      "qty": 3,
+      "text": [
+        "瓮上原本该有的名字被水泡得一个字都不剩。",
+        "翻过来看瓮底，刻着打铁庄的记号——内埔那家铺子的手路。",
+        "瓮里没有骨殖，只有三张没用过的叫魂符，叠得整整齐齐。",
+        "符是新的，像是随时准备用，却一直没等到能用上的那一天。"
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "hf_tou7",
+      "name": "頭七",
+      "sprite": "knight",
+      "x": 13,
+      "y": 5,
+      "dir": "down",
+      "unless": "huofangTou7",
+      "script": {
+        "type": "boss",
+        "enemies": [
+          "tigergran",
+          "ghost",
+          "ghost"
+        ],
+        "winFlag": "huofangTou7",
+        "after": [
+          "七日到了，该走的走。",
+          "祖堂让开了——里面的东西，你们自己看。"
+        ]
+      },
+      "dialogue": [
+        {
+          "lines": [
+            "七日未满，谁都不许进祖堂。",
+            "规矩是死的，人是活的——可规矩定下来的时候，没人问过死的答不答应。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hf_shouye",
+      "name": "守夜的",
+      "sprite": "woman",
+      "x": 11,
+      "y": 17,
+      "dir": "down",
+      "dialogue": [
+        {
+          "if": "chest:huofang_urn_6",
+          "lines": [
+            "连祖堂那个都翻过了？",
+            "翻到底的人不多。翻到底了，就晓得这屋里装的是什么。"
+          ]
+        },
+        {
+          "if": "chest:huofang_urn_1",
+          "lines": [
+            "翻过瓮了。",
+            "翻一个是问一句，翻完了才轮到答。"
+          ]
+        },
+        {
+          "lines": [
+            "水池这么多年没干过，瓮也这么多年没人翻过。",
+            "你们要翻，我不拦。只是翻了就要翻完，不要翻一半就走。"
+          ]
+        }
+      ]
+    }
+  ],
+  "gen": {
+    "kind": "castle",
+    "entry": [
+      13,
+      26
+    ],
+    "exit": [
+      10,
+      1
+    ],
+    "seed": 53,
+    "attempt": 0
+  },
+  "escape": {
+    "map": "overworld",
+    "x": 6,
+    "y": 30,
+    "facing": "down"
+  }
+}

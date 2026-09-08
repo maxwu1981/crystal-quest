@@ -1,0 +1,287 @@
+{
+  "name": "空伙房 · 前落",
+  "encounterZone": "huofang",
+  "spawn": {
+    "x": 13,
+    "y": 24
+  },
+  "legend": {
+    "W": {
+      "tile": "wall",
+      "solid": true
+    },
+    "o": {
+      "tile": "flagstone"
+    },
+    ",": {
+      "tile": "path"
+    },
+    "f": {
+      "tile": "floor"
+    },
+    "D": {
+      "tile": "arch_door"
+    },
+    "I": {
+      "tile": "pillar",
+      "solid": true
+    },
+    "A": {
+      "tile": "altar",
+      "solid": true
+    },
+    "B": {
+      "tile": "bed",
+      "solid": true
+    },
+    "c": {
+      "tile": "stove",
+      "solid": true
+    },
+    "w": {
+      "tile": "water",
+      "solid": true
+    },
+    "T": {
+      "tile": "tree",
+      "solid": true
+    },
+    "g": {
+      "tile": "grass",
+      "encounter": true
+    },
+    ">": {
+      "tile": "stairs_down"
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWoooWWooW>IoAoIoWooWWoooWW",
+    "WooIooWooWooo,oooWooWooIooW",
+    "WoooooDooWooo,oooWooDoooooW",
+    "WWoooWWooWooo,oooWooWWoooWW",
+    "WWWWWWWooWooo,oooWooWWWWWWW",
+    "WBffffWooWooo,oooWooWffffBW",
+    "WfffffDooWWWWDWWWWooDfffffW",
+    "WBffffWooWooo,oooWooWffffBW",
+    "WfffffWooWoIo,oIoWooWfffffW",
+    "WWWWWWWooDooo,oooDooWWWWWWW",
+    "WccoooWooWooo,oooWooWoooccW",
+    "WoooooDooWWWWDWWWWooDoooooW",
+    "WoooooWooWoooooooWooWoooooW",
+    "WoooooWooWoTgggToWooWoooooW",
+    "WoooooWooWogwwwgoWooWoooooW",
+    "WoooooWooWogwwwgoWooWoooooW",
+    "WoooooWooWogwwwgoWooWoooooW",
+    "WWWWWWWooWogggggoWooWWWWWWW",
+    "WoooooWooWoTgggToWooWoooooW",
+    "WoooooWooWoooooooWooWoooooW",
+    "WoooooWooWWWWDWWWWooWoooooW",
+    "WoooooWooWooo,oooWooWoooooW",
+    "WoooooDooWooo,oooWooDoooooW",
+    "WoooooWooDoIo,oIoDooWoooooW",
+    "WccoooWooWooo,oooWooWoooccW",
+    "WWWWWWWWWWWWWDWWWWWWWWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 10,
+      "y": 1,
+      "type": "warp",
+      "to": {
+        "map": "huofang_2",
+        "x": 13,
+        "y": 25,
+        "facing": "up"
+      }
+    },
+    {
+      "x": 13,
+      "y": 26,
+      "type": "warp",
+      "to": {
+        "map": "overworld",
+        "x": 6,
+        "y": 30,
+        "facing": "down"
+      }
+    },
+    {
+      "x": 3,
+      "y": 11,
+      "type": "chest",
+      "id": "huofang_1_1",
+      "item": "antidote",
+      "qty": 3,
+      "text": [
+        "灶下的瓮一字排开，裂了大半。",
+        "剩下没裂的两个，里面还是干的。"
+      ]
+    },
+    {
+      "x": 23,
+      "y": 11,
+      "type": "chest",
+      "id": "huofang_1_2",
+      "gold": 380,
+      "text": [
+        "米缸底下压着一个布包，铜钱都发绿了。",
+        "布包上还留着一个手印，按得很用力。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "type": "chest",
+      "id": "huofang_1_3",
+      "item": "hiether",
+      "qty": 2,
+      "text": [
+        "床头摆着一碗药，早就干成了黑渣。",
+        "碗底压着两包符水，没拆封。"
+      ]
+    },
+    {
+      "x": 23,
+      "y": 7,
+      "type": "chest",
+      "id": "huofang_1_4",
+      "item": "bell",
+      "qty": 3,
+      "text": [
+        "枕头边挂着几个铜铃，串在一条红绳上。",
+        "绳结打得很紧，像是怕被风吹走一样。"
+      ]
+    },
+    {
+      "x": 3,
+      "y": 17,
+      "type": "chest",
+      "id": "huofang_1_5",
+      "item": "hipotion",
+      "qty": 3,
+      "text": [
+        "房里堆着几个药篓，草药早就霉了。",
+        "篓子最底下，还留着几帖没用完的。"
+      ]
+    },
+    {
+      "x": 23,
+      "y": 17,
+      "type": "chest",
+      "id": "huofang_1_6",
+      "gold": 520,
+      "text": [
+        "供桌下的小抽屉锁着，锁早就锈死了。",
+        "撬开一看，是攒了很久的私房钱。"
+      ]
+    },
+    {
+      "x": 12,
+      "y": 1,
+      "type": "chest",
+      "id": "huofang_1_7",
+      "item": "power_band",
+      "qty": 1,
+      "text": [
+        "祖堂廊下挂着一副护腕，皮面磨得发亮。",
+        "看得出主人常年扛重物，肩膀那侧特别薄。"
+      ]
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "type": "chest",
+      "id": "huofang_1_8",
+      "item": "xpotion",
+      "qty": 1,
+      "text": [
+        "祖堂神桌角落摆着一瓶药，封蜡还是完整的。",
+        "留到现在没喝——大概是在等一个用得上的人。"
+      ]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "hf_dazhai",
+      "name": "打齋的",
+      "sprite": "elder",
+      "x": 13,
+      "y": 25,
+      "dir": "up",
+      "if": "chest:huofang_urn_1",
+      "unless": "huofangSettled",
+      "script": {
+        "type": "boss",
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "skeleton"
+        ],
+        "winFlag": "huofangSettled",
+        "after": [
+          "送出去了。"
+        ]
+      },
+      "dialogue": [
+        {
+          "lines": [
+            "瓮一开，账就记上了。",
+            "你们翻过的，总要有人送——不然翻了跟没翻一样。",
+            "我送。让开，或者帮忙。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hf_tonggui",
+      "name": "同歸",
+      "sprite": "knight",
+      "x": 13,
+      "y": 26,
+      "dir": "up",
+      "if": "chest:huofang_urn_6",
+      "unless": "huofangSent",
+      "script": {
+        "type": "boss",
+        "enemies": [
+          "tigergran",
+          "skeleton",
+          "skeleton",
+          "tigergran"
+        ],
+        "winFlag": "huofangSent",
+        "after": [
+          "都送出去了。伙房空了，这回是真的空了。"
+        ]
+      },
+      "dialogue": [
+        {
+          "lines": [
+            "瓮都开过了，名字也认不全了，你们倒是一个不落全跟到这里。",
+            "门在我背后。你们要出去，就先把该讲的话跟我讲完。"
+          ]
+        }
+      ]
+    }
+  ],
+  "gen": {
+    "kind": "castle",
+    "entry": [
+      13,
+      26
+    ],
+    "exit": [
+      10,
+      1
+    ],
+    "seed": 47,
+    "attempt": 0
+  },
+  "escape": {
+    "map": "overworld",
+    "x": 6,
+    "y": 30,
+    "facing": "down"
+  }
+}
