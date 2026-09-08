@@ -19,6 +19,7 @@ export function newGameState(data) {
     gold: data.config.startGold || 0,
     inventory: (data.config.startInventory || []).map(i => ({ id: i.id, qty: i.qty })),
     map: { id: mapId, x: map.spawn.x, y: map.spawn.y, facing: 'down' },
+    vehicle: null,
     flags: {},
     steps: 0,
     stepsUntilEncounter: 0,
@@ -37,5 +38,6 @@ export function loadGame(data = null) {
   const st = JSON.parse(s);
   for (const m of st.party) { m.status ||= {}; m.equipment ||= {}; m.equipment.accessory ??= null; normalizeMember(m, data); }
   st.settings ||= {};
+  st.vehicle ??= null;
   return st;
 }

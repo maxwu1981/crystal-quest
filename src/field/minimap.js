@@ -24,6 +24,7 @@ function mapColor(cell) {
   if (t === 'grass' || t === 'town') return '#4a6b3a';
   if (t === 'forest' || t === 'tree') return '#2f4a2a';
   if (t === 'bridge') return '#7a5a3a';
+  if (t === 'cartstop') return '#8a6a3e';                          // 牛稠：比 path 深一档，摊开全图找得到上车点
   return '#4a4750';                                                // 洞窟地面等
 }
 // 画一张地图：scale = 每格几个逻辑像素

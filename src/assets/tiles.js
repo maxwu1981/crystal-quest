@@ -56,6 +56,8 @@ function castShadow(ctx, rng, ground, speckA, speckB, core, penumbra, edge) {
 export const DRAW = {
   grass(ctx, rng) { fill(ctx, '#5cb85c'); scatter(ctx, rng, 10, '#4e9f4e'); scatter(ctx, rng, 5, '#72c872'); },
   path(ctx, rng) { fill(ctx, '#d2b47a'); scatter(ctx, rng, 8, '#c19d5f'); scatter(ctx, rng, 3, '#e0c58f'); },
+  // 牛稠：车辙路面 + 一根拴牛的木桩，兜底占位（正式母版见 docs/交通与世界移动.md §4.4）
+  cartstop(ctx, rng) { DRAW.path(ctx, rng); ctx.fillStyle = '#5e3a20'; ctx.fillRect(7, 2, 2, 5); ctx.fillStyle = '#33200f'; ctx.fillRect(2, 13, 12, 2); },
   tree(ctx, rng) {
     DRAW.grass(ctx, rng);
     ctx.fillStyle = '#5d4037'; ctx.fillRect(6, 10, 4, 6);

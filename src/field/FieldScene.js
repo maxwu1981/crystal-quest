@@ -22,6 +22,7 @@ import { renderMinimap, renderFullMap } from './minimap.js';
 import { addItem } from '../game/items.js';
 import { EndingScene } from '../title/EndingScene.js';
 import { saveGame } from '../game/state.js';
+import { VEHICLES, tryBoard } from './vehicles.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 
@@ -33,7 +34,7 @@ export function parseMap(md) {
     for (let x = 0; x < w; x++) {
       const ch = rows[y][x], def = md.legend[ch];
       if (!def) throw new Error(`地图 ${md.name} 未知字符 '${ch}' at (${x},${y})`);
-      cells.push({ tile: def.tile, solid: !!def.solid, encounter: !!def.encounter, counter: !!def.counter });
+      cells.push({ tile: def.tile, solid: !!def.solid, encounter: !!def.encounter, counter: !!def.counter, ride: def.ride || null });
     }
   }
   const events = {};
@@ -54,6 +55,8 @@ export class FieldScene {
   loadMap(id, x, y, facing) {
     const md = this.game.data.maps[id];
     if (!md) throw new Error(`地图不存在: ${id}`);
+    // 换图不许带着这台载具就自动下车——不然会骑着牛車走进客栈
+    if (this.game.state.vehicle && !(md.vehicles || []).includes(this.game.state.vehicle)) this.game.state.vehicle = null;
     this.mapId = id; this.map = parseMap(md);
     this.p = { x, y, fromX: x, fromY: y, dir: facing || 'down', moving: false, t: 0, phase: 0 };
     this.npcDefs = md.npcs || []; this.refreshNpcs();
@@ -110,7 +113,12 @@ export class FieldScene {
     if (x < 0 || y < 0 || x >= this.map.w || y >= this.map.h) return null;
     return this.map.cells[y * this.map.w + x];
   }
-  passable(x, y) { const c = this.cell(x, y); return !!c && !c.solid; }
+  passable(x, y) {
+    const c = this.cell(x, y); if (!c) return false;
+    if (c.ride) return c.ride === this.game.state.vehicle;       // 载具专用格：solid 不管，只认骑没骑对
+    const v = VEHICLES[this.game.state.vehicle];
+    return v ? (v.fly || v.only.includes(c.tile)) : !c.solid;    // 骑上载具收窄/放宽能走的地方
+  }
   // who: 'player' | NPC
   walkable(x, y, who = null) {
     if (!this.passable(x, y)) return false;
@@ -137,8 +145,9 @@ export class FieldScene {
       if (input.justPressed('confirm')) { this.interact(); return; }
     }
     if (p.moving) {
-      p.t += dt / STEP_TIME;
-      p.phase = (p.phase + dt / STEP_TIME) % 2;   // 每走满一格 +1，两拍一循环
+      const stepTime = VEHICLES[this.game.state.vehicle]?.step ?? STEP_TIME;
+      p.t += dt / stepTime;
+      p.phase = (p.phase + dt / stepTime) % 2;   // 每走满一格 +1，两拍一循环
       if (p.t >= 1) {
         p.t = 0; p.moving = false; p.fromX = p.x; p.fromY = p.y;
         this.onStep();
@@ -174,7 +183,7 @@ export class FieldScene {
     st.steps++;
     for (const m of st.party) if (m.status?.poison && m.hp > 1) { m.hp--; this.poisonT = 0.15; } // 中毒：每步掉 1 HP，不会走死
     const c = this.cell(this.p.x, this.p.y);
-    if (c?.encounter) { st.stepsUntilEncounter--; if (st.stepsUntilEncounter <= 0) this.triggerEncounter(); }
+    if (c?.encounter && !VEHICLES[st.vehicle]?.noEnc) { st.stepsUntilEncounter--; if (st.stepsUntilEncounter <= 0) this.triggerEncounter(); }
   }
   triggerEncounter() {
     const zone = this.zone;
@@ -189,6 +198,7 @@ export class FieldScene {
     const [dx, dy] = DIRS[this.p.dir];
     let x = this.p.x + dx, y = this.p.y + dy;
     if (this.cell(x, y)?.counter) { x += dx; y += dy; } // 隔着柜台说话
+    if (tryBoard(this, x, y)) return;
     const npc = this.npcs.find(n => n.occupies(x, y));
     if (!npc) { const ev = this.eventAt(x, y); if (ev?.type === 'chest') this.openChest(ev); else if (ev?.type === 'crystal') this.touchCrystal(ev); return; }
     npc.stop(); npc.faceToward(this.p.x, this.p.y);
