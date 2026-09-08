@@ -47,6 +47,12 @@ export const MOOD = {
   // 不该沿用石城的暖调——退一支冷灰蓝，後落（甕都在那边）比前落更深一档
   huofang_1: { tint: '#5f6f86', tintA: 0.34, vig: { r: 120, a: 0.40, c: '10,10,14' }, motes: DUST, sun: HALL },
   huofang_2: { tint: '#5a6a82', tintA: 0.40, vig: { r: 100, a: 0.48, c: '8,8,12' }, motes: { ...DUST, n: 9 }, sun: HALL },
+  // 塭岸：室外，跟木馬道一样该有天光（sun: OUT）。潮水色调是这座迷宫唯一能在
+  // 战斗以外分辨两态的地方——退潮（塭底晒着，暖沙色）跟满潮（水盖过来，冷蓝）
+  // 故意分得开，玩家瞄一眼画面就知道自己在哪一态，不用等打开小地图。
+  pond_1: { tint: '#c9b48a', tintA: 0.22, motes: POLLEN, sun: OUT, vig: { r: 190, a: 0.16, c: '30,26,14' } },
+  pond_2: { tint: '#c9b48a', tintA: 0.22, motes: POLLEN, sun: OUT, vig: { r: 190, a: 0.16, c: '30,26,14' } },
+  pond_3: { tint: '#8fb8c8', tintA: 0.30, motes: { ...POLLEN, n: 6 }, sun: OUT, vig: { r: 170, a: 0.22, c: '10,20,26' } },
   // 風口：三张图共用一套冷色调（跟 cave_1/cave_2 同一支），只有粒子的横向速度
   // （vx）不同——這就是「你能改風向」在画面上唯一看得见的地方。
   // windgap_2（東風）vx 取正、windgap_3（西風）取负：掏完洞回来，

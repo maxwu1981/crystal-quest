@@ -74,7 +74,7 @@
     "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwET",
     "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
     "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
-    "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
+    "TggggggggggggTggggggpgggFFFFFFFFFwVSSggT",
     "Tggggggggggggggg,,,,p,,,,FFFFFFFSSSggggT",
     "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
     "TgggggVggggggggg,,,,V,,,,ggggggggggggggT",
@@ -262,6 +262,17 @@
         "y": 13,
         "facing": "right"
       }
+    },
+    {
+      "x": 34,
+      "y": 26,
+      "type": "warp",
+      "to": {
+        "map": "pond_1",
+        "x": 2,
+        "y": 12,
+        "facing": "down"
+      }
     }
   ],
   "npcs": [
@@ -302,6 +313,24 @@
             "那间伙房莫要进去。屋是空了，毋过没干净。",
             "大代志都还没个了结，先莫管这些细项。",
             "代志办完，你自己要进去，𠊎毋拦你。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pond_gatekeeper",
+      "name": "顾塭的",
+      "sprite": "man",
+      "x": 34,
+      "y": 26,
+      "dir": "down",
+      "unless": "bossDefeated",
+      "dialogue": [
+        {
+          "lines": [
+            "塭岸这几年一直在崩，不是自家人莫入去。",
+            "大代志都还没了结，这种细项等以后再算。",
+            "代志办完，你自己要看，𠊎毋拦你。"
           ]
         }
       ]

@@ -243,6 +243,9 @@ export async function run(data = null, n = 30) {
                    // 而且量出来的加权 HP 比出火还重（huofang_deep 215.5 > chuhuo_deep 顶 300 那档的均值），
                    // 量的等级比出火再抬一档
                    huofang: [9, 10, 11, 12], huofang_deep: [10, 11, 12, 13],
+                   // 塭岸也挂在 bossDefeated 后面（overworld 入口的「顾塭的」同一挂法），
+                   // 量出来的加权 HP（pond 165.9 / pond_high 216.6）跟空伙房同一档，量同一批等级
+                   pond: [9, 10, 11, 12], pond_high: [10, 11, 12, 13],
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
                    'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12],
                    'boss(壇下+爐底)': [4, 5, 6, 7, 8] };

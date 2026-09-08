@@ -1567,5 +1567,177 @@
         "weight": 1
       }
     ]
+  },
+  "pond": {
+    "steps": [
+      11,
+      24
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "ghost",
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "viper"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime",
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "ghost",
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "paperkid",
+          "paperkid",
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "earthox"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime",
+          "darkslime"
+        ],
+        "weight": 1
+      }
+    ]
+  },
+  "pond_high": {
+    "steps": [
+      10,
+      22
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "ghost",
+          "ghost",
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "viper",
+          "viper"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox",
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "ghost",
+          "ghost"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "earthox",
+          "earthox"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "tigergran"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "ghost",
+          "ghost"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }

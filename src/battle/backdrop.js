@@ -40,7 +40,9 @@ const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_
                   // 它不是洞，画面上该是天光而不是岩壁
                   trail: 'plains', trail_deep: 'plains',
                   // 空伙房：castle 复用（跟隘寮石城同一个原型），退 cave/deep 跟 fort 一致
-                  huofang: 'cave', huofang_deep: 'deep' };
+                  huofang: 'cave', huofang_deep: 'deep',
+                  // 塭岸：mine 换皮，但地面上的鱼塭，不是地下坑道——退 plains 天光那一档
+                  pond: 'plains', pond_high: 'plains' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
                  fort_ailiao: 'cave', tomb_wanjin: 'deep',
                  altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',
