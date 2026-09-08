@@ -1076,5 +1076,171 @@
         "weight": 1
       }
     ]
+  },
+  "chuhuo": {
+    "steps": [
+      12,
+      28
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "paperkid",
+          "paperkid"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "paperkid"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "paperkid"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "darkslime"
+        ],
+        "weight": 1
+      }
+    ]
+  },
+  "chuhuo_deep": {
+    "steps": [
+      11,
+      25
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "earthox",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "darkslime",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "tigergran"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "darkslime",
+          "darkslime"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "earthox",
+          "paperkid",
+          "paperkid"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "tigergran",
+          "paperkid"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }

@@ -231,7 +231,11 @@ export async function run(data = null, n = 30) {
                    // altar 1.42 ≈ plains 1.49、altar_deep 3.09 ≈ fort/tomb、furnace 2.95 ≈ fort、
                    // furnace_deep 5.50 ≈ cave_deep 5.53、lighthouse 4.27 介于两档之间偏硬
                    altar: [2, 3, 4, 5], altar_deep: [4, 5, 6, 7], furnace: [4, 5, 6, 7], furnace_deep: [5, 6, 7, 8],
-                   lighthouse: [5, 6, 7, 8],
+                   lighthouse: [5, 6, 7, 8], windgap: [5, 6, 7, 8], windgap_deep: [6, 7, 8, 9],
+                   // 出火地縫挂在打完乌火之后（overworld 入口的 NPC 是 unless: bossDefeated），
+                   // 量它就该量「刚通完主线」那个等级，不是从头量——纯商店路线 10–12 级才打得过乌火，
+                   // 顺路开箱 7 级就稳赢（CLAUDE.md「Boss 难度曲线」），这里取两条路线的交集往上一点
+                   chuhuo: [8, 9, 10, 11], chuhuo_deep: [9, 10, 11, 12],
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
                    'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12],
                    'boss(壇下+爐底)': [4, 5, 6, 7, 8] };

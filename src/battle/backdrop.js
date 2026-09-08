@@ -32,13 +32,17 @@ const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_
                   // 塔身是砌石殿堂的调子，退 shrine 最合适——cave_3 罗经圈深处用的就是它
                   lighthouse: 'shrine',
                   // 風口：cave 原型，風吹沙那一层退 cave，響石窟（東風/西風共用一层深度）退 deep
-                  windgap: 'cave', windgap_deep: 'deep' };
+                  windgap: 'cave', windgap_deep: 'deep',
+                  // 出火地縫：cave 原型。ZONE_BG 两套调色都是冷蓝（暖色是新美术，另一摊工），
+                  // 不是「对」只是「不退回通用」——ambience.js 的 MOOD 另外补了暖橙 tint 压过去
+                  chuhuo: 'cave', chuhuo_deep: 'deep' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
                  fort_ailiao: 'cave', tomb_wanjin: 'deep',
                  altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',
                  furnace_1: 'cave', furnace_2: 'deep',
                  lamp_1: 'shrine',
-                 windgap_1: 'cave', windgap_2: 'deep', windgap_3: 'deep' };
+                 windgap_1: 'cave', windgap_2: 'deep', windgap_3: 'deep',
+                 chuhuo_1: 'cave', chuhuo_2: 'deep' };
 
 // 背景里的随机细节（星星、钟乳石、竹丛…）只能掷一次骰子：每帧重掷会变成一整片雪花。
 // 所以由 BattleScene 在 constructor 里调用本函数把结果存下来，render 只读不掷。

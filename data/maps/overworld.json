@@ -79,7 +79,7 @@
     "TgggggTgggggTggg,,,,p,,,,gggFggggggggggT",
     "Tggggggggggggggg,,,,V,,,,ggggggggggggggT",
     "Tggggggggggggggg,,,,,,,,,ggggggggggggggT",
-    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTETTTTTT"
   ],
   "events": [
     {
@@ -229,6 +229,17 @@
         "y": 20,
         "facing": "up"
       }
+    },
+    {
+      "x": 33,
+      "y": 31,
+      "type": "warp",
+      "to": {
+        "map": "chuhuo_1",
+        "x": 19,
+        "y": 21,
+        "facing": "left"
+      }
     }
   ],
   "npcs": [
@@ -295,6 +306,23 @@
           "lines": [
             "天暗以前出来。听到人叫，莫回头。",
             "𠊎在这里等。风大，𠊎坐得住。"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chuhuo_gate",
+      "name": "看火的",
+      "sprite": "elder",
+      "x": 33,
+      "y": 30,
+      "dir": "down",
+      "unless": "bossDefeated",
+      "dialogue": [
+        {
+          "lines": [
+            "南势彼位莫去。缝会喷，你手上无火种镇毋住。",
+            "等火种转来昌黎祠，我才让你落去看你先人。"
           ]
         }
       ]

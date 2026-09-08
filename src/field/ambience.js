@@ -53,6 +53,11 @@ export const MOOD = {
     motes: { n: 14, c: '232,214,176', a: [0.10, 0.24], vx: [14, 26], vy: [-1, 2], amp: [1, 3] } },
   windgap_3: { tint: '#7d92ac', tintA: 0.30, vig: { r: 132, a: 0.36, c: '8,10,16' }, sun: CAVE,
     motes: { n: 14, c: '232,214,176', a: [0.10, 0.24], vx: [-26, -14], vy: [-1, 2], amp: [1, 3] } },
+  // 出火地縫：全作唯一的火系迷宫，色值抄 docs/八元素迷宫.md §1.6 那张表——
+  // 暖橙压过 cave 原型的冷蓝调色板，才读得出「地缝里透出来的热」而不是「又一个洞窟」。
+  // 二层更暗更小（vig 半径收进来），呼应「越往下越靠近火母」
+  chuhuo_1: { tint: '#c86a3a', tintA: 0.34, vig: { r: 120, a: 0.42, c: '24,8,4' }, motes: DUST, sun: CAVE },
+  chuhuo_2: { tint: '#c86a3a', tintA: 0.40, vig: { r: 104, a: 0.50, c: '24,8,4' }, motes: DUST, sun: CAVE },
   house_elder: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   house_hakka: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   inn: { tint: '#ffdca8', tintA: 0.22, sun: HALL },
