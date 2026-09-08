@@ -36,7 +36,8 @@ export const TALL = {
   roof_ridge: 1.25, roof: 1.15, roof_eave: 1, wall_upper: 0.85, wall_window: 0.85,
   wall_base: 0.7, door_front: 0.7, arch_door: 0.75,
   tree: 0.75, forest: 0.7, cave_entrance: 0.9, town: 0.6, crystal: 0.6,
-  pillar: 0.8, throne: 0.5, ore_vein: 0.45, crate: 0.4, glowstone: 0.35, rubble: 0.3,
+  pillar: 0.8, seal_stone: 0.7, idol: 0.7, altar: 0.55, throne: 0.5, stove: 0.5,
+  ore_vein: 0.45, crate: 0.4, sarcophagus: 0.4, glowstone: 0.35, rubble: 0.3,
   counter: 0.35, bed: 0.25,
 };
 // 一条拖影切成几片：片距压在 1.5 逻辑像素上下，剩下的台阶靠降采样抹平。
@@ -45,6 +46,34 @@ const slabs = L => Math.max(6, Math.min(28, Math.round(L / 1.5)));
 const FACE = 5;       // 立面暗部的高度（逻辑像素）
 const RIM = 3;        // 受光棱的厚度（逻辑像素）
 const DOWN = 3;       // 软化用的降采样倍数。**不用 ctx.filter**：小半径反而更贵（见 HD2D方案.md 五-3）
+const FALL = 1.45;    // 落地之后的衰减指数。峰值真落到地面之后，1.25 会拖出一条均匀的暗带
+const MINL = 10;      // 落地长度的下限（逻辑像素）。见下面 exitDist 上方那段
+const REACH = 6 * TILE, PROBE = 2;   // 找出口时最远走几格、几像素一步
+
+// **影子从投影体里钻出来的那一点**，单位是逻辑像素；一路走到 REACH 还没出来就返回 null
+//（那种格子的影子等下会被「不落在高物身上」整个擦掉，直接不画。罗经圈那种整片岩壁的图，
+// 这一条把要画的格子砍掉一大半）。
+//
+// **斜坡必须从这里起算，不能从投影源那一格起算。** 第一版是后者，量出来的后果是：
+// alpha 峰值那一片的偏移量只有 L/K ＝ 一两个像素，整片压在投影源自己头上，
+// 被下一步擦得干干净净；落到可走地面上的**永远只剩衰减到尾巴的那一截**。
+// 一栋房子的墙脚因此只拿到 0.17 而不是参数写的 0.30，村庄地面平均只压暗 2.8%，
+// 关掉再打开肉眼分不出来。量法与前后读数见 docs/HD2D走地图.md 第三节。
+//
+// 连带的第二个后果：**矮东西一点影子都没有**。树 TALL 0.75 → 12 逻辑像素 < 一格 16，
+// 整条影子都在自己格子里。六堆平原 164 棵树在草地上一片影子都不投——
+// 而「山脚下的草是全亮的」正是 HD2D走地图.md 第零节记的最刺眼那一条。
+// 从出口起算之后，树这一档自己就够了（12 px 全部落在邻格上）；
+// **MINL 只管更矮的那一档**（hgt < 0.625：木箱 6.4、床 4、碎石 4.8 逻辑像素），
+// 那些连出口都跨不过去，得给一个下限才在右下角留得下一小片。
+function exitDist(at, x, y) {
+  for (let f = 0; f <= REACH; f += PROBE) {
+    // 拖影的每一片都是一整格见方，所以看的是**这一片的中心**落在哪一格
+    const cx = x * TILE + SUN.dx * f + TILE / 2, cy = y * TILE + SUN.dy * f + TILE / 2;
+    if (!at(Math.floor(cx / TILE), Math.floor(cy / TILE))) return f;
+  }
+  return null;
+}
 
 function mask(w, h, bg) {
   const c = document.createElement('canvas');
@@ -92,22 +121,17 @@ function bake(map, s) {
   for (let y = 0; y < map.h; y++) for (let x = 0; x < map.w; x++) {
     const t = tall[y * map.w + x];
     if (!t) continue;
-    const L = Math.min(hgt[y * map.w + x], s.cap) * SUN.len;
-    // 影子一路走过去全是高物 ＝ 等下会被整个擦掉，直接不画。
-    // 罗经圈那种整片岩壁的图，这一条把要画的格子砍掉一大半。
-    const steps = Math.max(1, Math.ceil(L / TILE));
-    let esc = false;
-    for (let k = 1; k <= steps && !esc; k++) {
-      const f = L * k / steps;
-      const gx = x + Math.round(SUN.dx * f / TILE), gy = y + Math.round(SUN.dy * f / TILE);
-      esc = !at(gx, gy) || !at(gx + 1, gy) || !at(gx, gy + 1);   // 扫过去的是一个方块，顺便看右和下
-    }
-    if (!esc) continue;
+    // L 是「**离开投影体之后**还拖多远」，不是影子总长。两个含义在整墙那一档差不多
+    //（墙的出口就在自己脚下），差别全在矮物件上：树 12 px、木箱 6.4 px 本来都够不着邻格。
+    // cap 的语义不变，仍然是「这张图的影子最长几格」（ambience.js 的 sun 里按场景分三档）。
+    const L = Math.max(MINL, Math.min(hgt[y * map.w + x], s.cap) * SUN.len);
+    const f0 = exitDist(at, x, y);
+    if (f0 === null) continue;
     const K = slabs(L);
     for (let k = 0; k < K; k++) {
-      const u = (k + 1) / K;
-      sg.fillStyle = gray(s.a * Math.min(1, t) * (1 - k / K) ** 1.25);
-      sg.fillRect(Math.round(x * TILE + SUN.dx * L * u), Math.round(y * TILE + SUN.dy * L * u), TILE, TILE);
+      sg.fillStyle = gray(s.a * Math.min(1, t) * (1 - k / K) ** FALL);
+      const f = f0 + L * (k + 1) / K;
+      sg.fillRect(Math.round(x * TILE + SUN.dx * f), Math.round(y * TILE + SUN.dy * f), TILE, TILE);
     }
   }
   // 影子不落在高物身上：不然屋脊会把影子投在自家屋顶上。
