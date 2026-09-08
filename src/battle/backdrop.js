@@ -30,12 +30,15 @@ const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_
                   furnace: 'cave', furnace_deep: 'deep',
                   // 燈：鵝鑾鼻燈塔，temple 原型复用（gen_temple 的环廊几何）。
                   // 塔身是砌石殿堂的调子，退 shrine 最合适——cave_3 罗经圈深处用的就是它
-                  lighthouse: 'shrine' };
+                  lighthouse: 'shrine',
+                  // 風口：cave 原型，風吹沙那一层退 cave，響石窟（東風/西風共用一层深度）退 deep
+                  windgap: 'cave', windgap_deep: 'deep' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
                  fort_ailiao: 'cave', tomb_wanjin: 'deep',
                  altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',
                  furnace_1: 'cave', furnace_2: 'deep',
-                 lamp_1: 'shrine' };
+                 lamp_1: 'shrine',
+                 windgap_1: 'cave', windgap_2: 'deep', windgap_3: 'deep' };
 
 // 背景里的随机细节（星星、钟乳石、竹丛…）只能掷一次骰子：每帧重掷会变成一整片雪花。
 // 所以由 BattleScene 在 constructor 里调用本函数把结果存下来，render 只读不掷。

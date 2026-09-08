@@ -43,6 +43,16 @@ export const MOOD = {
   // 这两张要靠色调把六七种地板收成一个空间，所以取到 22% 那一档——跟洞窟二层同级。
   fort_ailiao: { tint: '#c9a05c', tintA: 0.34, vig: { r: 150, a: 0.26, c: '18,16,12' }, motes: DUST, sun: HALL },
   tomb_wanjin: { tint: '#6d86ad', tintA: 0.38, vig: { r: 120, a: 0.44, c: '6,8,14' }, motes: { ...DUST, n: 9 }, sun: { ...HALL, col: [186, 210, 238] } },
+  // 風口：三张图共用一套冷色调（跟 cave_1/cave_2 同一支），只有粒子的横向速度
+  // （vx）不同——這就是「你能改風向」在画面上唯一看得见的地方。
+  // windgap_2（東風）vx 取正、windgap_3（西風）取负：掏完洞回来，
+  // 屏幕上的沙立刻反着吹，不用一个字就说完「你改了风向」。
+  windgap_1: { tint: '#8fa3b8', tintA: 0.20, vig: { r: 160, a: 0.24, c: '10,14,18' }, sun: CAVE,
+    motes: { n: 12, c: '224,214,190', a: [0.09, 0.20], vx: [10, 20], vy: [-1, 2], amp: [1, 3] } },
+  windgap_2: { tint: '#7d92ac', tintA: 0.30, vig: { r: 132, a: 0.36, c: '8,10,16' }, sun: CAVE,
+    motes: { n: 14, c: '232,214,176', a: [0.10, 0.24], vx: [14, 26], vy: [-1, 2], amp: [1, 3] } },
+  windgap_3: { tint: '#7d92ac', tintA: 0.30, vig: { r: 132, a: 0.36, c: '8,10,16' }, sun: CAVE,
+    motes: { n: 14, c: '232,214,176', a: [0.10, 0.24], vx: [-26, -14], vy: [-1, 2], amp: [1, 3] } },
   house_elder: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   house_hakka: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   inn: { tint: '#ffdca8', tintA: 0.22, sun: HALL },

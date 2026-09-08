@@ -51,7 +51,7 @@
     "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
     "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
     "TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMT",
-    "TMMEMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMgMT",
+    "TMMEMgMMgMMMMMgMMgggEgMgMMMMgMggMMMMMEMT",
     "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
     "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
     "TgEMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
@@ -216,6 +216,17 @@
         "map": "lamp_1",
         "x": 12,
         "y": 23,
+        "facing": "up"
+      }
+    },
+    {
+      "x": 37,
+      "y": 3,
+      "type": "warp",
+      "to": {
+        "map": "windgap_1",
+        "x": 23,
+        "y": 20,
         "facing": "up"
       }
     }

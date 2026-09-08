@@ -887,5 +887,194 @@
         "weight": 1
       }
     ]
+  },
+  "windgap": {
+    "steps": [
+      11,
+      26
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "bat"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "muntjac"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "bee",
+          "bee",
+          "bee"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "viper",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "mandrake"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "muntjac",
+          "muntjac",
+          "bee"
+        ],
+        "weight": 1
+      }
+    ]
+  },
+  "windgap_deep": {
+    "steps": [
+      10,
+      22
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "ghost",
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox",
+          "mandrake"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "ghost"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "mandrake",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton",
+          "darkslime"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "ghost",
+          "ghost"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton",
+          "bat"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "viper",
+          "viper",
+          "muntjac"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }
