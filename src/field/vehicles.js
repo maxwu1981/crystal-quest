@@ -6,9 +6,21 @@
 // fly：不看 only，任何非 solid 格都能站（火輪那一级用）。
 // step：每格秒数，覆盖 FieldScene 的 STEP_TIME。noEnc：骑着完全不计遇敌步数。
 // board：面朝哪种 tile 触发上/下车的对话。
+// encMul：遇敌间隔乘上去（竹排 ×2 ＝ 遇敌减半）。zone：把遇敌区换成自己的分区（plains → plains_river）。
+// 火輪的 board 是 null 是故意的——会飞的那一级不做定点上下车，见 §7.4；上车机制还没做，
+// 所以现在 state.vehicle 不可能变成 'wheel'，表项先摆着不会有副作用。
 export const VEHICLES = {
   oxcart: { name: '牛車', only: ['path', 'cartstop'], step: 0.11, noEnc: true, board: 'cartstop' },
+  raft:   { name: '竹排', only: ['water', 'dock'], step: 0.13, encMul: 2, zone: 'river', board: 'dock' },
+  wheel:  { name: '火輪', fly: true, step: 0.09, noEnc: true, board: null },
 };
+
+// 骑着的载具可以把遇敌区换成自己的分区；没有那一区就退回原区。
+// 回传的是「区 id」不是区本身——战斗背景（ZONE_BG）也要按同一个 id 查，否则河上打架会用平原背景。
+export function zoneFor(base, vehicleId, encounters) {
+  const suf = VEHICLES[vehicleId]?.zone, id = `${base}_${suf}`;
+  return suf && encounters[id] ? id : base;
+}
 
 import { DialogueScene } from '../ui/DialogueScene.js';
 

@@ -22,7 +22,7 @@ import { renderMinimap, renderFullMap } from './minimap.js';
 import { addItem } from '../game/items.js';
 import { EndingScene } from '../title/EndingScene.js';
 import { saveGame } from '../game/state.js';
-import { VEHICLES, tryBoard } from './vehicles.js';
+import { VEHICLES, tryBoard, zoneFor } from './vehicles.js';
 
 const STEP_TIME = 0.16; // 每格秒数
 
@@ -104,10 +104,11 @@ export class FieldScene {
   eventAt(x, y) { return this.map.events[`${x},${y}`]; }
   chestOpened(ev) { return !!this.game.state.flags[`chest:${ev.id}`]; }
 
-  get zone() { return this.game.data.encounters[this.map.encounterZone]; }
+  get zoneId() { return zoneFor(this.map.encounterZone, this.game.state.vehicle, this.game.data.encounters); }
+  get zone() { return this.game.data.encounters[this.zoneId]; }
   resetEncounter() {
-    const [a, b] = this.zone?.steps || [16, 40];
-    this.game.state.stepsUntilEncounter = this.game.rng.int(a, b);
+    const [a, b] = this.zone?.steps || [16, 40], k = VEHICLES[this.game.state.vehicle]?.encMul || 1;
+    this.game.state.stepsUntilEncounter = this.game.rng.int(a, b) * k;
   }
   cell(x, y) {
     if (x < 0 || y < 0 || x >= this.map.w || y >= this.map.h) return null;
@@ -117,7 +118,7 @@ export class FieldScene {
     const c = this.cell(x, y); if (!c) return false;
     if (c.ride) return c.ride === this.game.state.vehicle;       // 载具专用格：solid 不管，只认骑没骑对
     const v = VEHICLES[this.game.state.vehicle];
-    return v ? (v.fly || v.only.includes(c.tile)) : !c.solid;    // 骑上载具收窄/放宽能走的地方
+    return v ? (v.fly ? !c.solid : v.only.includes(c.tile)) : !c.solid;  // 骑上载具收窄/放宽；fly 也不许穿 solid
   }
   // who: 'player' | NPC
   walkable(x, y, who = null) {
@@ -190,7 +191,7 @@ export class FieldScene {
     if (!zone) return;
     const g = this.game.rng.weighted(zone.groups, x => x.weight);
     this.resetEncounter();
-    this.game.startBattle(g.enemies, { zone: this.map.encounterZone });
+    this.game.startBattle(g.enemies, { zone: this.zoneId });
   }
 
   // ---------- 对话 ----------
