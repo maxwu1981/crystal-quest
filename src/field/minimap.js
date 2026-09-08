@@ -13,7 +13,10 @@ function mapColor(cell) {
   const t = cell.tile;
   if (cell.solid) return t === 'water' ? '#1d3c52' : '#2b2a30';   // 墙与水都是过不去的，但水另给一色
   if (t === 'path' || t === 'flagstone' || t === 'floor') return '#8a7a5e';
-  if (t === 'sand') return '#9c8f6a';
+  // 沙原本跟上面那档只差 19/255（CLAUDE.md 的判准：10.9 是分不清路，37.4 是修好）。
+  // 燈塔那座迷宫的招牌机制「光帶不遇敵」靠的正是 flagstone(阴影)/sand(光带) 这组对比，
+  // 玩家摊开全图规划路线时必须一眼分得出——量出来现在 Δlum 72.8，同一套判准下算修好。
+  if (t === 'sand') return '#d8c48c';
   if (t === 'grass' || t === 'town') return '#4a6b3a';
   if (t === 'forest' || t === 'tree') return '#2f4a2a';
   if (t === 'bridge') return '#7a5a3a';

@@ -808,5 +808,84 @@
         "weight": 1
       }
     ]
+  },
+  "lighthouse": {
+    "steps": [
+      10,
+      22
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "paperkid",
+          "paperkid",
+          "paperkid"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "paperkid"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "darkslime",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "ghost"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "darkslime",
+          "paperkid"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "ghost",
+          "paperkid"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "viper",
+          "bat"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }

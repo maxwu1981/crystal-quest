@@ -226,6 +226,12 @@ export async function run(data = null, n = 30) {
     'cave_deep(童乩)': { groups: [{ enemies: ['skeleton', 'darkslime'], weight: 2 }, { enemies: ['ghost', 'ghost', 'skeleton'], weight: 1 }], tangki: 21 } };
   const levels = { village_field: [1, 2, 3], plains: [2, 3, 4, 5], cave: [4, 5, 6, 7], cave_deep: [5, 6, 7, 8],
                    fort: [4, 5, 6, 7], tomb: [4, 5, 6, 7],          // 隘寮石城 / 万金古塚：跟 cave 同一档，用同一组等级才好对照
+                   // 这四个区之前漏在这张表外，会静默落到兜底 [3,6,9]——数字量出来但答的是另一道题
+                   // （八元素迷宫剩下六座的对抗验证捅出来的）。按加权 exp/步实测对齐：
+                   // altar 1.42 ≈ plains 1.49、altar_deep 3.09 ≈ fort/tomb、furnace 2.95 ≈ fort、
+                   // furnace_deep 5.50 ≈ cave_deep 5.53、lighthouse 4.27 介于两档之间偏硬
+                   altar: [2, 3, 4, 5], altar_deep: [4, 5, 6, 7], furnace: [4, 5, 6, 7], furnace_deep: [5, 6, 7, 8],
+                   lighthouse: [5, 6, 7, 8],
                    'boss(纯商店)': [6, 8, 10, 12], 'boss(顺路开箱)': [4, 5, 6, 7, 8], 'boss(全开箱)': [4, 5, 6, 7, 8],
                    'boss(童乩)': [5, 7, 9, 12], 'cave_deep(童乩)': [6, 9, 12],
                    'boss(壇下+爐底)': [4, 5, 6, 7, 8] };

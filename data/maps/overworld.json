@@ -71,7 +71,7 @@
     "TggFFFFFFFFFpFgggggggTggggggggSSSwSSSggT",
     "TgggFEFFFFFFpggggggggggggggggSSwwwwwSSgT",
     "TggggFFFFFFFpppppppppgggggggSSwwwwwwwSST",
-    "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwST",
+    "TgggggggFgggTgggggggpgggTgggSwwwwwwwwwET",
     "TgggggggggggggggggggpTggggggFSwwwwwwwSST",
     "TgggTgggggggggggTgggpggggFFFFFFFwwwwSSgT",
     "TggggggggggggTggggggpgggFFFFFFFFFwSSSggT",
@@ -206,6 +206,17 @@
         "x": 2,
         "y": 12,
         "facing": "right"
+      }
+    },
+    {
+      "x": 38,
+      "y": 23,
+      "type": "warp",
+      "to": {
+        "map": "lamp_1",
+        "x": 12,
+        "y": 23,
+        "facing": "up"
       }
     }
   ],

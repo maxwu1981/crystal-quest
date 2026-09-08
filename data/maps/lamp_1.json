@@ -1,0 +1,141 @@
+{
+  "name": "燈 · 鵝鑾鼻燈塔",
+  "encounterZone": "lighthouse",
+  "spawn": {
+    "x": 12,
+    "y": 23
+  },
+  "legend": {
+    "<": {
+      "tile": "stairs_down"
+    },
+    ">": {
+      "tile": "stairs_up"
+    },
+    "C": {
+      "tile": "idol",
+      "solid": true
+    },
+    "D": {
+      "tile": "arch_door"
+    },
+    "I": {
+      "tile": "pillar",
+      "solid": true
+    },
+    "R": {
+      "tile": "seal_stone",
+      "solid": true
+    },
+    "W": {
+      "tile": "stone_wall",
+      "solid": true
+    },
+    "o": {
+      "tile": "flagstone",
+      "encounter": true
+    },
+    "L": {
+      "tile": "sand"
+    }
+  },
+  "rows": [
+    "WWWWWWWWWWWWRWWWWWWWWWWWW",
+    "WLLLLLLLLLLLLLLLLLLLLLLLW",
+    "WLLILLLLLLLLLLLLLLLLLILLW",
+    "WLILLLILILILILILILILLLILW",
+    "WLLLoWWWWWWWWWWWWWWWoLLLW",
+    "WLLLWooooooLLLLLLLLLWLLLW",
+    "WLLIWooIooooLLLLLILLWILLW",
+    "WLLLWoIoooooILILLLILWLLLW",
+    "WLLIWooooWDWWWWWoLLLWILLW",
+    "WLLLWoooWLLLLLLLWLLLWLLLW",
+    "WLLIWooIWLLL>LILWILLWILLW",
+    "WLLLWoooWLLLLLLLWLLLWLLLW",
+    "RLoIWooIWLLLCLLLWILLWILLR",
+    "WoooWoooWLLLLLLLWLLLWLLLW",
+    "WoooDooIWLILLLILWILLWILLW",
+    "WoooWoooWLLLLLLLWLLLWLLLW",
+    "WooIWooLoWWWWWWWoLLLWILLW",
+    "WoooWLILLLILILILLLILWLLLW",
+    "WooIWLLILLLLLLLLLILLWILLW",
+    "WoooWLLLLLLLLLLLLLLLWLLLW",
+    "WooooWWWWWWWWWWWWWWWoLLLW",
+    "WoIoooIoIoIoIoILILILLLILW",
+    "WooIoooooooooooLLLLLLILLW",
+    "WooooooooooooooLLLLLLLLLW",
+    "WWWWWWWWWWWW<WWWWWWWWWWWW"
+  ],
+  "events": [
+    {
+      "x": 12,
+      "y": 24,
+      "type": "warp",
+      "to": {
+        "map": "overworld",
+        "x": 38,
+        "y": 24,
+        "facing": "down"
+      }
+    },
+    {
+      "x": 4,
+      "y": 20,
+      "type": "chest",
+      "id": "lamp_1_1",
+      "text": [
+        "龛里的灯油干了，灯芯还立着。"
+      ],
+      "item": "hipotion",
+      "qty": 3
+    },
+    {
+      "x": 20,
+      "y": 20,
+      "type": "chest",
+      "id": "lamp_1_2",
+      "item": "ether",
+      "qty": 3
+    },
+    {
+      "x": 4,
+      "y": 4,
+      "type": "chest",
+      "id": "lamp_1_3",
+      "gold": 360
+    },
+    {
+      "x": 20,
+      "y": 4,
+      "type": "chest",
+      "id": "lamp_1_4",
+      "item": "phoenix",
+      "qty": 2
+    },
+    {
+      "x": 8,
+      "y": 8,
+      "type": "chest",
+      "id": "lamp_1_5",
+      "item": "swift_boots",
+      "qty": 1,
+      "text": [
+        "一双磨薄了底的鞋，鞋带还系着。"
+      ]
+    }
+  ],
+  "npcs": [],
+  "gen": {
+    "kind": "temple",
+    "entry": [
+      12,
+      24
+    ],
+    "exit": [
+      12,
+      10
+    ],
+    "seed": 61,
+    "attempt": 0
+  }
+}
