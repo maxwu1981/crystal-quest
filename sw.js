@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 240 个文件，约 3.4 MB。
-const VERSION = '83f963b978cd';
+// 共 242 个文件，约 3.4 MB。
+const VERSION = '04bb10210b73';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -150,6 +150,8 @@ const PRECACHE = [
   './data/maps/gen_tomb_1.json',
   './data/maps/house_elder.json',
   './data/maps/house_hakka.json',
+  './data/maps/huofang_1.json',
+  './data/maps/huofang_2.json',
   './data/maps/inn.json',
   './data/maps/lamp_1.json',
   './data/maps/overworld.json',
