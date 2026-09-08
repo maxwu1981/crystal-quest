@@ -357,8 +357,9 @@ export class FieldScene {
     // 现在每走满一格换一次脚：正/背面是「左脚→右脚」，侧面是「迈步→站立」。
     const frame = p.moving ? (Math.floor(p.phase) ? 2 : 1) : 0;
     const drawables = this.npcs.map(n => ({ y: n.renderPos()[1], draw: () => n.render(ctx, camX, camY, this.game.sprites) }));
-    const spr = this.game.sprites[`${leader.jobId}_${p.dir}_${frame}`];
-    const gear = layersFor(leader, p.dir); // 穿在身上的装备
+    const rid = this.game.state.vehicle;
+    const spr = this.game.sprites[`${rid || leader.jobId}_${p.dir}_${frame}`];
+    const gear = rid ? [] : layersFor(leader, p.dir); // 骑车时不画装备叠加层，载具精灵自带乘客
     drawables.push({ y: py, draw: () => {
       const dx = Math.round(px - camX), dy = Math.round(py - camY) - (artH(spr) - TILE); // 高精灵脚贴格子底
       drawShadow(ctx, Math.round(px - camX), Math.round(py - camY));

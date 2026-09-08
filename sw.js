@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 280 个文件，约 3.5 MB。
-const VERSION = '9a37cad94120';
+// 共 286 个文件，约 3.5 MB。
+const VERSION = '7be90959212b';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -74,6 +74,12 @@ const PRECACHE = [
   './assets/art/char_merchant_left_walk.png',
   './assets/art/char_merchant_up.png',
   './assets/art/char_merchant_up_walk.png',
+  './assets/art/char_oxcart_down.png',
+  './assets/art/char_oxcart_down_walk.png',
+  './assets/art/char_oxcart_left.png',
+  './assets/art/char_oxcart_left_walk.png',
+  './assets/art/char_oxcart_up.png',
+  './assets/art/char_oxcart_up_walk.png',
   './assets/art/char_peddler_down.png',
   './assets/art/char_peddler_down_walk.png',
   './assets/art/char_peddler_left.png',
