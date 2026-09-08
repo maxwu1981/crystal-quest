@@ -55,7 +55,7 @@
     "TgggggMgggggggggTgggpgggTgggggMMMMMMMggT",
     "TggMMMMMMMggggggggggpppppppppMMMMMMMMMgT",
     "TgEMMMMMMMMTgggggTggggggggggpgMMMMMMMggT",
-    "TggMMMMMMMFgggggggggggggggggpgFggMgggggT",
+    "TggMMMMMMMFgggggggggggggggggpgEggMgggggT",
     "TgggggMFFFFFFFggggggTggTgggFpFFFFFgggggT",
     "TgggggFFFFFFFFFgggggpppppppppFFFFFFggggT",
     "TggggTgFFFFFFFggggggpggggFFFFFFFFFFFgggT",
@@ -239,6 +239,17 @@
         "x": 19,
         "y": 21,
         "facing": "left"
+      }
+    },
+    {
+      "x": 30,
+      "y": 7,
+      "type": "warp",
+      "to": {
+        "map": "trail_1",
+        "x": 2,
+        "y": 13,
+        "facing": "right"
       }
     }
   ],

@@ -158,7 +158,19 @@ export class FieldScene {
 
   onStep() {
     const st = this.game.state, ev = this.map.events[`${this.p.x},${this.p.y}`];
-    if (ev?.type === 'warp') { audio.sfx('door'); this.game.fadeTo(() => this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing)); return; }
+    if (ev?.type === 'warp') {
+      // 同图内的 warp（木馬道的滑道：踏上坡口一步到底）不是「进了一个新地方」，
+      // 不该重放开门声，也不该把地图名横幅再顶出来——那两样都是「换地图」的
+      // 反馈，滑道说的是「你在同一张图里被地形带着走」。fadeTo 本身的快闪
+      // 留着：一格黑一格亮，正好是「嗖」的那一下，不比专门写一套滑行演出差。
+      const sameMap = ev.to.map === this.mapId;
+      if (!sameMap) audio.sfx('door');
+      this.game.fadeTo(() => {
+        this.loadMap(ev.to.map, ev.to.x, ev.to.y, ev.to.facing);
+        if (sameMap) this.nameT = 0;
+      });
+      return;
+    }
     st.steps++;
     for (const m of st.party) if (m.status?.poison && m.hp > 1) { m.hp--; this.poisonT = 0.15; } // 中毒：每步掉 1 HP，不会走死
     const c = this.cell(this.p.x, this.p.y);

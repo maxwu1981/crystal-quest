@@ -1242,5 +1242,167 @@
         "weight": 1
       }
     ]
+  },
+  "trail": {
+    "steps": [
+      12,
+      28
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "wolf",
+          "wolf"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "wolf"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "bee"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "bat",
+          "bat"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "mandrake"
+        ],
+        "weight": 3
+      },
+      {
+        "enemies": [
+          "viper",
+          "bee"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "mandrake",
+          "darkslime"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "muntjac",
+          "muntjac"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "bee",
+          "bee"
+        ],
+        "weight": 2
+      }
+    ]
+  },
+  "trail_deep": {
+    "steps": [
+      11,
+      24
+    ],
+    "groups": [
+      {
+        "enemies": [
+          "tigergran",
+          "wolf"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "earthox",
+          "bee"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "ghost",
+          "skeleton"
+        ],
+        "weight": 2
+      },
+      {
+        "enemies": [
+          "skeleton",
+          "bat",
+          "bat"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "earthox",
+          "skeleton"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "mandrake"
+        ],
+        "weight": 1
+      },
+      {
+        "enemies": [
+          "tigergran",
+          "viper"
+        ],
+        "weight": 1
+      }
+    ]
   }
 }

@@ -12,7 +12,11 @@ import { drawText } from '../core/text.js';
 function mapColor(cell) {
   const t = cell.tile;
   if (cell.solid) return t === 'water' ? '#1d3c52' : '#2b2a30';   // 墙与水都是过不去的，但水另给一色
-  if (t === 'path' || t === 'flagstone' || t === 'floor') return '#8a7a5e';
+  if (t === 'path' || t === 'flagstone') return '#8a7a5e';
+  // floor 原本跟上面同色。木馬道的滑道就是靠 floor 跟林间土路（path）分开的——
+  // 同色的话玩家摊开全图完全看不出哪条是滑道，这座迷宫唯一的机制在导航
+  // 界面上就是隐形的。分色之后顺带也帮到所有室内图：floor 从此不再假装是土路。
+  if (t === 'floor') return '#a9793f';
   // 沙原本跟上面那档只差 19/255（CLAUDE.md 的判准：10.9 是分不清路，37.4 是修好）。
   // 燈塔那座迷宫的招牌机制「光帶不遇敵」靠的正是 flagstone(阴影)/sand(光带) 这组对比，
   // 玩家摊开全图规划路线时必须一眼分得出——量出来现在 Δlum 72.8，同一套判准下算修好。
@@ -33,7 +37,9 @@ function drawMapAt(scene, ctx, ox, oy, scale, { dots = true } = {}) {
   // 楼梯与门：亮青色；没开过的宝箱：金色；开过的不画（已经拿完了就别再吸引注意）
   for (const ev of Object.values(map.events)) {
     const s = Math.max(1, scale);
-    if (ev.type === 'warp') ctx.fillStyle = '#6fe0d0';
+    // 同图内的 warp（滑道口）跟真的楼梯/门用同一支亮青会撞：滑道口踩上去是
+    // 单向的「一步到底」，跟楼梯「上下一层」是两件事，玩家在全图上得分得出来
+    if (ev.type === 'warp') ctx.fillStyle = ev.to.map === scene.mapId ? '#c8e04a' : '#6fe0d0';
     else if (ev.type === 'chest') { if (scene.chestOpened(ev)) continue; ctx.fillStyle = '#ffd257'; }
     else if (ev.type === 'crystal') ctx.fillStyle = '#ff9c4a';
     else continue;

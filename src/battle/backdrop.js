@@ -35,14 +35,18 @@ const ZONE_BG = { village_field: 'plains', plains: 'plains', cave: 'cave', cave_
                   windgap: 'cave', windgap_deep: 'deep',
                   // 出火地縫：cave 原型。ZONE_BG 两套调色都是冷蓝（暖色是新美术，另一摊工），
                   // 不是「对」只是「不退回通用」——ambience.js 的 MOOD 另外补了暖橙 tint 压过去
-                  chuhuo: 'cave', chuhuo_deep: 'deep' };
+                  chuhuo: 'cave', chuhuo_deep: 'deep',
+                  // 木馬道：全作第一座户外迷宫，legend 换皮成林子/土路，退 plains 才对——
+                  // 它不是洞，画面上该是天光而不是岩壁
+                  trail: 'plains', trail_deep: 'plains' };
 const MAP_BG = { village: 'plains', overworld: 'plains', cave_1: 'cave', cave_2: 'deep', cave_3: 'shrine',
                  fort_ailiao: 'cave', tomb_wanjin: 'deep',
                  altar_1: 'cave', altar_2: 'cave', altar_3: 'deep',
                  furnace_1: 'cave', furnace_2: 'deep',
                  lamp_1: 'shrine',
                  windgap_1: 'cave', windgap_2: 'deep', windgap_3: 'deep',
-                 chuhuo_1: 'cave', chuhuo_2: 'deep' };
+                 chuhuo_1: 'cave', chuhuo_2: 'deep',
+                 trail_1: 'plains', trail_2: 'plains', trail_3: 'plains' };
 
 // 背景里的随机细节（星星、钟乳石、竹丛…）只能掷一次骰子：每帧重掷会变成一整片雪花。
 // 所以由 BattleScene 在 constructor 里调用本函数把结果存下来，render 只读不掷。

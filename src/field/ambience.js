@@ -58,6 +58,13 @@ export const MOOD = {
   // 二层更暗更小（vig 半径收进来），呼应「越往下越靠近火母」
   chuhuo_1: { tint: '#c86a3a', tintA: 0.34, vig: { r: 120, a: 0.42, c: '24,8,4' }, motes: DUST, sun: CAVE },
   chuhuo_2: { tint: '#c86a3a', tintA: 0.40, vig: { r: 104, a: 0.50, c: '24,8,4' }, motes: DUST, sun: CAVE },
+  // 木馬道：全作第一座户外迷宫，legend 换皮成林子/土路，理应拿到 sun: OUT
+  // 的天光——不加的话它比隔壁六堆平原还平（altar/furnace 没有 MOOD 是因为
+  // 它们是洞，本来就没有天光可言，这里不是同一种「债」）。三层越往里树冠越密、
+  // 光线更暗更绿，呼应「越走越深入林子」
+  trail_1: { tint: '#ffe0a8', tintA: 0.14, motes: POLLEN, sun: OUT, vig: { r: 190, a: 0.16, c: '40,30,16' } },
+  trail_2: { tint: '#f0dc9c', tintA: 0.18, motes: POLLEN, sun: OUT, vig: { r: 170, a: 0.20, c: '30,28,12' } },
+  trail_3: { tint: '#d8d488', tintA: 0.22, motes: { ...POLLEN, n: 6 }, sun: OUT, vig: { r: 150, a: 0.24, c: '20,24,10' } },
   house_elder: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   house_hakka: { tint: '#ffdca8', tintA: 0.20, sun: HALL },
   inn: { tint: '#ffdca8', tintA: 0.22, sun: HALL },
