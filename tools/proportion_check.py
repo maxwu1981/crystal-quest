@@ -122,16 +122,19 @@ def make_sheet(path):
                 rows.append((job, v, fs[v], fs[v + '_walk']))
     if not rows:
         return '(没有可对照的帧)'
-    S, CW, CH = 4, 32 * 4, 48 * 4
+    # 输出格固定 128x192：按源图**实际尺寸**等比例映射，不能假设源图是当年 ART=2 的 32x48——
+    # 之前硬编码 `y // 4` 只在源图正好 32x48 时成立，ART 切到 6（96x144）之后
+    # 这条只读得到源图左上角一小块，对照图变成只看得见头。
+    CW, CH = 32 * 4, 48 * 4
     W, H = CW * 2, CH * len(rows)
     out = bytearray(W * H * 4)
     for r, (_, _, fa, fb) in enumerate(rows):
         for c, f in enumerate((fa, fb)):
             w, h, px = pixel.decode_png(open(os.path.join(ART, f), 'rb').read())
             for y in range(CH):
-                sy = min(h - 1, y // S)
+                sy = min(h - 1, y * h // CH)
                 for x in range(CW):
-                    sx = min(w - 1, x // S)
+                    sx = min(w - 1, x * w // CW)
                     si = (sy * w + sx) * 4
                     if not px[si + 3]: continue
                     di = ((r * CH + y) * W + c * CW + x) * 4

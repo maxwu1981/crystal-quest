@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 246 个文件，约 3.4 MB。
-const VERSION = 'ae32b8bc9ae4';
+// 共 280 个文件，约 3.5 MB。
+const VERSION = '9a37cad94120';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -21,6 +21,11 @@ const PRECACHE = [
   './assets/art/char_boxer_up.png',
   './assets/art/char_boxer_up_walk.png',
   './assets/art/char_elder_down.png',
+  './assets/art/char_elder_down_walk.png',
+  './assets/art/char_elder_left.png',
+  './assets/art/char_elder_left_walk.png',
+  './assets/art/char_elder_up.png',
+  './assets/art/char_elder_up_walk.png',
   './assets/art/char_general_down.png',
   './assets/art/char_general_down_walk.png',
   './assets/art/char_general_left.png',
@@ -28,6 +33,11 @@ const PRECACHE = [
   './assets/art/char_general_up.png',
   './assets/art/char_general_up_walk.png',
   './assets/art/char_guard_down.png',
+  './assets/art/char_guard_down_walk.png',
+  './assets/art/char_guard_left.png',
+  './assets/art/char_guard_left_walk.png',
+  './assets/art/char_guard_up.png',
+  './assets/art/char_guard_up_walk.png',
   './assets/art/char_herbwife_down.png',
   './assets/art/char_herbwife_down_walk.png',
   './assets/art/char_herbwife_left.png',
@@ -41,10 +51,29 @@ const PRECACHE = [
   './assets/art/char_hunter_up.png',
   './assets/art/char_hunter_up_walk.png',
   './assets/art/char_innkeeper_down.png',
+  './assets/art/char_innkeeper_down_walk.png',
+  './assets/art/char_innkeeper_left.png',
+  './assets/art/char_innkeeper_left_walk.png',
+  './assets/art/char_innkeeper_up.png',
+  './assets/art/char_innkeeper_up_walk.png',
   './assets/art/char_kid_down.png',
+  './assets/art/char_kid_down_walk.png',
+  './assets/art/char_kid_left.png',
+  './assets/art/char_kid_left_walk.png',
+  './assets/art/char_kid_up.png',
+  './assets/art/char_kid_up_walk.png',
   './assets/art/char_man_down.png',
+  './assets/art/char_man_down_walk.png',
   './assets/art/char_man_left.png',
+  './assets/art/char_man_left_walk.png',
+  './assets/art/char_man_up.png',
+  './assets/art/char_man_up_walk.png',
   './assets/art/char_merchant_down.png',
+  './assets/art/char_merchant_down_walk.png',
+  './assets/art/char_merchant_left.png',
+  './assets/art/char_merchant_left_walk.png',
+  './assets/art/char_merchant_up.png',
+  './assets/art/char_merchant_up_walk.png',
   './assets/art/char_peddler_down.png',
   './assets/art/char_peddler_down_walk.png',
   './assets/art/char_peddler_left.png',
@@ -64,6 +93,11 @@ const PRECACHE = [
   './assets/art/char_tangki_up.png',
   './assets/art/char_tangki_up_walk.png',
   './assets/art/char_woman_down.png',
+  './assets/art/char_woman_down_walk.png',
+  './assets/art/char_woman_left.png',
+  './assets/art/char_woman_left_walk.png',
+  './assets/art/char_woman_up.png',
+  './assets/art/char_woman_up_walk.png',
   './assets/art/enemy_bat.png',
   './assets/art/enemy_bee.png',
   './assets/art/enemy_darkslime.png',

@@ -50,25 +50,60 @@
       "up_walk": "char_herbwife_up_walk.png"
     },
     "man": {
-      "down": "char_man_down.png"
+      "down": "char_man_down.png",
+      "down_walk": "char_man_down_walk.png",
+      "left": "char_man_left.png",
+      "left_walk": "char_man_left_walk.png",
+      "up": "char_man_up.png",
+      "up_walk": "char_man_up_walk.png"
     },
     "woman": {
-      "down": "char_woman_down.png"
+      "down": "char_woman_down.png",
+      "down_walk": "char_woman_down_walk.png",
+      "left": "char_woman_left.png",
+      "left_walk": "char_woman_left_walk.png",
+      "up": "char_woman_up.png",
+      "up_walk": "char_woman_up_walk.png"
     },
     "elder": {
-      "down": "char_elder_down.png"
+      "down": "char_elder_down.png",
+      "down_walk": "char_elder_down_walk.png",
+      "left": "char_elder_left.png",
+      "left_walk": "char_elder_left_walk.png",
+      "up": "char_elder_up.png",
+      "up_walk": "char_elder_up_walk.png"
     },
     "kid": {
-      "down": "char_kid_down.png"
+      "down": "char_kid_down.png",
+      "down_walk": "char_kid_down_walk.png",
+      "left": "char_kid_left.png",
+      "left_walk": "char_kid_left_walk.png",
+      "up": "char_kid_up.png",
+      "up_walk": "char_kid_up_walk.png"
     },
     "merchant": {
-      "down": "char_merchant_down.png"
+      "down": "char_merchant_down.png",
+      "down_walk": "char_merchant_down_walk.png",
+      "left": "char_merchant_left.png",
+      "left_walk": "char_merchant_left_walk.png",
+      "up": "char_merchant_up.png",
+      "up_walk": "char_merchant_up_walk.png"
     },
     "innkeeper": {
-      "down": "char_innkeeper_down.png"
+      "down": "char_innkeeper_down.png",
+      "down_walk": "char_innkeeper_down_walk.png",
+      "left": "char_innkeeper_left.png",
+      "left_walk": "char_innkeeper_left_walk.png",
+      "up": "char_innkeeper_up.png",
+      "up_walk": "char_innkeeper_up_walk.png"
     },
     "guard": {
-      "down": "char_guard_down.png"
+      "down": "char_guard_down.png",
+      "down_walk": "char_guard_down_walk.png",
+      "left": "char_guard_left.png",
+      "left_walk": "char_guard_left_walk.png",
+      "up": "char_guard_up.png",
+      "up_walk": "char_guard_up_walk.png"
     }
   },
   "enemies": {
