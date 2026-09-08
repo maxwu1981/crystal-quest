@@ -4,8 +4,8 @@
 // 策略：cache-first。这是个不联网的单机游戏，装好之后就该完全走本地，
 // 每次都先问网络只会让弱网下开局卡住。资源变了靠版本号换缓存名来更新。
 //
-// 共 237 个文件，约 3.4 MB。
-const VERSION = 'a7c62beb05b4';
+// 共 240 个文件，约 3.4 MB。
+const VERSION = '83f963b978cd';
 const CACHE = 'crystal-quest-' + VERSION;
 
 const PRECACHE = [
@@ -155,6 +155,9 @@ const PRECACHE = [
   './data/maps/overworld.json',
   './data/maps/shop.json',
   './data/maps/tomb_wanjin.json',
+  './data/maps/trail_1.json',
+  './data/maps/trail_2.json',
+  './data/maps/trail_3.json',
   './data/maps/village.json',
   './data/maps/windgap_1.json',
   './data/maps/windgap_2.json',
