@@ -3,6 +3,10 @@ import { TILE } from '../assets/tiles.js';
 import { addItem } from '../game/items.js';
 import { DIRS, lerp } from './grid.js';
 import { drawArt, artH } from '../core/draw.js';
+import { SUN } from './lightmap.js';
+
+// 落影跟 lightmap.js 的太阳影同一个光向（左上来光，往右下拖），不能各画各的。
+const SUN_D = Math.hypot(SUN.dx, SUN.dy), SUN_UX = SUN.dx / SUN_D, SUN_UY = SUN.dy / SUN_D;
 
 const NPC_STEP_TIME = 0.28;
 
@@ -34,13 +38,18 @@ export function applyVariant(v, state) {
 
 // 脚下的一小块椭圆影。方向影会在格线上切出方坑（地图是逐格画的），所以用居中的椭圆。
 // 导出给 FieldScene 画主角用——只给 NPC 加会不一致。
-export function drawShadow(ctx, dx, dy) {
+// hgt/wide 都留默认值：现有两处调用点（角色、NPC）一个字不用改。
+// 中心朝太阳的方向偏一点、加一圈更淡的外晕——跟 lightmap.js 的长投影同一个光向，
+// 落影才不会看着像「贴纸的锚点」，而是「光压出来的影」。
+export function drawShadow(ctx, dx, dy, hgt = 1, wide = 1) {
+  const cx = dx + TILE / 2 + SUN_UX * 1.5 * hgt, cy = dy + TILE - 2 + SUN_UY * 1.5 * hgt;
+  const rx = TILE * 0.34 * wide, ry = TILE * 0.14;
   ctx.save();
-  ctx.globalAlpha = 0.22;
   ctx.fillStyle = '#000';
-  ctx.beginPath();
-  ctx.ellipse(dx + TILE / 2, dy + TILE - 2, TILE * 0.30, TILE * 0.14, 0, 0, 6.29);
-  ctx.fill();
+  ctx.globalAlpha = 0.11;
+  ctx.beginPath(); ctx.ellipse(cx, cy, rx * 1.35, ry * 1.35, 0, 0, 6.29); ctx.fill();
+  ctx.globalAlpha = 0.22;
+  ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 6.29); ctx.fill();
   ctx.restore();
 }
 

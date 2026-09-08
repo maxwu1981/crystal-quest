@@ -93,14 +93,20 @@ export function seedOf(id) {
 export function makeMotes(spec, rng, bw, bh) {
   const out = [];
   const span = (r) => r[0] + rng.next() * (r[1] - r[0]);
-  for (let i = 0; i < spec.n; i++) out.push({
-    x: rng.next() * bw, y: rng.next() * bh,
-    vx: span(spec.vx), vy: span(spec.vy), amp: span(spec.amp),
-    f: 0.25 + rng.next() * 0.35,          // 横向摆动 10~25 秒一个来回
-    ph: rng.next() * 6.283,
-    par: 0.55 + rng.next() * 0.45,        // 视差：跟镜头走得慢一点的显得远
-    c: `rgba(${spec.c},${span(spec.a).toFixed(3)})`,
-  });
+  for (let i = 0; i < spec.n; i++) {
+    const par = 0.55 + rng.next() * 0.45; // 视差：跟镜头走得慢一点的显得远
+    // 景深烘一次就定：par 小（远）的透明度打折、画成 2×1 而不是 1×1——
+    // 一颗糊开的粗点比一颗清楚的细点更像「没对焦」，比实时缩放便宜得多。
+    const a = span(spec.a) * (0.45 + 0.55 * par);
+    out.push({
+      x: rng.next() * bw, y: rng.next() * bh,
+      vx: span(spec.vx), vy: span(spec.vy), amp: span(spec.amp),
+      f: 0.25 + rng.next() * 0.35,          // 横向摆动 10~25 秒一个来回
+      ph: rng.next() * 6.283,
+      par, far: par < 0.775,
+      c: `rgba(${spec.c},${a.toFixed(3)})`,
+    });
+  }
   return out;
 }
 
@@ -115,7 +121,7 @@ export function renderAmbience(scene, ctx, camX, camY, px, py, mw, mh) {
     for (const m of fx.motes) {
       const sx = ox + mod(m.x + m.vx * t + Math.sin(t * m.f + m.ph) * m.amp - camX * m.par, fx.bw);
       const sy = oy + mod(m.y + m.vy * t - camY * m.par, fx.bh);
-      ctx.fillStyle = m.c; ctx.fillRect(snap(sx), snap(sy), 1, 1);
+      ctx.fillStyle = m.c; ctx.fillRect(snap(sx), snap(sy), m.far ? 2 : 1, 1);
     }
   }
   const v = fx.mood?.vig;
