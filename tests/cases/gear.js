@@ -11,6 +11,7 @@ import { assert, test, data } from '../context.js';
 import { computeStats } from '../../src/game/party.js';
 import { addItem, removeItem, countItem, applyItem, equip, canEquip } from '../../src/game/items.js';
 import { makePartyActors } from '../../src/battle/actors.js';
+import { scene as balanceScene, checkGear } from '../balance.js';
 
 test('背包增删计数', () => {
   const inv = []; addItem(inv, 'potion', 2); addItem(inv, 'potion');
@@ -79,6 +80,19 @@ test('三个装备槽：饰品可装、加成进属性、卸下还原', () => {
   assert(after.def === before.def + 6, '防御加成没生效');
   assert(equip(m, 'accessory', 'power_band', inv, data) && countItem(inv, 'dragon_heart') === 1, '换饰品应把旧的放回背包');
   assert(equip(m, 'accessory', null, inv, data) && computeStats(m, data).atk === before.atk, '卸下应还原');
+});
+// tests/balance.js 的 LOADOUTS 表长期写着 accessory:null——不是数值定得不好，
+// 是 scene() 那一行只解构 [w,a] 两个位置，第三格写了也没人读。六座迷宫的对抗验证
+// 捅出这个洞：箱子里塞饰品，balance 表上一个数字都不会动，看着像「改动没影响」。
+// 这条直接跑一遍 balance.js 自己的 scene()，确认第三格真的穿到了队员身上。
+test('balance.js 的装备表：第三格（饰品）真的会穿到模拟角色身上', () => {
+  checkGear(data);       // 顺便验 LOADOUTS 里三个格子的道具 id 都存在（含只读 id 那半）
+  const s = balanceScene(data, 9, ['goblin'], 1, 'full', 21);   // tangkiLv>0 才会换一个童乩进队伍
+  const withAcc = s.party.filter(p => p.member.equipment.accessory);
+  assert(withAcc.length >= 4, `LOADOUTS.full 该有至少 4 人戴着饰品，实际 ${withAcc.length}`);
+  // 挑一个断言到具体数值：童乩戴的 ouroboros 是 immuneAll，这条最容易被「读到了但没生效」蒙混过去
+  const tk = s.party.find(p => p.jobId === 'tangki');
+  assert(tk?.immune?.length >= 3, `童乩该因为 ouroboros 免疫全部状态异常，实际 immune=${JSON.stringify(tk?.immune)}`);
 });
 test('武器特效：属性倍率、连击、附加状态、免疫饰品', () => {
   const m = { jobId: 'boxer', level: 8, exp: 0, hp: 1, mp: 1, status: {}, equipment: { weapon: 'kusanagi', armor: null, accessory: null } };

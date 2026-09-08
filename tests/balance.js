@@ -51,15 +51,20 @@ const LOADOUTS = {
     peddler:  ['steel_sword', 'silk_robe'],
   },
   // ② 全开箱：迷宫翻遍。注意四个人**都**换成神装——原来只换三个，
-  //    那种半吊子配置没有任何玩家会是那样
+  //    那种半吊子配置没有任何玩家会是那样。
+  // **饰品也是**（2026-09-08 补的）：overworld 上摆着 ouroboros / winged_sandals /
+  // sampo / dragon_heart 三尊神话饰品，cave_2 有银戒指、tomb_wanjin 有守护护腕——
+  // 「全开箱」的定义就是这些也翻到了，只穿武器防具不算全开箱。
+  // 之前这张表全员 accessory:null，六座迷宫的对抗验证捅出这个洞——
+  // 不是这张表错了，是它从来没被算进去过：一直没有代码会去读第三格。
   full: {
-    boxer:    ['kusanagi', 'aegis'],
-    hunter:   ['harpe', 'bronze_armor'],
-    general:  ['vajra', 'silk_robe'],
-    herbwife: ['caduceus', 'hagoromo'],
-    talisman: ['laevateinn', 'silk_robe'],
-    tangki:   ['laevateinn', 'silk_robe'],
-    peddler:  ['ganjiang', 'silk_robe'],
+    boxer:    ['kusanagi', 'aegis', 'dragon_heart'],      // 近战坦：+150hp+6def 配埃癸斯正合适
+    hunter:   ['harpe', 'bronze_armor', 'winged_sandals'], // 闪避型：+14spd+10eva
+    general:  ['vajra', 'silk_robe', 'guard_band'],
+    herbwife: ['caduceus', 'hagoromo', 'sampo'],           // 后排：+30mp+6int
+    talisman: ['laevateinn', 'silk_robe', 'silver_ring'],
+    tangki:   ['laevateinn', 'silk_robe', 'ouroboros'],    // 请神打完最脆的是他：免疫状态异常保命
+    peddler:  ['ganjiang', 'silk_robe', null],             // 六件真实存在的饰品分完了，他没有
   },
   // ③ 一个箱都不开：纯靠商店。这是难度的上限，练级派会落在这一档
   shop: null,   // null = 走 TIERS，按等级取商店档
@@ -89,6 +94,16 @@ export function checkGear(data) {
     if (!t.gear[id]) throw new Error(`balance.js 的装备表缺少职业 ${id}（等级 ≤ ${t.upto}）`);
   for (const id of Object.keys(data.jobs))
     if (!ENDGAME[id]) throw new Error(`balance.js 的决战装备表缺少职业 ${id}`);
+  // 三个格子写的 id 必须真的存在，且第三格（饰品）不能悄悄退化成「反正没人读」。
+  // 2026-09-08 之前这条门根本没人守：LOADOUTS.full 全员 accessory:null 挂了很久，
+  // 因为 scene() 只解构 [w,a] 两个位置——写了第三个值也是白写。
+  for (const [name, table] of Object.entries(LOADOUTS)) {
+    if (!table) continue;
+    for (const [job, gear] of Object.entries(table)) {
+      const [w, a, acc] = gear;
+      for (const id of [w, a, acc]) if (id && !data.items[id]) throw new Error(`LOADOUTS.${name}.${job} 指到不存在的道具 ${id}`);
+    }
+  }
 }
 
 // 队伍里换一个童乩进来。**不这么做的话「請神」在这张表上完全不存在**——
@@ -102,10 +117,16 @@ function makeTangki(st, data, jobLv) {
   return m;
 }
 
-function scene(data, level, enemyIds, seed, endgame, tangkiLv = 0) {
+// 导出只为了给 tests/cases/gear.js 那条「饰品真的穿上了」测试用——
+// 平衡模拟本身不需要外部调用它，run() 自己在下面调。
+export function scene(data, level, enemyIds, seed, endgame, tangkiLv = 0) {
   const st = newGameState(data);
   if (tangkiLv) makeTangki(st, data, tangkiLv);
-  for (const m of st.party) { m.level = level; const [w, a] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: null }; healFull(m, data); }
+  // [weapon, armor, accessory?]——第三格以前没人填过，因为没人读。
+  // 八元素迷宫剩下六座的对抗验证发现了这个洞：箱子里塞的戒指/鞋子塞给谁都行，
+  // 反正这张表从不戴——于是「改完记得跑 tests/?balance 验证」这句话对饰品是空话。
+  // 现在 LOADOUTS 的第三格真的会被穿上；没给第三格的档位（TIERS 那三档）accessory 仍是 null。
+  for (const m of st.party) { m.level = level; const [w, a, acc = null] = GEAR(level, endgame)[m.jobId]; m.equipment = { weapon: w, armor: a, accessory: acc }; healFull(m, data); }
   const s = { game: { data, state: st }, rng: new RNG(seed), msg: '', escaped: false, canFlee: false,
     // 桩要跟 Effects 的接口一致：少一个 shake，一出会心就抛「不是函数」；
     // 少一个 size，第一次物理攻击就抛「scene.size is not a function」——
